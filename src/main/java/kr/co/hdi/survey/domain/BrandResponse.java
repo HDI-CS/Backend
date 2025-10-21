@@ -10,6 +10,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -161,31 +164,39 @@ public class BrandResponse extends BaseTimeEntityWithDeletion {
     }
 
     public boolean checkAllResponsesFilled() {
-        return (response1 != null) && (response2 != null) && (response3 != null) &&
-                (response4 != null) && (response5 != null) && (response6 != null) &&
-                (response7 != null) && (response8 != null) && (response9 != null) &&
-                (response10 != null) && (response11 != null) && (response12 != null) &&
-                (response13 != null) && (response14 != null) && (response15 != null) &&
-                (response16 != null) && (response17 != null) && (response18 != null) &&
-                (response19 != null) && (response20 != null) && (response21 != null) &&
-                (response22 != null) && (response23 != null) && (response24 != null) &&
-                (response25 != null) && (response26 != null) && (response27 != null) &&
-                (response28 != null) && (response29 != null) && (response30 != null) &&
-                (textResponse != null);
+        boolean allNumericFilled =
+                (response1 != null) && (response2 != null) && (response3 != null) &&
+                        (response4 != null) && (response5 != null) && (response6 != null) &&
+                        (response7 != null) && (response8 != null) && (response9 != null) &&
+                        (response10 != null) && (response11 != null) && (response12 != null) &&
+                        (response13 != null) && (response14 != null) && (response15 != null) &&
+                        (response16 != null) && (response17 != null) && (response18 != null) &&
+                        (response19 != null) && (response20 != null) && (response21 != null) &&
+                        (response22 != null) && (response23 != null) && (response24 != null) &&
+                        (response25 != null) && (response26 != null) && (response27 != null) &&
+                        (response28 != null) && (response29 != null) && (response30 != null);
+
+        boolean textFilled = (textResponse != null && !textResponse.isBlank());
+
+        return allNumericFilled && textFilled;
     }
 
     private boolean allResponsesAreNull() {
-        return response1 == null && response2 == null && response3 == null &&
-                response4 == null && response5 == null && response6 == null &&
-                response7 == null && response8 == null && response9 == null &&
-                response10 == null && response11 == null && response12 == null &&
-                response13 == null && response14 == null && response15 == null &&
-                response16 == null && response17 == null && response18 == null &&
-                response19 == null && response20 == null && response21 == null &&
-                response22 == null && response23 == null && response24 == null &&
-                response25 == null && response26 == null && response27 == null &&
-                response28 == null && response29 == null && response30 == null &&
-                textResponse == null;
+        boolean allNumericNull =
+                response1 == null && response2 == null && response3 == null &&
+                        response4 == null && response5 == null && response6 == null &&
+                        response7 == null && response8 == null && response9 == null &&
+                        response10 == null && response11 == null && response12 == null &&
+                        response13 == null && response14 == null && response15 == null &&
+                        response16 == null && response17 == null && response18 == null &&
+                        response19 == null && response20 == null && response21 == null &&
+                        response22 == null && response23 == null && response24 == null &&
+                        response25 == null && response26 == null && response27 == null &&
+                        response28 == null && response29 == null && response30 == null;
+
+        boolean textEmpty = (textResponse == null || textResponse.isBlank());
+
+        return allNumericNull && textEmpty;
     }
 
     @Builder(access = lombok.AccessLevel.PRIVATE)
@@ -232,5 +243,42 @@ public class BrandResponse extends BaseTimeEntityWithDeletion {
         this.response29 = response29;
         this.response30 = response30;
         this.textResponse = textResponse;
+    }
+
+    public List<Integer> getResponses() {
+        List<Integer> responses = new ArrayList<>(30);
+
+        responses.add(response1);
+        responses.add(response2);
+        responses.add(response3);
+        responses.add(response4);
+        responses.add(response5);
+        responses.add(response6);
+        responses.add(response7);
+        responses.add(response8);
+        responses.add(response9);
+        responses.add(response10);
+        responses.add(response11);
+        responses.add(response12);
+        responses.add(response13);
+        responses.add(response14);
+        responses.add(response15);
+        responses.add(response16);
+        responses.add(response17);
+        responses.add(response18);
+        responses.add(response19);
+        responses.add(response20);
+        responses.add(response21);
+        responses.add(response22);
+        responses.add(response23);
+        responses.add(response24);
+        responses.add(response25);
+        responses.add(response26);
+        responses.add(response27);
+        responses.add(response28);
+        responses.add(response29);
+        responses.add(response30);
+
+        return responses;
     }
 }

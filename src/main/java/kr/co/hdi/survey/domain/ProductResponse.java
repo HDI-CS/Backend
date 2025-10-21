@@ -9,6 +9,9 @@ import kr.co.hdi.user.domain.UserEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -214,7 +217,8 @@ public class ProductResponse extends BaseTimeEntityWithDeletion {
     }
 
     public boolean checkAllResponsesFilled () {
-        return (response1 != 0) && (response2 != 0) && (response3 != 0) &&
+
+        boolean allNumericFilled = (response1 != 0) && (response2 != 0) && (response3 != 0) &&
                 (response4 != 0) && (response5 != 0) && (response6 != 0) &&
                 (response7 != 0) && (response8 != 0) && (response9 != 0) &&
                 (response10 != 0) && (response11 != 0) && (response12 != 0) &&
@@ -227,12 +231,14 @@ public class ProductResponse extends BaseTimeEntityWithDeletion {
                 (response31 != 0) && (response32 != 0) && (response33 != 0) &&
                 (response34 != 0) && (response35 != 0) && (response36 != 0) &&
                 (response37 != 0) && (response38 != 0) && (response39 != 0) &&
-                (response40 != 0) && (response41 != 0) &&
-                (textResponse != null);
+                (response40 != 0) && (response41 != 0);
+
+        boolean textFilled = (textResponse != null && !textResponse.isBlank());
+        return allNumericFilled && textFilled;
     }
 
     private boolean allResponsesAreNull() {
-        return response1 == null && response2 == null && response3 == null &&
+        boolean allNumericNull = response1 == null && response2 == null && response3 == null &&
                 response4 == null && response5 == null && response6 == null &&
                 response7 == null && response8 == null && response9 == null &&
                 response10 == null && response11 == null && response12 == null &&
@@ -245,8 +251,58 @@ public class ProductResponse extends BaseTimeEntityWithDeletion {
                 response31 == null && response32 == null && response33 == null &&
                 response34 == null && response35 == null && response36 == null &&
                 response37 == null && response38 == null && response39 == null &&
-                response40 == null && response41 == null &&
-                textResponse == null;
+                response40 == null && response41 == null;
+
+        boolean textEmpty = (textResponse == null || textResponse.isBlank());
+        return allNumericNull && textEmpty;
+    }
+
+    public List<Integer> getResponses() {
+        List<Integer> responses = new ArrayList<>(41);
+
+        responses.add(response1);
+        responses.add(response2);
+        responses.add(response3);
+        responses.add(response4);
+        responses.add(response5);
+        responses.add(response6);
+        responses.add(response7);
+        responses.add(response8);
+        responses.add(response9);
+        responses.add(response10);
+        responses.add(response11);
+        responses.add(response12);
+        responses.add(response13);
+        responses.add(response14);
+        responses.add(response15);
+        responses.add(response16);
+        responses.add(response17);
+        responses.add(response18);
+        responses.add(response19);
+        responses.add(response20);
+        responses.add(response21);
+        responses.add(response22);
+        responses.add(response23);
+        responses.add(response24);
+        responses.add(response25);
+        responses.add(response26);
+        responses.add(response27);
+        responses.add(response28);
+        responses.add(response29);
+        responses.add(response30);
+        responses.add(response31);
+        responses.add(response32);
+        responses.add(response33);
+        responses.add(response34);
+        responses.add(response35);
+        responses.add(response36);
+        responses.add(response37);
+        responses.add(response38);
+        responses.add(response39);
+        responses.add(response40);
+        responses.add(response41);
+
+        return responses;
     }
 
 }
