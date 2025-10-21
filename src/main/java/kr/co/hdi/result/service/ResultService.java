@@ -1,4 +1,4 @@
-가package kr.co.hdi.result.service;
+package kr.co.hdi.result.service;
 
 import kr.co.hdi.survey.domain.BrandResponse;
 import kr.co.hdi.survey.domain.ProductResponse;
