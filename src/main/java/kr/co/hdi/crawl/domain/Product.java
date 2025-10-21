@@ -36,6 +36,8 @@ public class Product {
 
     private String productTypeName;
 
+    @Column(name = "original_id")
+    private Long originalId;
 
     public static Product from(Map<String, String> productInfo, String referenceUrl) {
         return Product.builder()
