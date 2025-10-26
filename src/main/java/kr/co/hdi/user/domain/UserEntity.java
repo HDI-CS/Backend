@@ -67,6 +67,10 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
         this.surveyDone = true;
     }
 
+    public void updateSurveyStatusToFalse() {
+        this.surveyDone = false;
+    }
+
     @Builder(access = PRIVATE)
     private UserEntity(String password, boolean enabled, Role role, String email, String name, UserType userType, Boolean surveyDone) {
         this.name = name;

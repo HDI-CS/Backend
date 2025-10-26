@@ -307,6 +307,8 @@ public class SurveyService {
             long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
             if (datasetCount == responsedDatasetCount)
                 user.updateSurveyDoneStatus();
+            else
+                user.updateSurveyStatusToFalse();
             userRepository.save(user);
         }
         if (user.getUserType() == UserType.PRODUCT) {
@@ -314,6 +316,8 @@ public class SurveyService {
             long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
             if (datasetCount == responsedDatasetCount)
                 user.updateSurveyDoneStatus();
+            else
+                user.updateSurveyStatusToFalse();
             userRepository.save(user);
         }
     }
