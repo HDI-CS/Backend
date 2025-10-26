@@ -13,6 +13,7 @@ import kr.co.hdi.survey.exception.SurveyErrorCode;
 import kr.co.hdi.survey.exception.SurveyException;
 import kr.co.hdi.survey.repository.*;
 import kr.co.hdi.user.domain.UserEntity;
+import kr.co.hdi.user.domain.UserType;
 import kr.co.hdi.user.exception.AuthErrorCode;
 import kr.co.hdi.user.exception.AuthException;
 import kr.co.hdi.user.repository.UserRepository;
@@ -294,5 +295,26 @@ public class SurveyService {
                         score.getScore8()
                 ))
                 .toList();
+    }
+
+    @Transactional
+    public void checkSurveyDone(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        if (user.getUserType() == UserType.BRAND) {
+            long datasetCount = brandDatasetAssignmentRepository.countByUser(user);
+            long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
+            if (datasetCount == responsedDatasetCount)
+                user.updateSurveyDoneStatus();
+            userRepository.save(user);
+        }
+        if (user.getUserType() == UserType.PRODUCT) {
+            long datasetCount = productDatasetAssignmentRepository.countByUser(user);
+            long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
+            if (datasetCount == responsedDatasetCount)
+                user.updateSurveyDoneStatus();
+            userRepository.save(user);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package kr.co.hdi.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.co.hdi.survey.service.SurveyService;
 import kr.co.hdi.user.domain.Role;
 import kr.co.hdi.user.domain.UserEntity;
 import kr.co.hdi.user.dto.response.AuthInfoResponse;
@@ -21,6 +22,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SurveyService surveyService;
 
     public AuthResponse login(String email, String password) {
         UserEntity user = userRepository.findByEmail(email)
@@ -59,6 +61,9 @@ public class AuthService {
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        // 평가 완료 확인
+        surveyService.checkSurveyDone(userId);
 
         return AuthResponse.from(user);
     }

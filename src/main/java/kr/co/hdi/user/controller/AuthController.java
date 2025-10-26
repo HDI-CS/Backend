@@ -60,16 +60,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-//    @Operation(summary = "평가자 분야(BRAND, PRODUCT)와 모든 평가를 완료했는지 여부 조회")
-//    @GetMapping("/me/info")
-//    public ResponseEntity<AuthInfoResponse> getCurrentUserInfo(
-//            @SessionAttribute(name = "userId", required = true) Long userId
-//    ) {
-//
-//        AuthInfoResponse response = authService.getAuthInfo(userId, email, name, role);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
-
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(
             @RequestBody RegisterRequest request
