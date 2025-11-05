@@ -26,4 +26,9 @@ public class BrandDatasetAssignment extends BaseTimeEntityWithDeletion {
     @JoinColumn(name = "data_id")
     private Brand brand;
 
+    public BrandDatasetAssignment(UserEntity user, Brand brand) {
+        this.user = user;
+        this.brand = brand;
+    }
+
 }

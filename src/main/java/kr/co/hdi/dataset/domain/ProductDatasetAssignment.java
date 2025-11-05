@@ -27,4 +27,10 @@ public class ProductDatasetAssignment extends BaseTimeEntityWithDeletion {
     @JoinColumn(name = "data_id")
     private Product product;
 
+
+    public ProductDatasetAssignment(UserEntity user, Product product) {
+        this.user = user;
+        this.product = product;
+    }
+
 }
