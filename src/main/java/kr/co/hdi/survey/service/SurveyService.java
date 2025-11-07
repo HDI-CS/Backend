@@ -25,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -45,17 +47,41 @@ public class SurveyService {
     @Transactional
     public List<ProductSurveyDataResponse> getAllBrandSurveys(Long userId) {
 
-        List<BrandResponse> brandResponses = brandResponseRepository.findAllByUserId(userId);
-        if (brandResponses.isEmpty()) {
-            List<BrandDatasetAssignment> assignments = brandDatasetAssignmentRepository.findAllByUserId(userId);
-            List<BrandResponse> newResponses = assignments.stream()
-                    .map(a -> BrandResponse.createBrandResponse(a.getUser(), a.getBrand()))
-                    .toList();
-            brandResponses = brandResponseRepository.saveAll(newResponses);
+        // 유저의 전체 브랜드 배정 정보 조회
+        List<BrandDatasetAssignment> assignments = brandDatasetAssignmentRepository.findAllByUserId(userId);
+
+        if (assignments.isEmpty()) {
+            return List.of(); // 배정 자체가 없으면 빈 리스트 반환
         }
 
-        return brandResponses.stream()
-                .sorted(Comparator.comparing(br -> br.getBrand().getId()))
+        // 유저의 기존 응답 조회 (user + brand 기준)
+        List<BrandResponse> existingResponses = brandResponseRepository.findAllByUserId(userId);
+
+        // Brand ID 기준으로 빠른 조회를 위한 Map 구성
+        Map<Long, BrandResponse> responseMap = existingResponses.stream()
+                .collect(Collectors.toMap(
+                        br -> br.getBrand().getId(),
+                        br -> br
+                ));
+
+        // 배정된 브랜드 중 아직 응답이 없는 경우 새로 생성
+        List<BrandResponse> missingResponses = assignments.stream()
+                .map(BrandDatasetAssignment::getBrand)
+                .filter(brand -> !responseMap.containsKey(brand.getId()))
+                .map(brand -> BrandResponse.createBrandResponse(assignments.get(0).getUser(), brand))
+                .toList();
+
+        // 새로 생성된 응답 저장
+        if (!missingResponses.isEmpty()) {
+            List<BrandResponse> saved = brandResponseRepository.saveAll(missingResponses);
+            // 새로 저장한 것도 Map에 합치기
+            saved.forEach(br -> responseMap.put(br.getBrand().getId(), br));
+        }
+
+        // 정렬 및 DTO 변환
+        return responseMap.values().stream()
+//                .sorted(Comparator.comparing(br -> br.getBrand().getId()))
+                .sorted(Comparator.comparing(br -> br.getCreatedAt()))
                 .map(br -> new ProductSurveyDataResponse(
                         br.getBrand().getBrandName(),
                         br.getBrand().getImage(),
@@ -63,30 +89,91 @@ public class SurveyService {
                         br.getId()
                 ))
                 .toList();
+
+//        List<BrandResponse> brandResponses = brandResponseRepository.findAllByUserId(userId);
+//        if (brandResponses.isEmpty()) {
+//            List<BrandDatasetAssignment> assignments = brandDatasetAssignmentRepository.findAllByUserId(userId);
+//            List<BrandResponse> newResponses = assignments.stream()
+//                    .map(a -> BrandResponse.createBrandResponse(a.getUser(), a.getBrand()))
+//                    .toList();
+//            brandResponses = brandResponseRepository.saveAll(newResponses);
+//        }
+//
+//        return brandResponses.stream()
+//                .sorted(Comparator.comparing(br -> br.getBrand().getId()))
+//                .map(br -> new ProductSurveyDataResponse(
+//                        br.getBrand().getBrandName(),
+//                        br.getBrand().getImage(),
+//                        br.getResponseStatus(),
+//                        br.getId()
+//                ))
+//                .toList();
     }
 
     // 평가할 제품 리스트 조회
     @Transactional
     public List<ProductSurveyDataResponse> getAllProductSurveys(Long userId) {
 
-        List<ProductResponse> productResponses = productResponseRepository.findAllByUserId(userId);
-        if (productResponses.isEmpty()) {
-            List<ProductDatasetAssignment> assignments = productDatasetAssignmentRepository.findAllByUserId(userId);
-            List<ProductResponse> newResponses = assignments.stream()
-                    .map(a -> ProductResponse.createProductResponse(a.getUser(), a.getProduct()))
-                    .toList();
-            productResponses = productResponseRepository.saveAll(newResponses);
+        // 유저의 전체 product assignment 조회
+        List<ProductDatasetAssignment> assignments = productDatasetAssignmentRepository.findAllByUserId(userId);
+
+        if (assignments.isEmpty()) {
+            return List.of(); // 배정 자체가 없으면 빈 리스트 반환
         }
 
-        return productResponses.stream()
-                .sorted(Comparator.comparing(productResponse -> productResponse.getProduct().getId()))
-                .map(productResponse -> new ProductSurveyDataResponse(
-                        productResponse.getProduct().getProductName(),
-                        productImageRepository.findByProductId(productResponse.getProduct().getId()).getFrontPath(),
-                        productResponse.getResponseStatus(),
-                        productResponse.getId()
+        // 유저의 기존 product 응답 조회
+        List<ProductResponse> existingResponses = productResponseRepository.findAllByUserId(userId);
+
+        // Product ID 기준으로 Map 구성
+        Map<Long, ProductResponse> responseMap = existingResponses.stream()
+                .collect(Collectors.toMap(
+                        pr -> pr.getProduct().getId(),
+                        pr -> pr
+                ));
+
+        // 응답이 없는 product에 대해 새로 생성
+        List<ProductResponse> missingResponses = assignments.stream()
+                .map(ProductDatasetAssignment::getProduct)
+                .filter(product -> !responseMap.containsKey(product.getId()))
+                .map(product -> ProductResponse.createProductResponse(assignments.get(0).getUser(), product))
+                .toList();
+
+        // 새 응답 저장 및 합치기
+        if (!missingResponses.isEmpty()) {
+            List<ProductResponse> saved = productResponseRepository.saveAll(missingResponses);
+            saved.forEach(pr -> responseMap.put(pr.getProduct().getId(), pr));
+        }
+
+        // 정렬 및 DTO 변환
+        return responseMap.values().stream()
+//                .sorted(Comparator.comparing(pr -> pr.getProduct().getId()))
+                .sorted(Comparator.comparing(pr -> pr.getCreatedAt()))
+                .map(pr -> new ProductSurveyDataResponse(
+                        pr.getProduct().getProductName(),
+                        productImageRepository.findByProductId(pr.getProduct().getId()).getFrontPath(),
+                        pr.getResponseStatus(),
+                        pr.getId()
                 ))
                 .toList();
+
+//        List<ProductResponse> productResponses = productResponseRepository.findAllByUserId(userId);
+//        if (productResponses.isEmpty()) {
+//            List<ProductDatasetAssignment> assignments = productDatasetAssignmentRepository.findAllByUserId(userId);
+//            List<ProductResponse> newResponses = assignments.stream()
+//                    .map(a -> ProductResponse.createProductResponse(a.getUser(), a.getProduct()))
+//                    .toList();
+//            productResponses = productResponseRepository.saveAll(newResponses);
+//        }
+//
+//        return productResponses.stream()
+//                .sorted(Comparator.comparing(productResponse -> productResponse.getProduct().getId()))
+//                .map(productResponse -> new ProductSurveyDataResponse(
+//                        productResponse.getProduct().getProductName(),
+//                        productImageRepository.findByProductId(productResponse.getProduct().getId()).getFrontPath(),
+//                        productResponse.getResponseStatus(),
+//                        productResponse.getId()
+//                ))
+//                .toList();
     }
 
     public ProductSurveyDetailResponse getProductSurveyDetail(Long productResponseId) {
