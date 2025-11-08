@@ -80,8 +80,7 @@ public class SurveyService {
 
         // 정렬 및 DTO 변환
         return responseMap.values().stream()
-//                .sorted(Comparator.comparing(br -> br.getBrand().getId()))
-                .sorted(Comparator.comparing(br -> br.getCreatedAt()))
+                .sorted(Comparator.comparing(BrandResponse::getCreatedAt).reversed())
                 .map(br -> new ProductSurveyDataResponse(
                         br.getBrand().getBrandName(),
                         br.getBrand().getImage(),
@@ -146,8 +145,7 @@ public class SurveyService {
 
         // 정렬 및 DTO 변환
         return responseMap.values().stream()
-//                .sorted(Comparator.comparing(pr -> pr.getProduct().getId()))
-                .sorted(Comparator.comparing(pr -> pr.getCreatedAt()))
+                .sorted(Comparator.comparing(ProductResponse::getCreatedAt).reversed())
                 .map(pr -> new ProductSurveyDataResponse(
                         pr.getProduct().getProductName(),
                         productImageRepository.findByProductId(pr.getProduct().getId()).getFrontPath(),
