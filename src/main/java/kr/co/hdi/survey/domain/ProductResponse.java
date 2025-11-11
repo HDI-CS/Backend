@@ -223,10 +223,17 @@ public class ProductResponse extends BaseTimeEntityWithDeletion {
                 (response7 != 0) && (response8 != 0) && (response9 != 0) &&
                 (response10 != 0) && (response11 != 0) && (response12 != 0) &&
                 (response13 != 0) && (response14 != 0) && (response15 != 0) &&
-                (response16 != 0) && (response17 != 0) && (response18 != 0) &&
-                (response19 != 0) && (response20 != 0) && (response21 != 0) &&
-                (response22 != 0) && (response23 != 0) && (response24 != 0) &&
-                (response25 != 0) && (response26 != 0) && (response27 != 0) &&
+                (response16 != 0) &&
+//                (response17 != 0) &&
+                (response18 != 0) &&
+                (response19 != 0) &&
+//                (response20 != 0) &&
+                (response21 != 0) &&
+                (response22 != 0) && (response23 != 0) &&
+//                (response24 != 0) &&
+                (response25 != 0) &&
+//                (response26 != 0) &&
+                (response27 != 0) &&
                 (response28 != 0) && (response29 != 0) && (response30 != 0) &&
                 (response31 != 0) && (response32 != 0) && (response33 != 0) &&
                 (response34 != 0) && (response35 != 0) && (response36 != 0) &&
