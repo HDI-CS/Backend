@@ -1,8 +1,9 @@
-package kr.co.hdi.dataset.domain;
+package kr.co.hdi.domain.assignment.entity;
 
 import jakarta.persistence.*;
+import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
-import kr.co.hdi.domain.user.entity.UserEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,23 +13,16 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
-public class BrandDatasetAssignment extends BaseTimeEntityWithDeletion {
+public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "visual_data_assignment_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private UserYearRound userYearRound;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "data_id")
-    private Brand brand;
-
-    public BrandDatasetAssignment(UserEntity user, Brand brand) {
-        this.user = user;
-        this.brand = brand;
-    }
-
+    private VisualData visualData;
 }

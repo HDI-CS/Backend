@@ -5,7 +5,7 @@ import kr.co.hdi.dataset.domain.Brand;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import kr.co.hdi.survey.exception.SurveyErrorCode;
 import kr.co.hdi.survey.exception.SurveyException;
-import kr.co.hdi.user.domain.UserEntity;
+import kr.co.hdi.domain.user.entity.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
