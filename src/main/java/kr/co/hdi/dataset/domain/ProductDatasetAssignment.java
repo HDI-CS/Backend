@@ -3,7 +3,7 @@ package kr.co.hdi.dataset.domain;
 import jakarta.persistence.*;
 import kr.co.hdi.crawl.domain.Product;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
-import kr.co.hdi.user.domain.UserEntity;
+import kr.co.hdi.domain.user.entity.UserEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
