@@ -48,9 +48,9 @@ public class ResponseInterceptor implements ResponseBodyAdvice {
         String message = (status >= 200 && status < 300) ? "OK" : "Error";
 
         CommonResponse<Object> commonResponse = CommonResponse.builder()
-                .status(status)
+                .code(status)
                 .message(message)
-                .data(body)
+                .result(body)
                 .build();
 
         // 응답을 String으로 내는 경우 따로 예외처리

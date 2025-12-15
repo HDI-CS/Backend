@@ -3,16 +3,16 @@ package kr.co.hdi.global.dto;
 import lombok.Builder;
 
 public record CommonResponse<T>(
-        int status,
+        int code,
         String message,
-        T data
+        T result
 ) {
 
     @Builder
-    public CommonResponse(int status, String message, T data) {
-        this.status = status;
+    public CommonResponse(int code, String message, T result) {
+        this.code = code;
         this.message = message;
-        this.data = data;
+        this.result = result;
     }
 
 }
