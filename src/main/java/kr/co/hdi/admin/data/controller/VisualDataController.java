@@ -2,6 +2,8 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.co.hdi.admin.data.dto.request.VisualDataIdsRequest;
+import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataWithCategoryResponse;
@@ -10,10 +12,7 @@ import kr.co.hdi.admin.data.service.VisualDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -55,5 +54,41 @@ public class VisualDataController {
 
         List<VisualDataIdsResponse> response = visualDataService.getVisualDataIds(yearId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping("/datasets/duplicate")
+    @Operation(summary = "시각 디자인 데이터셋 복제")
+    public ResponseEntity<Void> duplicateVisualData(@RequestBody VisualDataIdsRequest request) {
+
+        visualDataService.duplicateVisualData(request.ids());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/years/{yearId}/datasets")
+    @Operation(summary = "시각 디자인 데이터셋 생성")
+    public ResponseEntity<Void> createVisualData(
+            @PathVariable Long yearId,
+            @RequestBody VisualDataRequest request) {
+
+        visualDataService.createVisualData(yearId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/datasets/{datasetId}")
+    @Operation(summary = "시각 디자인 데이터셋 수정")
+    public ResponseEntity<Void> updateVisualData(
+            @PathVariable Long datasetId,
+            @RequestBody VisualDataRequest request) {
+
+        visualDataService.updateVisualData(datasetId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/datasets")
+    @Operation(summary = "시각 디자인 데이터셋 삭제")
+    public ResponseEntity<Void> deleteVisualData(@RequestBody VisualDataIdsRequest request) {
+
+        visualDataService.deleteVisualData(request.ids());
+        return ResponseEntity.ok().build();
     }
 }

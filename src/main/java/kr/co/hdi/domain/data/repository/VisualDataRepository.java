@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VisualDataRepository extends JpaRepository<VisualData, Long> {
 
@@ -27,4 +28,8 @@ public interface VisualDataRepository extends JpaRepository<VisualData, Long> {
         AND v.year.id = :yearId
     """)
     List<VisualDataIdsResponse> findIdByYearId(@Param("yearId") Long yearId);
+
+    Optional<VisualData> findByIdAndDeletedAtIsNull(Long id);
+
+    List<VisualData> findByIdInAndDeletedAtIsNull(List<Long> ids);
 }

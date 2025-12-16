@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataWithCategoryResponse;
@@ -74,5 +75,54 @@ public class VisualDataService {
     public List<VisualDataIdsResponse> getVisualDataIds(@PathVariable Long yearId) {
 
         return visualDataRepository.findIdByYearId(yearId);
+    }
+
+    /*
+    시각 디자인 데이터셋 복제
+     */
+    @Transactional
+    public void duplicateVisualData(List<Long> ids) {
+
+        List<VisualData> visualDatas = visualDataRepository.findByIdInAndDeletedAtIsNull(ids);
+        List<VisualData> duplicated = visualDatas.stream()
+                .map(VisualData::duplicate)
+                .toList();
+        visualDataRepository.saveAll(duplicated);
+    }
+
+    /*
+    시각 디자인 데이터셋 생성
+     */
+    @Transactional
+    public void createVisualData(Long yearId, VisualDataRequest request) {
+
+        Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
+                .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
+
+        VisualData visualData = VisualData.create(year, request);
+        visualDataRepository.save(visualData);
+    }
+
+    /*
+    시각 디자인 데이터셋 수정
+     */
+    @Transactional
+    public void updateVisualData(Long datasetId, VisualDataRequest request) {
+
+        VisualData visualData = visualDataRepository.findByIdAndDeletedAtIsNull(datasetId)
+                        .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
+
+        visualData.updatePartial(request);
+        visualDataRepository.save(visualData);
+    }
+
+    /*
+    시각 디자인 데이터셋 삭제
+     */
+    @Transactional
+    public void deleteVisualData(List<Long> ids) {
+
+        List<VisualData> visualDatas = visualDataRepository.findByIdInAndDeletedAtIsNull(ids);
+        visualDatas.forEach(VisualData::delete);
     }
 }
