@@ -37,7 +37,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     private String productTypeName;
 
     @Column(name = "original_id")
-    private Long originalId;
+    private String originalId;
 
     @Enumerated(EnumType.STRING)
     private IndustryDataCategory industryDataCategory;

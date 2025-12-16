@@ -39,7 +39,8 @@ out/
 application-jwt.yml
 application-oauth.yml
 
-.env
+src/main/resources/.env
+src/main/resources/application-local.yml
 /src/main/resources/application-apikey.yml
 
 # MapStruct 또는 기타 코드 생성 관련 클래스 무시

@@ -18,7 +18,7 @@ services:
     depends_on:
       - cache
     env_file:
-      - .env
+      - src/main/resources/.env
     networks:
       - hdi-be-network
 
