@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IndustryDataRepository extends JpaRepository<IndustryData, Long> {
@@ -31,4 +32,8 @@ public interface IndustryDataRepository extends JpaRepository<IndustryData, Long
         AND i.year.id = :yearId
     """)
     List<IndustryDataIdsResponse> findIdByYearId(@Param("yearId") Long yearId);
+
+    Optional<IndustryData> findByIdAndDeletedAtIsNull(Long id);
+
+    List<IndustryData> findByIdInAndDeletedAtIsNull(List<Long> ids);
 }

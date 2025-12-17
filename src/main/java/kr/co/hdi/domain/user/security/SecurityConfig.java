@@ -26,6 +26,8 @@ public class SecurityConfig {
             "/actuator/health",
             "/v3/api-docs/**",
             "/swagger-ui/**",
+
+            "/api/v1/industry/data/years/1/datasets/export"
     };
 
     @Bean
