@@ -24,7 +24,7 @@ public record VisualDataResponse(
                 v.getMainProduct(),
                 v.getTarget(),
                 v.getReferenceUrl(),
-                null // TODO : logoImage (추후 매핑)
+                v.getLogoImage()
         );
     }
 }

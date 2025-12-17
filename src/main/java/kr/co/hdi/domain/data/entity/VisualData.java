@@ -41,6 +41,9 @@ public class VisualData extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private Year year;
 
+    @Column(columnDefinition = "text")
+    private String logoImage;
+
     public void delete() {
         processDeletion();
     }

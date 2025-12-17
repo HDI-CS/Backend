@@ -9,6 +9,7 @@ import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataWithCategoryResponse;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.data.service.VisualDataService;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/data")
+@RequestMapping("/api/v1/visual/data")
 @Tag(name = "시각디자인 데이터 ", description = "시각 디자인 데이터 관리 API")
 public class VisualDataController {
 
@@ -90,5 +91,14 @@ public class VisualDataController {
 
         visualDataService.deleteVisualData(request.ids());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/datasets/search")
+    @Operation(summary = "시각 디자인 데이터셋 검색")
+    public ResponseEntity<List<VisualDataResponse>> searchVisualData(
+            @RequestParam String q, @RequestParam VisualDataCategory category) {
+
+        List<VisualDataResponse> response = visualDataService.searchVisualData(q, category);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

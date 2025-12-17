@@ -8,6 +8,7 @@ import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.repository.YearRepository;
@@ -124,5 +125,13 @@ public class VisualDataService {
 
         List<VisualData> visualDatas = visualDataRepository.findByIdInAndDeletedAtIsNull(ids);
         visualDatas.forEach(VisualData::delete);
+    }
+
+    /*
+    시각 디자인 데이터셋 검색
+     */
+    public List<VisualDataResponse> searchVisualData(String q, VisualDataCategory category) {
+
+        return visualDataRepository.search(q, category);
     }
 }
