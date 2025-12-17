@@ -36,9 +36,9 @@ public record IndustryDataResponse (
                 i.getRegisteredAt(),
                 i.getProductPath(),
                 i.getProductTypeName(),
-                null,
-                null,
-                null //TODO: ImagePath 추가
+                i.getDetailImagePath(),
+                i.getFrontImagePath(),
+                i.getSideImagePath()
         );
     }
 }

@@ -47,6 +47,15 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private Year year;
 
+    @Column(columnDefinition = "text")
+    private String detailImagePath;
+
+    @Column(columnDefinition = "text")
+    private String frontImagePath;
+
+    @Column(columnDefinition = "text")
+    private String sideImagePath;
+
     public void delete() {
         processDeletion();
     }
@@ -71,6 +80,9 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.productPath = request.productPath();
         i.productTypeName = request.productTypeName();
         i.industryDataCategory = request.industryDataCategory();
+        i.detailImagePath = request.detailImagePath();
+        i.frontImagePath = request.frontImagePath();
+        i.sideImagePath = request.sideImagePath();
 
         return i;
     }
@@ -97,6 +109,9 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.productPath = this.productPath;
         copy.productTypeName = this.productTypeName;
         copy.industryDataCategory = this.industryDataCategory;
+        copy.detailImagePath = this.detailImagePath;
+        copy.frontImagePath = this.frontImagePath;
+        copy.sideImagePath = this.sideImagePath;
 
         return copy;
     }
@@ -144,6 +159,15 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
         if (request.industryDataCategory() != null) {
             this.industryDataCategory = request.industryDataCategory();
+        }
+        if (request.detailImagePath() != null) {
+            this.detailImagePath = request.detailImagePath();
+        }
+        if (request.frontImagePath() != null) {
+            this.frontImagePath = request.frontImagePath();
+        }
+        if (request.sideImagePath() != null) {
+            this.sideImagePath = request.sideImagePath();
         }
 
     }

@@ -6,6 +6,8 @@ import kr.co.hdi.admin.data.dto.request.IndustryDataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.IndustryDataService;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.springframework.core.io.ByteArrayResource;
@@ -82,15 +84,14 @@ public class IndustryDataController {
                 .body(resource);
     }
 
-//    @GetMapping("/datasets/search")
-//    @Operation(summary = "산업 디자인 데이터셋 검색")
-//    public ResponseEntity<List<IndustryDataResponse>> searchIndustryDatasets(
-//            @RequestParam("q") String query,
-//            @RequestParam("category") IndustryDataCategory category) {
-//
-//        List<IndustryDataResponse> response = industryDataService.searchIndustryDatasets(query, category);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    @GetMapping("/datasets/search")
+    @Operation(summary = "산업 디자인 데이터셋 검색")
+    public ResponseEntity<List<IndustryDataResponse>> searchIndustryData(
+            @RequestParam String q, @RequestParam IndustryDataCategory category) {
+
+        List<IndustryDataResponse> response = industryDataService.searchIndustryData(q, category);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     /*
     POST method

@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IndustryDataRepository extends JpaRepository<IndustryData, Long> {
+public interface IndustryDataRepository extends JpaRepository<IndustryData, Long>, IndustryDataRepositoryCustom {
 
     @Query("""
     SELECT i
