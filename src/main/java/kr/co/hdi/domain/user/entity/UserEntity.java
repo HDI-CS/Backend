@@ -32,15 +32,17 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
     @Enumerated(STRING)
     private Role role;
 
+    @Enumerated(STRING)
     private UserType userType;
 
     private Boolean surveyDone;
 
     // V1에서 사용하지 않음
-    public static UserEntity createUser(String email, String encodePassword, String name) {
+    public static UserEntity createUser(String email, String encodePassword, String name, UserType type) {
         return UserEntity.builder()
                 .enabled(true)
                 .role(Role.USER)
+                .userType(type)
 
                 .email(email)
                 .password(encodePassword)
@@ -51,10 +53,11 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
                 .build();
     }
 
-    public static UserEntity createAdmin(String email, String encodePassword, String name) {
+    public static UserEntity createAdmin(String email, String encodePassword, String name, UserType type) {
         return UserEntity.builder()
                 .enabled(true)
                 .role(Role.ADMIN)
+                .userType(type)
 
                 .email(email)
                 .password(encodePassword)
