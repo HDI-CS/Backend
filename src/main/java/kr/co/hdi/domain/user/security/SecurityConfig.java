@@ -20,12 +20,14 @@ public class SecurityConfig {
     private final SessionAuthenticationFilter sessionAuthenticationFilter;
 
     private static final String[] WHITE_LIST = {
-            "/auth/login",
-            "/auth/register",
-            "/auth/register-admin",
+            "/user/auth/login",
+            "/user/auth/logout",
+            "/user/auth/register",
+            "/user/auth/register-admin",
             "/actuator/health",
             "/v3/api-docs/**",
             "/swagger-ui/**",
+            "/swagger"
     };
 
     @Bean
@@ -39,6 +41,8 @@ public class SecurityConfig {
                 // 경로별 인가
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(WHITE_LIST).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 
