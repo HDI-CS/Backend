@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,4 +26,10 @@ public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private VisualData visualData;
+
+    @Builder
+    public VisualDataAssignment(UserYearRound userYearRound, VisualData visualData) {
+        this.userYearRound = userYearRound;
+        this.visualData = visualData;
+    }
 }
