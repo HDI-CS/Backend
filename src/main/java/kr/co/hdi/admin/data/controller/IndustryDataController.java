@@ -2,7 +2,7 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.co.hdi.admin.data.dto.request.IndustryDataIdsRequest;
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.IndustryDataService;
@@ -109,7 +109,7 @@ public class IndustryDataController {
     @PostMapping("/datasets/duplicate")
     @Operation(summary = "산업 디자인 데이터셋 복제")
     public ResponseEntity<Void> duplicateIndustryData(
-            @RequestBody IndustryDataIdsRequest request) {
+            @RequestBody DataIdsRequest request) {
 
         industryDataService.duplicateIndustryData(request.ids());
         return ResponseEntity.ok().build();
@@ -134,7 +134,7 @@ public class IndustryDataController {
     @DeleteMapping("/datasets")
     @Operation(summary = "산업 디자인 데이터셋 삭제")
     public ResponseEntity<Void> deleteIndustryData(
-            @RequestBody IndustryDataIdsRequest request) {
+            @RequestBody DataIdsRequest request) {
 
         industryDataService.deleteIndustryData(request.ids());
         return ResponseEntity.ok().build();

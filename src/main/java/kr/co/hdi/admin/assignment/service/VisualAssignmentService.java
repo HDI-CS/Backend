@@ -8,7 +8,7 @@ import kr.co.hdi.admin.assignment.dto.response.AssignmentDataResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
 import kr.co.hdi.admin.assignment.exception.AssignmentErrorCode;
 import kr.co.hdi.admin.assignment.exception.AssignmentException;
-import kr.co.hdi.admin.data.dto.request.VisualDataIdsRequest;
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
@@ -44,9 +44,15 @@ public class VisualAssignmentService implements AssignmentService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final VisualDataAssignmentRepository visualDataAssignmentRepository;
 
+    @Override
+    public DomainType getDomainType() {
+        return DomainType.VISUAL;
+    }
+
     /*
     매칭 연도 목록 조회
      */
+    @Override
     public List<YearResponse> getAssignmentYearList() {
 
         List<Year> years = yearRepository.findAll();
@@ -58,6 +64,7 @@ public class VisualAssignmentService implements AssignmentService {
     /*
     해당 연도의 매칭 차수 목록 조회
      */
+    @Override
     public List<AssessmentRoundResponse> getAssessmentRoundList(Long yearId) {
 
         List<AssessmentRound> assessmentRounds = assessmentRoundRepository.findByDomainTypeAndYear(DomainType.VISUAL, yearId);
@@ -72,6 +79,7 @@ public class VisualAssignmentService implements AssignmentService {
     /*
     해당 차수의 데이터셋 매칭 전체 조회
      */
+    @Override
     public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId) {
 
         List<AssignmentRow> rows = visualDataAssignmentRepository.findVisualDataAssignment(assessmentRoundId);
@@ -90,6 +98,7 @@ public class VisualAssignmentService implements AssignmentService {
     /*
     데이터셋 매칭 전문가별 조회
      */
+    @Override
     public AssignmentResponse getDatasetAssignmentByUser(Long assessmentRoundId, Long userId) {
 
         List<AssignmentRow> rows = visualDataAssignmentRepository.findVisualDataAssignmentByUser(assessmentRoundId, userId);
@@ -125,11 +134,12 @@ public class VisualAssignmentService implements AssignmentService {
     2. 새로 요청된 데이터 id 조회
     3. 갱신된 정보 파악 (삭제할 id, 추가할 id)
      */
+    @Override
     @Transactional
     public void updateDatasetAssignment(
             Long assessmentRoundId,
             Long memberId,
-            VisualDataIdsRequest request) {
+            DataIdsRequest request) {
 
         UserYearRound userYearRound = getUserYearRound(assessmentRoundId, memberId);
         AssignmentDiff diff = calculateDiff(userYearRound, request);
@@ -144,7 +154,7 @@ public class VisualAssignmentService implements AssignmentService {
                 .orElseThrow(() -> new AssignmentException(USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND));
     }
 
-    private AssignmentDiff calculateDiff(UserYearRound userYearRound, VisualDataIdsRequest request) {
+    private AssignmentDiff calculateDiff(UserYearRound userYearRound, DataIdsRequest request) {
 
         // 기존에 할당된 데이터 ids
         Set<Long> existingIds = visualDataAssignmentRepository.findByUserYearRound(userYearRound)
@@ -183,6 +193,7 @@ public class VisualAssignmentService implements AssignmentService {
     1. 해당 연도의 차수에 전문가 등록 (UserYearRound 등록)
     2. 전문가에게 데이터셋 할당 (userYearRound와 dataIds를 Assignment에 저장)
      */
+    @Override
     @Transactional
     public void createDatasetAssignment(
             Long assessmentRoundId,
