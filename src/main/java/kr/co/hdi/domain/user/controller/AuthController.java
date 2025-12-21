@@ -1,7 +1,8 @@
 package kr.co.hdi.domain.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
-import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.dto.RegisterRequest;
 import kr.co.hdi.domain.user.dto.request.LoginRequest;
 import kr.co.hdi.domain.user.dto.response.AuthResponse;
@@ -12,16 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
-@Slf4j
+@RequestMapping("/user/auth")
+@Tag(name = "Authentication", description = "Authentication 관련 API")
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "로그인")
     public ResponseEntity<AuthResponse> login(
             @RequestBody LoginRequest request,
             HttpSession session
@@ -38,40 +40,27 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "로그아웃")
     public ResponseEntity<Void> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<AuthResponse> getCurrentUser(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        String email = (String) session.getAttribute("email");
-        Role role = (Role) session.getAttribute("role");
-        String name = (String) session.getAttribute("name");
-
-        AuthResponse response = authService.getAuthInfo(userId, email, name, role);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @PostMapping("/register")
+    @Operation(summary = "새로운 전문가 등록")
     public ResponseEntity<AuthResponse> register(
             @RequestBody RegisterRequest request
     ) {
-        AuthResponse response = authService.createUser(request.email(), request.password(), request.name());
+        AuthResponse response = authService.createUser(request.email(), request.password(), request.name(), request.type());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/register-admin")
+    @Operation(summary = "새로운 어드민 등록")
     public ResponseEntity<AuthResponse> registerAdmin(
             @RequestBody RegisterRequest request
     ) {
-        AuthResponse response = authService.createAdmin(request.email(), request.password(), request.name());
+        AuthResponse response = authService.createAdmin(request.email(), request.password(), request.name(),request.type());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
 }
