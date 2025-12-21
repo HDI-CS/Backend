@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/api/v1/user/auth")
 @Tag(name = "User", description = "일반 유저 (전문가) 관련 API")
 public class UserController {
 
     private final AuthService authService;
 
-    @GetMapping("/auth/me")
+    @GetMapping("/me")
     @Operation(summary = "현재 로그인한 유저의 정보 반환")
     public ResponseEntity<AuthResponse> getCurrentUser(HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");

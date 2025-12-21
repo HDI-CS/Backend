@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/visual/data")
+@RequestMapping("/api/v1/admin/visual/data")
 @Tag(name = "시각디자인 데이터 ", description = "시각 디자인 데이터 관리 API")
 public class VisualDataController {
 
