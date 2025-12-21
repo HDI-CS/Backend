@@ -5,6 +5,8 @@ import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
 import kr.co.hdi.admin.assignment.dto.response.AssessmentRoundResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentDataResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
+import kr.co.hdi.admin.assignment.exception.AssignmentErrorCode;
+import kr.co.hdi.admin.assignment.exception.AssignmentException;
 import kr.co.hdi.admin.data.dto.request.VisualDataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
@@ -26,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static kr.co.hdi.admin.assignment.exception.AssignmentErrorCode.USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND;
 
 @Service
 @RequiredArgsConstructor
@@ -140,7 +144,7 @@ public class VisualAssignmentService implements AssignmentService {
 
         // 1. userYearRound 조회
         UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(assessmentRoundId, memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 차수에 참여하지 않은 사용자입니다."));
+                .orElseThrow(() -> new AssignmentException(USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND));
 
         // 2. 기존에 할당되어있는 데이터 조회
         List<VisualDataAssignment> existingAssignments =
@@ -185,9 +189,9 @@ public class VisualAssignmentService implements AssignmentService {
             AssignmentDataRequest request) {
 
         UserEntity user = userRepository.findById(request.memberId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                        .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.USER_NOT_FOUND));
         AssessmentRound assessmentRound = assessmentRoundRepository.findById(assessmentRoundId)
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 차수입니다."));
+                        .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSESSMENT_ROUND_NOT_FOUND));
         List<VisualData> visualDataList =
                 visualDataRepository.findAllById(request.datasetsIds());
 
