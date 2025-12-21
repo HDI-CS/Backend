@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.assignment.service;
 
+import kr.co.hdi.admin.assignment.dto.query.AssignmentDiff;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
 import kr.co.hdi.admin.assignment.dto.response.AssessmentRoundResponse;
@@ -78,35 +79,11 @@ public class VisualAssignmentService implements AssignmentService {
             return List.of();
         }
 
-        Map<Long, List<AssignmentDataResponse>> dataMap =
-                rows.stream()
-                        .collect(Collectors.groupingBy(
-                                AssignmentRow::userId,
-                                HashMap::new,
-                                Collectors.mapping(
-                                        r -> new AssignmentDataResponse(
-                                                r.dataId(),
-                                                r.dataCode()
-                                        ),
-                                        Collectors.toList()
-                                )
-                        ));
-
-        Map<Long, String> nameMap =
-                rows.stream()
-                        .collect(Collectors.toMap(
-                                AssignmentRow::userId,
-                                AssignmentRow::username,
-                                (a, b) -> a,
-                                HashMap::new
-                        ));
-
-        return dataMap.entrySet().stream()
-                .map(entry -> new AssignmentResponse(
-                        entry.getKey(),
-                        nameMap.get(entry.getKey()),
-                        entry.getValue()
-                ))
+        return rows.stream()
+                .collect(Collectors.groupingBy(AssignmentRow::userId))
+                .values()
+                .stream()
+                .map(this::toAssignmentResponse)
                 .toList();
     }
 
@@ -120,21 +97,33 @@ public class VisualAssignmentService implements AssignmentService {
             return null;
         }
 
-        AssignmentRow userData = rows.get(0);
+        return toAssignmentResponse(rows);
+    }
+
+    private AssignmentResponse toAssignmentResponse(List<AssignmentRow> rows) {
+        AssignmentRow first = rows.get(0);
+
         return new AssignmentResponse(
-                userData.userId(),
-                userData.username(),
+                first.userId(),
+                first.username(),
                 rows.stream()
-                        .map(r -> new AssignmentDataResponse(
-                                r.dataId(),
-                                r.dataCode()
-                        ))
+                        .map(this::toAssignmentData)
                         .toList()
+        );
+    }
+
+    private AssignmentDataResponse toAssignmentData(AssignmentRow row) {
+        return new AssignmentDataResponse(
+                row.dataId(),
+                row.dataCode()
         );
     }
 
     /*
     데이터셋 매칭 수정
+    1. 기존에 할당된 데이터 id 조회
+    2. 새로 요청된 데이터 id 조회
+    3. 갱신된 정보 파악 (삭제할 id, 추가할 id)
      */
     @Transactional
     public void updateDatasetAssignment(
@@ -142,76 +131,104 @@ public class VisualAssignmentService implements AssignmentService {
             Long memberId,
             VisualDataIdsRequest request) {
 
-        // 1. userYearRound 조회
-        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(assessmentRoundId, memberId)
+        UserYearRound userYearRound = getUserYearRound(assessmentRoundId, memberId);
+        AssignmentDiff diff = calculateDiff(userYearRound, request);
+
+        deleteRemovedAssignments(userYearRound, diff);
+        addNewAssignments(userYearRound, diff);
+    }
+
+    private UserYearRound getUserYearRound(Long assessmentRoundId, Long memberId) {
+
+        return userYearRoundRepository.findByAssessmentRoundIdAndUserId(assessmentRoundId, memberId)
                 .orElseThrow(() -> new AssignmentException(USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND));
+    }
 
-        // 2. 기존에 할당되어있는 데이터 조회
-        List<VisualDataAssignment> existingAssignments =
-                visualDataAssignmentRepository.findByUserYearRound(userYearRound);
+    private AssignmentDiff calculateDiff(UserYearRound userYearRound, VisualDataIdsRequest request) {
 
-        Set<Long> existingDataIds = existingAssignments.stream()
+        // 기존에 할당된 데이터 ids
+        Set<Long> existingIds = visualDataAssignmentRepository.findByUserYearRound(userYearRound)
+                .stream()
                 .map(a -> a.getVisualData().getId())
                 .collect(Collectors.toSet());
-        Set<Long> requestedDataIds = new HashSet<>(request.ids());
 
-        // 3. 삭제 대상
-        for (VisualDataAssignment assignment : existingAssignments) {
-            if (!requestedDataIds.contains(assignment.getVisualData().getId())) {
-                visualDataAssignmentRepository.delete(assignment);
-            }
+        // 새로 수정된 데이터 ids
+        Set<Long> requestedIds = new HashSet<>(request.ids());
+
+        return AssignmentDiff.of(existingIds, requestedIds);
+    }
+
+    private void deleteRemovedAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
+
+        if (diff.toRemove().isEmpty()) {
+            return;
+        }
+        visualDataAssignmentRepository.deleteByUserYearRoundAndVisualDataIds(userYearRound, diff.toRemove());
+    }
+
+    private void addNewAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
+
+        if (diff.toAdd().isEmpty()) {
+            return;
         }
 
-        // 4. 추가 대상
-        Set<Long> toAddIds = requestedDataIds.stream()
-                .filter(id -> !existingDataIds.contains(id))
-                .collect(Collectors.toSet());
-
-        if (!toAddIds.isEmpty()) {
-            List<VisualData> visualDataList = visualDataRepository.findAllById(toAddIds);
-            for(VisualData visualData : visualDataList) {
-                visualDataAssignmentRepository.save(
-                        VisualDataAssignment.builder()
-                                .userYearRound(userYearRound)
-                                .visualData(visualData)
-                                .build()
-                );
-            }
-        }
+        List<VisualData> visualDataList = visualDataRepository.findAllById(diff.toAdd());
+        visualDataAssignmentRepository.saveAll(
+                VisualDataAssignment.createAll(userYearRound, visualDataList)
+        );
     }
 
     /*
     전문가와 데이터셋 매칭 등록
+    1. 해당 연도의 차수에 전문가 등록 (UserYearRound 등록)
+    2. 전문가에게 데이터셋 할당 (userYearRound와 dataIds를 Assignment에 저장)
      */
     @Transactional
     public void createDatasetAssignment(
             Long assessmentRoundId,
             AssignmentDataRequest request) {
 
-        UserEntity user = userRepository.findById(request.memberId())
-                        .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.USER_NOT_FOUND));
-        AssessmentRound assessmentRound = assessmentRoundRepository.findById(assessmentRoundId)
-                        .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSESSMENT_ROUND_NOT_FOUND));
-        List<VisualData> visualDataList =
-                visualDataRepository.findAllById(request.datasetsIds());
+        UserEntity user = getUser(request.memberId());
+        AssessmentRound assessmentRound = getAssessmentRound(assessmentRoundId);
+        List<VisualData> visualDataList = getVisualData(request.datasetsIds());
 
-        // 1. YearRound에 유저 먼저 할당
+        UserYearRound userYearRound = createUserYearRound(user, assessmentRound);
+
+        createVisualDataAssignments(userYearRound, visualDataList);
+    }
+
+    private UserEntity getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.USER_NOT_FOUND));
+    }
+
+    private AssessmentRound getAssessmentRound(Long id) {
+        return assessmentRoundRepository.findById(id)
+                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.ASSESSMENT_ROUND_NOT_FOUND));
+    }
+
+    private List<VisualData> getVisualData(List<Long> ids) {
+        return visualDataRepository.findAllById(ids);
+    }
+
+    private UserYearRound createUserYearRound(
+            UserEntity user,
+            AssessmentRound assessmentRound) {
+
         UserYearRound userYearRound = UserYearRound.builder()
                 .user(user)
                 .assessmentRound(assessmentRound)
                 .build();
-        userYearRoundRepository.save(userYearRound);
 
-        // 2. 유저한테 전문가 할당
-        List<VisualDataAssignment> assignments =
-                visualDataList.stream()
-                        .map(visualData ->
-                                VisualDataAssignment.builder()
-                                        .userYearRound(userYearRound)
-                                        .visualData(visualData)
-                                        .build()
-                        )
-                        .toList();
-        visualDataAssignmentRepository.saveAll(assignments);
+        return userYearRoundRepository.save(userYearRound);
+    }
+
+    private void createVisualDataAssignments(
+            UserYearRound userYearRound,
+            List<VisualData> visualDataList) {
+
+        visualDataAssignmentRepository.saveAll(
+                VisualDataAssignment.createAll(userYearRound, visualDataList)
+        );
     }
 }
