@@ -2,27 +2,24 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.co.hdi.admin.data.dto.request.IndustryDataIdsRequest;
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.IndustryDataService;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
-import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.util.WorkbookUtil;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/industry/data")
+@RequestMapping("/api/v1/admin/industry/data")
 @Tag(name = "산업디자인 데이터 ", description = "산업 디자인 데이터 관리 API")
 public class IndustryDataController {
 
@@ -109,7 +106,7 @@ public class IndustryDataController {
     @PostMapping("/datasets/duplicate")
     @Operation(summary = "산업 디자인 데이터셋 복제")
     public ResponseEntity<Void> duplicateIndustryData(
-            @RequestBody IndustryDataIdsRequest request) {
+            @RequestBody DataIdsRequest request) {
 
         industryDataService.duplicateIndustryData(request.ids());
         return ResponseEntity.ok().build();
@@ -134,7 +131,7 @@ public class IndustryDataController {
     @DeleteMapping("/datasets")
     @Operation(summary = "산업 디자인 데이터셋 삭제")
     public ResponseEntity<Void> deleteIndustryData(
-            @RequestBody IndustryDataIdsRequest request) {
+            @RequestBody DataIdsRequest request) {
 
         industryDataService.deleteIndustryData(request.ids());
         return ResponseEntity.ok().build();

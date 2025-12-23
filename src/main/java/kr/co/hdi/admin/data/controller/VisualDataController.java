@@ -2,7 +2,7 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.co.hdi.admin.data.dto.request.VisualDataIdsRequest;
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/visual/data")
+@RequestMapping("/api/v1/admin/visual/data")
 @Tag(name = "시각디자인 데이터 ", description = "시각 디자인 데이터 관리 API")
 public class VisualDataController {
 
@@ -59,7 +59,7 @@ public class VisualDataController {
 
     @PostMapping("/datasets/duplicate")
     @Operation(summary = "시각 디자인 데이터셋 복제")
-    public ResponseEntity<Void> duplicateVisualData(@RequestBody VisualDataIdsRequest request) {
+    public ResponseEntity<Void> duplicateVisualData(@RequestBody DataIdsRequest request) {
 
         visualDataService.duplicateVisualData(request.ids());
         return ResponseEntity.ok().build();
@@ -87,7 +87,7 @@ public class VisualDataController {
 
     @DeleteMapping("/datasets")
     @Operation(summary = "시각 디자인 데이터셋 삭제")
-    public ResponseEntity<Void> deleteVisualData(@RequestBody VisualDataIdsRequest request) {
+    public ResponseEntity<Void> deleteVisualData(@RequestBody DataIdsRequest request) {
 
         visualDataService.deleteVisualData(request.ids());
         return ResponseEntity.ok().build();

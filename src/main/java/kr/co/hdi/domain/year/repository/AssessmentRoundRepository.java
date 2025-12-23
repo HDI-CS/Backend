@@ -1,0 +1,23 @@
+package kr.co.hdi.domain.year.repository;
+
+import kr.co.hdi.domain.year.entity.AssessmentRound;
+import kr.co.hdi.domain.year.enums.DomainType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
+public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound, Long> {
+
+    @Query("""
+    select ar
+    from AssessmentRound ar
+    where ar.deletedAt is NULL
+        AND ar.year.id = :yearId
+        AND ar.domainType = :domainType
+    """)
+    List<AssessmentRound> findByDomainTypeAndYear(
+            @Param("domainType") DomainType domainType,
+            @Param("yearId") Long yearId);
+}
