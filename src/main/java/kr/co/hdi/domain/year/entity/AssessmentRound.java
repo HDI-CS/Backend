@@ -20,7 +20,7 @@ public class AssessmentRound extends BaseTimeEntityWithDeletion {
     @Column(name = "assessment_round_id")
     private Long id;
 
-    private Integer assessmenetRound;
+    private Integer assessmentRound;
 
     private LocalDate startDate;
 

@@ -3,6 +3,7 @@ package kr.co.hdi.domain.year.entity;
 import jakarta.persistence.*;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,4 +25,10 @@ public class UserYearRound extends BaseTimeEntityWithDeletion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private AssessmentRound assessmentRound;
+
+    @Builder
+    public UserYearRound(UserEntity user, AssessmentRound assessmentRound) {
+        this.user = user;
+        this.assessmentRound = assessmentRound;
+    }
 }

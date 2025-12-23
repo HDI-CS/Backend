@@ -1,0 +1,21 @@
+package kr.co.hdi.admin.assignment.service;
+
+import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
+import kr.co.hdi.admin.assignment.dto.response.AssessmentRoundResponse;
+import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
+import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.domain.year.enums.DomainType;
+
+import java.util.List;
+
+public interface AssignmentService {
+
+    DomainType getDomainType();
+    List<YearResponse> getAssignmentYearList();
+    List<AssessmentRoundResponse> getAssessmentRoundList(Long yearId);
+    List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId);
+    AssignmentResponse getDatasetAssignmentByUser(Long assessmentRoundId, Long userId);
+    void updateDatasetAssignment(Long assessmentRoundId, Long memberId, DataIdsRequest request);
+    void createDatasetAssignment(Long assessmentRoundId, AssignmentDataRequest request);
+}

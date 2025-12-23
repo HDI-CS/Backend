@@ -4,8 +4,11 @@ import jakarta.persistence.*;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
@@ -25,4 +28,29 @@ public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private VisualData visualData;
+
+    @Builder
+    private VisualDataAssignment(UserYearRound userYearRound, VisualData visualData) {
+        this.userYearRound = userYearRound;
+        this.visualData = visualData;
+    }
+
+    public static VisualDataAssignment create(
+            UserYearRound userYearRound,
+            VisualData visualData
+    ) {
+        return VisualDataAssignment.builder()
+                .userYearRound(userYearRound)
+                .visualData(visualData)
+                .build();
+    }
+
+    public static List<VisualDataAssignment> createAll(
+            UserYearRound userYearRound,
+            List<VisualData> visualDataList
+    ) {
+        return visualDataList.stream()
+                .map(visualData -> create(userYearRound, visualData))
+                .toList();
+    }
 }

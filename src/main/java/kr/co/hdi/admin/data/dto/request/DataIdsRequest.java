@@ -2,7 +2,7 @@ package kr.co.hdi.admin.data.dto.request;
 
 import java.util.List;
 
-public record VisualDataIdsRequest(
+public record DataIdsRequest(
         List<Long> ids
 ) {
 }
