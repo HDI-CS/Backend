@@ -24,6 +24,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     WHERE u.userType = :userType
       AND u.role = :role
       AND u.deletedAt IS NULL
+    ORDER BY u.id ASC
 """)
     List<UserEntity> findExpertByType(@Param("userType") UserType userType, @Param("role")Role role);
 
