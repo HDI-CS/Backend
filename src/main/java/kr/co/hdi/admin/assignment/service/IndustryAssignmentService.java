@@ -15,6 +15,8 @@ import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.user.entity.UserEntity;
+import kr.co.hdi.domain.user.exception.AuthErrorCode;
+import kr.co.hdi.domain.user.exception.AuthException;
 import kr.co.hdi.domain.user.repository.UserRepository;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
 import kr.co.hdi.domain.year.entity.UserYearRound;
@@ -211,7 +213,7 @@ public class IndustryAssignmentService implements AssignmentService {
 
     private UserEntity getUser(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new AssignmentException(AssignmentErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
     }
 
     private AssessmentRound getAssessmentRound(Long id) {

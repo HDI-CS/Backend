@@ -1,4 +1,4 @@
-package kr.co.hdi.admin.user.controller;
+package kr.co.hdi.domain.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
