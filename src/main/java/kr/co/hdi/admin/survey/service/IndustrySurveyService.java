@@ -96,6 +96,7 @@ public class IndustrySurveyService implements SurveyService {
     차수 평가 이름 수정
      */
     @Override
+    @Transactional
     public void updateRoundFolderName(
             DomainType type,
             Long assessmentRoundId,
@@ -162,6 +163,7 @@ public class IndustrySurveyService implements SurveyService {
     년도 평가 설문 문항 생성
      */
     @Override
+    @Transactional
     public void createSurveyQuestion(
             DomainType type,
             Long yearId,
