@@ -3,6 +3,7 @@ package kr.co.hdi.domain.survey.entity;
 import jakarta.persistence.*;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
+import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +31,5 @@ public class VisualSurvey extends BaseTimeEntityWithDeletion {
     private SurveyType surveyType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private AssessmentRound assessmentRound;
+    private Year year;
 }
