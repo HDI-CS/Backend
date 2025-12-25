@@ -2,11 +2,15 @@ package kr.co.hdi.admin.survey.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
+import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
+import kr.co.hdi.admin.survey.dto.request.SurveyFolderNameRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.SurveyQuestionsByYearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyRoundIdResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyYearIdResponse;
 import kr.co.hdi.admin.survey.service.SurveyService;
+import kr.co.hdi.domain.year.entity.AssessmentRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import lombok.RequiredArgsConstructor;
@@ -74,4 +78,48 @@ public class SurveyController {
     }
 
     // PATCHMethod
+    @PatchMapping("/years/{yearId}")
+    @Operation(summary = "년도 평가 이름 수정")
+    public ResponseEntity<?> updateYearFolderName(
+            @PathVariable DomainType type,
+            @PathVariable Long yearId,
+            @RequestBody SurveyFolderNameRequest request
+    ){
+        surveyService.updateYearFolderName(type, yearId, request.folderName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/question/{questionId}")
+    @Operation(summary = "년도 평가 단일 설문 문항 수정")
+    public ResponseEntity<?> updateSurveyContent(
+            @PathVariable DomainType type,
+            @PathVariable Long questionId,
+            @RequestBody SurveyContentResquest request
+    ){
+        surveyService.updateSurveyContent(type,questionId, request.surveyContent());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/assessment/{assessmentRoundId}")
+    @Operation(summary = "차수 평가 이름 수정")
+    public ResponseEntity<?> updateRoundFolderName(
+            @PathVariable DomainType type,
+            @PathVariable Long assessmentRoundId,
+            @RequestBody SurveyFolderNameRequest request
+    ){
+        surveyService.updateRoundFolderName(type, assessmentRoundId, request.folderName());
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/assessment/{assessmentRoundId}/duration")
+    @Operation(summary = "차수 평가 기간 생성 및 수정")
+    public ResponseEntity<?> upsertSurveyDate(
+            @PathVariable DomainType type,
+            @PathVariable Long assessmentRoundId,
+            @RequestBody SurveyDateRequest request
+            ){
+        surveyService.upsertSurveyDate(type, assessmentRoundId, request);
+        return ResponseEntity.ok().build();
+    }
+
 }
