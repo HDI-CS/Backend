@@ -12,7 +12,6 @@ import java.util.List;
 @Repository
 public interface IndustrySurveyRepository extends JpaRepository<IndustrySurvey, Long> {
 
-
     @Query("""
     select is
     from IndustrySurvey is
