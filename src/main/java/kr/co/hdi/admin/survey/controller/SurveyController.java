@@ -84,8 +84,8 @@ public class SurveyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // PATCHMethod
-    @PatchMapping("/years/{yearId}")
+    // PUTMethod
+    @PutMapping("/years/{yearId}")
     @Operation(summary = "년도 평가 이름 수정")
     public ResponseEntity<?> updateYearFolderName(
             @PathVariable DomainType type,
@@ -97,7 +97,7 @@ public class SurveyController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/question/{questionId}")
+    @PutMapping("/question/{questionId}")
     @Operation(summary = "년도 평가 단일 설문 문항 수정")
     public ResponseEntity<?> updateSurveyContent(
             @PathVariable DomainType type,
@@ -109,7 +109,7 @@ public class SurveyController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/assessment/{assessmentRoundId}")
+    @PutMapping("/assessment/{assessmentRoundId}")
     @Operation(summary = "차수 평가 이름 수정")
     public ResponseEntity<?> updateRoundFolderName(
             @PathVariable DomainType type,
@@ -121,7 +121,7 @@ public class SurveyController {
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/assessment/{assessmentRoundId}/duration")
+    @PutMapping("/assessment/{assessmentRoundId}/duration")
     @Operation(summary = "차수 평가 기간 생성 및 수정")
     public ResponseEntity<?> upsertSurveyDate(
             @PathVariable DomainType type,
