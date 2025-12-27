@@ -20,4 +20,16 @@ public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound
     List<AssessmentRound> findByDomainTypeAndYear(
             @Param("domainType") DomainType domainType,
             @Param("yearId") Long yearId);
+
+    @Query("""
+    select ar
+    from AssessmentRound ar
+    join fetch ar.year y
+    where ar.deletedAt is NULL
+        AND ar.domainType = :type
+    order by y.id asc, ar.id asc
+    """)
+    List<AssessmentRound> findAllWithYearByDomainType(
+            @Param("type") DomainType type);
+
 }

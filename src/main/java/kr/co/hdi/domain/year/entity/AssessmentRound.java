@@ -1,6 +1,7 @@
 package kr.co.hdi.domain.year.entity;
 
 import jakarta.persistence.*;
+import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
@@ -20,7 +21,7 @@ public class AssessmentRound extends BaseTimeEntityWithDeletion {
     @Column(name = "assessment_round_id")
     private Long id;
 
-    private Integer assessmentRound;
+    private String assessmentRound;
 
     private LocalDate startDate;
 
@@ -32,4 +33,18 @@ public class AssessmentRound extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private Year year;
 
+    public static AssessmentRound create(Year year) {
+        AssessmentRound assessmentRound = new AssessmentRound();
+        assessmentRound.year = year;
+        return assessmentRound;
+    }
+
+    public void updateRound(String name) {
+        this.assessmentRound = name;
+    }
+
+    public void upsertDate(SurveyDateRequest request) {
+        this.startDate = request.startDate();
+        this.endDate = request.endDate();
+    }
 }
