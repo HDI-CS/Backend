@@ -1,6 +1,8 @@
 package kr.co.hdi.domain.user.entity;
 
 import jakarta.persistence.*;
+import kr.co.hdi.admin.user.dto.request.ExpertInfoRequest;
+import kr.co.hdi.admin.user.dto.request.ExpertInfoUpdateRequest;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,10 +24,17 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
 
     @Column(nullable = false, unique = true)
     private String email;
-
     private String password;
 
     private String name;
+    private String phoneNumber;
+    private String gender;
+    private String age;
+    private String career;
+    private String academic;
+    private String expertise;
+    private String company;
+    private String note;
 
     private boolean enabled;
 
@@ -75,7 +84,22 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
     }
 
     @Builder(access = PRIVATE)
-    private UserEntity(String password, boolean enabled, Role role, String email, String name, UserType userType, Boolean surveyDone) {
+    private UserEntity(
+            String email,
+            String password,
+            String name,
+            String phoneNumber,
+            String gender,
+            String age,
+            String career,
+            String academic,
+            String expertise,
+            String company,
+            String note,
+            boolean enabled,
+            Role role,
+            UserType userType,
+            Boolean surveyDone) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -83,6 +107,48 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
         this.role = role;
         this.userType = userType;
         this.surveyDone = surveyDone;
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+        this.age = age;
+        this.career = career;
+        this.academic = academic;
+        this.expertise = expertise;
+        this.company = company;
+        this.note = note;
     }
 
+    public static UserEntity createExpert(ExpertInfoRequest request, UserType type, String password) {
+        return UserEntity.builder()
+                .enabled(true)
+                .role(Role.USER)
+                .userType(type)
+
+                .name(request.name())
+                .email(request.email())
+                .password(password)
+                .phoneNumber(request.phoneNumber())
+                .gender(request.gender())
+                .age(request.age())
+                .career(request.career())
+                .academic(request.academic())
+                .expertise(request.expertise())
+                .company(request.company())
+                .note(request.note())
+
+                .surveyDone(false)
+
+                .build();
+    }
+
+    public void updateInfo(ExpertInfoUpdateRequest request) {
+        this.name = request.name();
+        this.phoneNumber = request.phoneNumber();
+        this.gender = request.gender();
+        this.age = request.age();
+        this.career = request.career();
+        this.academic = request.academic();
+        this.expertise = request.expertise();
+        this.company = request.company();
+        this.note = request.note();
+    }
 }
