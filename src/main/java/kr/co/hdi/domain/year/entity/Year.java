@@ -20,5 +20,13 @@ public class Year extends BaseTimeEntityWithDeletion {
     @Column(name = "year_id")
     private Long id;
 
-    private Integer year;
+    private String year;
+
+    public static Year create() {
+        return new Year();
+    }
+
+    public void updateYear(String name) {
+        this.year = name;
+    }
 }
