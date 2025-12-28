@@ -31,6 +31,9 @@ etc:
   base-url: ${BASE_URL}
   local-image-path: /Users/leo/workspace/hdi_images
 
+crypto:
+  password-key: ${CRYPTO_PASSWORD}
+
 springdoc:
   swagger-ui:
     path: /swagger
