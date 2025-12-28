@@ -1,10 +1,7 @@
 package kr.co.hdi.admin.data.service;
 
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
-import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
-import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
-import kr.co.hdi.admin.data.dto.response.VisualDataWithCategoryResponse;
-import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.VisualData;
@@ -12,6 +9,7 @@ import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.repository.YearRepository;
+import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class VisualDataService {
+
+    private final ImageService imageService;
 
     private final YearRepository yearRepository;
     private final VisualDataRepository visualDataRepository;
@@ -53,7 +53,10 @@ public class VisualDataService {
                 .map(entry -> new VisualDataWithCategoryResponse(
                         entry.getKey().name(),
                         entry.getValue().stream()
-                                .map(VisualDataResponse::from)
+                                .map(v -> VisualDataResponse.from(
+                                    v,
+                                    imageService.getImageUrl(v.getLogoImage())
+                                ))
                                 .toList()
                 ))
                 .toList();
@@ -67,7 +70,8 @@ public class VisualDataService {
         VisualData visualData = visualDataRepository.findById(datasetId)
                 .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
 
-        return VisualDataResponse.from(visualData);
+        String imageUrl = imageService.getImageUrl(visualData.getLogoImage());
+        return VisualDataResponse.from(visualData, imageUrl);
     }
 
     /*
@@ -95,26 +99,36 @@ public class VisualDataService {
     시각 디자인 데이터셋 생성
      */
     @Transactional
-    public void createVisualData(Long yearId, VisualDataRequest request) {
+    public ImageUploadUrlResponse createVisualData(Long yearId, VisualDataRequest request) {
 
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
 
         VisualData visualData = VisualData.create(year, request);
         visualDataRepository.save(visualData);
+
+        String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
+        return new ImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
     시각 디자인 데이터셋 수정
      */
     @Transactional
-    public void updateVisualData(Long datasetId, VisualDataRequest request) {
+    public ImageUploadUrlResponse updateVisualData(Long datasetId, VisualDataRequest request, String image) {
 
         VisualData visualData = visualDataRepository.findByIdAndDeletedAtIsNull(datasetId)
                         .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
 
         visualData.updatePartial(request);
+        if (image.equals("DELETE")) {
+            visualData.deleteImage();
+            imageService.deleteImage(visualData.getLogoImage());
+        }
         visualDataRepository.save(visualData);
+
+        String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
+        return new ImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
