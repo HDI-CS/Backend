@@ -27,6 +27,13 @@ spring:
       cookie:
         max-age: 7200
 
+aws:
+  s3:
+    accessKey: ${S3_ACCESS_KEY}
+    secretKey: ${S3_SECRET_KEY}
+    region: ${S3_REGION}
+    bucket: ${S3_BUCKET}
+
 etc:
   base-url: ${BASE_URL}
   local-image-path: /Users/leo/workspace/hdi_images
