@@ -3,6 +3,7 @@ package kr.co.hdi.domain.user.entity;
 import jakarta.persistence.*;
 import kr.co.hdi.admin.user.dto.request.ExpertInfoRequest;
 import kr.co.hdi.admin.user.dto.request.ExpertInfoUpdateRequest;
+import kr.co.hdi.global.auth.PasswordEncryptConverter;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,6 +25,8 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Convert(converter = PasswordEncryptConverter.class)
     private String password;
 
     private String name;
