@@ -10,7 +10,7 @@ public record VisualDataRequest(
         String mainProduct,
         String target,
         String referenceUrl,
-        String logoImage,
+        String originalLogoImage,
         VisualDataCategory visualDataCategory
 ) {
 }

@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
-import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
-import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
-import kr.co.hdi.admin.data.dto.response.VisualDataWithCategoryResponse;
-import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.VisualDataService;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import lombok.RequiredArgsConstructor;
@@ -67,22 +64,23 @@ public class VisualDataController {
 
     @PostMapping("/years/{yearId}/datasets")
     @Operation(summary = "시각 디자인 데이터셋 생성")
-    public ResponseEntity<Void> createVisualData(
+    public ResponseEntity<ImageUploadUrlResponse> createVisualData(
             @PathVariable Long yearId,
             @RequestBody VisualDataRequest request) {
 
-        visualDataService.createVisualData(yearId, request);
-        return ResponseEntity.ok().build();
+        ImageUploadUrlResponse response = visualDataService.createVisualData(yearId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PatchMapping("/datasets/{datasetId}")
     @Operation(summary = "시각 디자인 데이터셋 수정")
-    public ResponseEntity<Void> updateVisualData(
+    public ResponseEntity<ImageUploadUrlResponse> updateVisualData(
             @PathVariable Long datasetId,
-            @RequestBody VisualDataRequest request) {
+            @RequestBody VisualDataRequest request,
+            @RequestParam(defaultValue = "") String image) {
 
-        visualDataService.updateVisualData(datasetId, request);
-        return ResponseEntity.ok().build();
+        ImageUploadUrlResponse response = visualDataService.updateVisualData(datasetId, request, image);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/datasets")

@@ -14,7 +14,7 @@ public record VisualDataResponse(
         String logoImage
 ) {
 
-    public static VisualDataResponse from(VisualData v) {
+    public static VisualDataResponse from(VisualData v, String image) {
         return new VisualDataResponse(
                 v.getId(),
                 v.getBrandCode(),
@@ -24,7 +24,7 @@ public record VisualDataResponse(
                 v.getMainProduct(),
                 v.getTarget(),
                 v.getReferenceUrl(),
-                v.getLogoImage()
+                image
         );
     }
 }

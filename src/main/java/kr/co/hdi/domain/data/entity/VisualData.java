@@ -8,6 +8,8 @@ import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -42,10 +44,17 @@ public class VisualData extends BaseTimeEntityWithDeletion {
     private Year year;
 
     @Column(columnDefinition = "text")
-    private String logoImage;
+    private String logoImage;    // S3 key
+
+    @Column(columnDefinition = "text")
+    private String originalLogoImage;   // image 원본 이름
 
     public void delete() {
         processDeletion();
+    }
+
+    public void deleteImage() {
+        this.originalLogoImage = null;
     }
 
     /*
@@ -64,6 +73,8 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         v.target = request.target();
         v.referenceUrl = request.referenceUrl();
         v.visualDataCategory = request.visualDataCategory();
+        v.originalLogoImage = request.originalLogoImage();
+        v.logoImage = "2026/VI/" + UUID.randomUUID();
 
         return v;
     }
@@ -85,6 +96,7 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         copy.referenceUrl = this.referenceUrl;
         copy.visualDataCategory = this.visualDataCategory;
         copy.year = this.year;
+        copy.logoImage = "2026/VI/" + UUID.randomUUID();
 
         return copy;
     }
@@ -117,6 +129,9 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         }
         if (request.visualDataCategory() != null) {
             this.visualDataCategory = request.visualDataCategory();
+        }
+        if (request.originalLogoImage() != null) {
+            this.originalLogoImage = request.originalLogoImage();
         }
     }
 }
