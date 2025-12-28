@@ -44,6 +44,8 @@ public class VisualData extends BaseTimeEntityWithDeletion {
     @Column(columnDefinition = "text")
     private String logoImage;
 
+    private Integer brandCodeInteger;
+
     public void delete() {
         processDeletion();
     }
@@ -117,6 +119,18 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         }
         if (request.visualDataCategory() != null) {
             this.visualDataCategory = request.visualDataCategory();
+        }
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void syncBrandCodeInteger() {
+        if (this.brandCode != null) {
+            try {
+                this.brandCodeInteger = Integer.parseInt(this.brandCode);
+            } catch (NumberFormatException e) {
+                this.brandCodeInteger = null;
+            }
         }
     }
 }
