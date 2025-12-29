@@ -95,12 +95,12 @@ public class IndustryDataController {
     */
     @PostMapping("/years/{yearId}/datasets")
     @Operation(summary = "산업 디자인 데이터셋 생성")
-    public ResponseEntity<Void> createIndustryData(
+    public ResponseEntity<IndustryImageUploadUrlResponse> createIndustryData(
             @PathVariable Long yearId,
             @RequestBody IndustryDataRequest request) {
 
-        industryDataService.createIndustryData(yearId, request);
-        return ResponseEntity.ok().build();
+        IndustryImageUploadUrlResponse response = industryDataService.createIndustryData(yearId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/datasets/duplicate")
@@ -117,12 +117,13 @@ public class IndustryDataController {
     */
     @PatchMapping("/datasets/{datasetId}")
     @Operation(summary = "산업 디자인 데이터셋 수정")
-    public ResponseEntity<Void> updateIndustryData(
+    public ResponseEntity<IndustryImageUploadUrlResponse> updateIndustryData(
             @PathVariable("datasetId") Long datasetId,
-            @RequestBody IndustryDataRequest request) {
+            @RequestBody IndustryDataRequest request,
+            @RequestParam(defaultValue = "") List<String> image) {
 
-        industryDataService.updateIndustryData(datasetId, request);
-        return ResponseEntity.ok().build();
+        IndustryImageUploadUrlResponse response = industryDataService.updateIndustryData(datasetId, request, image);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /*
