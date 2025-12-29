@@ -6,9 +6,11 @@ import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static kr.co.hdi.domain.assignment.entity.QIndustryDataAssignment.industryDataAssignment;
+import static kr.co.hdi.domain.assignment.entity.QVisualDataAssignment.visualDataAssignment;
 import static kr.co.hdi.domain.data.entity.QIndustryData.industryData;
 import static kr.co.hdi.domain.user.entity.QUserEntity.userEntity;
 import static kr.co.hdi.domain.year.entity.QAssessmentRound.assessmentRound1;
@@ -18,6 +20,21 @@ import static kr.co.hdi.domain.year.entity.QUserYearRound.userYearRound;
 public class IndustryDataAssignmentRepositoryImpl implements IndustryDataAssignmentRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId) {
+        return queryFactory
+                .select(industryDataAssignment.updatedAt.max())
+                .from(industryDataAssignment)
+                .join(industryDataAssignment.userYearRound, userYearRound)
+                .join(userYearRound.assessmentRound, assessmentRound1)
+                .where(
+                        assessmentRound1.id.eq(assessmentRoundId),
+                        assessmentRound1.deletedAt.isNull(),
+                        industryDataAssignment.deletedAt.isNull()
+                )
+                .fetchOne();
+    }
 
     @Override
     public List<AssignmentRow> findIndustryDataAssignment(Long assessmentRoundId) {

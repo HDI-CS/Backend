@@ -6,6 +6,7 @@ import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static kr.co.hdi.domain.assignment.entity.QVisualDataAssignment.visualDataAssignment;
@@ -18,6 +19,21 @@ import static kr.co.hdi.domain.year.entity.QUserYearRound.userYearRound;
 public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignmentRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+
+    @Override
+    public LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId) {
+        return queryFactory
+                .select(visualDataAssignment.updatedAt.max())
+                .from(visualDataAssignment)
+                .join(visualDataAssignment.userYearRound, userYearRound)
+                .join(userYearRound.assessmentRound, assessmentRound1)
+                .where(
+                        assessmentRound1.id.eq(assessmentRoundId),
+                        assessmentRound1.deletedAt.isNull(),
+                        visualDataAssignment.deletedAt.isNull()
+                )
+                .fetchOne();
+    }
 
     @Override
     public List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId) {

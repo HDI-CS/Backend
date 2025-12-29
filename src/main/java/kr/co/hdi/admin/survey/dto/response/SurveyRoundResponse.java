@@ -23,4 +23,15 @@ public record SurveyRoundResponse (
                 r.getEndDate()
         );
     }
+
+    public static SurveyRoundResponse of(AssessmentRound r, LocalDateTime updatedAt) {
+        return new SurveyRoundResponse(
+                r.getId(),
+                r.getAssessmentRound(),
+                updatedAt,
+                r.getCreatedAt(),
+                r.getStartDate(),
+                r.getEndDate()
+        );
+    }
 }

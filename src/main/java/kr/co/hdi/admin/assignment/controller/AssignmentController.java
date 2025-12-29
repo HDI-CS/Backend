@@ -9,6 +9,7 @@ import kr.co.hdi.admin.assignment.service.AssignmentService;
 import kr.co.hdi.admin.assignment.service.AssignmentServiceResolver;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,23 +26,13 @@ public class AssignmentController {
 
     private final AssignmentServiceResolver resolver;
 
-    @GetMapping("/years")
-    @Operation(summary = "매칭 연도 목록 조회")
-    public ResponseEntity<List<YearResponse>> getAssignmentYearList(@PathVariable DomainType type) {
+    @GetMapping("/all")
+    @Operation(summary = "전체 매칭 폴더 조회")
+    public ResponseEntity<List<SurveyResponse>> getAssessmentList(
+            @PathVariable DomainType type) {
 
         AssignmentService service = resolver.resolve(type);
-        List<YearResponse> responses = service.getAssignmentYearList();
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
-    }
-
-    @GetMapping("/years/{yearId}")
-    @Operation(summary = "해당 연도의 매칭 차수 목록 조회")
-    public ResponseEntity<List<AssessmentRoundResponse>> getAssessmentRoundList(
-            @PathVariable DomainType type,
-            @PathVariable Long yearId) {
-
-        AssignmentService service = resolver.resolve(type);
-        List<AssessmentRoundResponse> responses = service.getAssessmentRoundList(yearId);
+        List<SurveyResponse> responses = service.getAssignmentYearRoundList(type);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
