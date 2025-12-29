@@ -195,7 +195,7 @@ public class IndustryDataService {
                 Row row = sheet.createRow(r++);
 
                 int c = 0;
-                row.createCell(c++).setCellValue(nvl(i.getId()));
+                row.createCell(c++).setCellValue(nvl(i.getOriginalId()));
                 row.createCell(c++).setCellValue(nvl(i.getProductName()));
                 row.createCell(c++).setCellValue(nvl(i.getCompanyName()));
                 row.createCell(c++).setCellValue(nvl(i.getModelName()));
