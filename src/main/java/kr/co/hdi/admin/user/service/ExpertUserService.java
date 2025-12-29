@@ -13,7 +13,6 @@ import kr.co.hdi.domain.user.repository.UserRepository;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 public class ExpertUserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserYearRoundRepository userYearRoundRepository;
 
     /*
@@ -71,9 +69,7 @@ public class ExpertUserService {
         userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ALREADY_EXISTS));
 
-        // 비밀번호 인코딩
-        String password = passwordEncoder.encode(request.password());
-        UserEntity newUser = UserEntity.createExpert(request, type, password);
+        UserEntity newUser = UserEntity.createExpert(request, type, request.password());
         userRepository.save(newUser);
     }
 

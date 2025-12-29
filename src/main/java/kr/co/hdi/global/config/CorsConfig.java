@@ -1,4 +1,4 @@
-package kr.co.hdi.domain.user.security;
+package kr.co.hdi.global.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;

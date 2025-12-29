@@ -11,10 +11,14 @@ import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -147,5 +151,65 @@ public class VisualDataService {
     public List<VisualDataResponse> searchVisualData(String q, VisualDataCategory category) {
 
         return visualDataRepository.search(q, category);
+    }
+
+    /*
+    시각 디자인 데이터셋 액셀 다운로드
+     */
+    public byte[] exportVisualData(Long yearId) {
+        List<VisualData> rows = visualDataRepository.findByYearIdAndDeletedAtIsNull(yearId);
+
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = wb.createSheet("visual_datasets");
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            String[] headers = {
+                    "ID", "Brand Name", "Sector Category", "Main Product Category",
+                    "Main Product", "Target", "Reference URL", "Category"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < headers.length; c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(headers[c]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int r = 1;
+            for (VisualData i : rows) {
+                Row row = sheet.createRow(r++);
+
+                int c = 0;
+                row.createCell(c++).setCellValue(nvl(i.getBrandCode()));
+                row.createCell(c++).setCellValue(nvl(i.getBrandName()));
+                row.createCell(c++).setCellValue(nvl(i.getSectorCategory()));
+                row.createCell(c++).setCellValue(nvl(i.getMainProductCategory()));
+                row.createCell(c++).setCellValue(nvl(i.getMainProduct()));
+                row.createCell(c++).setCellValue(nvl(i.getTarget()));
+                row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
+                row.createCell(c++).setCellValue(nvl(i.getVisualDataCategory()));
+            }
+
+            for (int c = 0; c < headers.length; c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to export excel", e);
+        }
+    }
+
+    private String nvl(Object v) {
+        return v == null ? "" : String.valueOf(v);
     }
 }
