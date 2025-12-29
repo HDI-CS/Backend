@@ -64,22 +64,22 @@ public class VisualDataController {
 
     @PostMapping("/years/{yearId}/datasets")
     @Operation(summary = "시각 디자인 데이터셋 생성")
-    public ResponseEntity<ImageUploadUrlResponse> createVisualData(
+    public ResponseEntity<VisualImageUploadUrlResponse> createVisualData(
             @PathVariable Long yearId,
             @RequestBody VisualDataRequest request) {
 
-        ImageUploadUrlResponse response = visualDataService.createVisualData(yearId, request);
+        VisualImageUploadUrlResponse response = visualDataService.createVisualData(yearId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PatchMapping("/datasets/{datasetId}")
     @Operation(summary = "시각 디자인 데이터셋 수정")
-    public ResponseEntity<ImageUploadUrlResponse> updateVisualData(
+    public ResponseEntity<VisualImageUploadUrlResponse> updateVisualData(
             @PathVariable Long datasetId,
             @RequestBody VisualDataRequest request,
             @RequestParam(defaultValue = "") String image) {
 
-        ImageUploadUrlResponse response = visualDataService.updateVisualData(datasetId, request, image);
+        VisualImageUploadUrlResponse response = visualDataService.updateVisualData(datasetId, request, image);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

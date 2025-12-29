@@ -99,7 +99,7 @@ public class VisualDataService {
     시각 디자인 데이터셋 생성
      */
     @Transactional
-    public ImageUploadUrlResponse createVisualData(Long yearId, VisualDataRequest request) {
+    public VisualImageUploadUrlResponse createVisualData(Long yearId, VisualDataRequest request) {
 
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
@@ -108,14 +108,14 @@ public class VisualDataService {
         visualDataRepository.save(visualData);
 
         String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
-        return new ImageUploadUrlResponse(imageUploadUrl);
+        return new VisualImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
     시각 디자인 데이터셋 수정
      */
     @Transactional
-    public ImageUploadUrlResponse updateVisualData(Long datasetId, VisualDataRequest request, String image) {
+    public VisualImageUploadUrlResponse updateVisualData(Long datasetId, VisualDataRequest request, String image) {
 
         VisualData visualData = visualDataRepository.findByIdAndDeletedAtIsNull(datasetId)
                         .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
@@ -128,7 +128,7 @@ public class VisualDataService {
         visualDataRepository.save(visualData);
 
         String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
-        return new ImageUploadUrlResponse(imageUploadUrl);
+        return new VisualImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
