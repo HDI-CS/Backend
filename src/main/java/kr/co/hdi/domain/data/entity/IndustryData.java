@@ -9,6 +9,8 @@ import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -48,16 +50,54 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     private Year year;
 
     @Column(columnDefinition = "text")
-    private String detailImagePath;
+    private String detailImagePath;   // 상세 이미지 S3 Key
 
     @Column(columnDefinition = "text")
-    private String frontImagePath;
+    private String originalDetailImagePath;
 
     @Column(columnDefinition = "text")
-    private String sideImagePath;
+    private String frontImagePath;    // 정면 이미지 S3 Key
+
+    @Column(columnDefinition = "text")
+    private String originalFrontImagePath;
+
+    @Column(columnDefinition = "text")
+    private String sideImagePath;     // 측면 이미지 S3 Key
+
+    @Column(columnDefinition = "text")
+    private String originalSideImagePath;
 
     public void delete() {
         processDeletion();
+    }
+
+    public String deleteImage(String imageStatus) {
+
+        if (imageStatus.equals("DETAIL")) {
+            deleteDetailImage();
+            return this.detailImagePath;
+        }
+        if (imageStatus.equals("FRONT")) {
+            deleteFrontImage();
+            return this.frontImagePath;
+        }
+        if (imageStatus.equals("SIDE")) {
+            deleteSideImage();
+            return this.sideImagePath;
+        }
+        return null;
+    }
+
+    private void deleteDetailImage() {
+        this.originalDetailImagePath = null;
+    }
+
+    private void deleteFrontImage() {
+        this.originalFrontImagePath = null;
+    }
+
+    private void deleteSideImage() {
+        this.originalSideImagePath = null;
     }
 
     /*
@@ -80,9 +120,15 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.productPath = request.productPath();
         i.productTypeName = request.productTypeName();
         i.industryDataCategory = request.industryDataCategory();
-        i.detailImagePath = request.detailImagePath();
-        i.frontImagePath = request.frontImagePath();
-        i.sideImagePath = request.sideImagePath();
+
+        i.originalDetailImagePath = request.originalDetailImagePath();
+        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
+
+        i.originalFrontImagePath = request.originalFrontImagePath();
+        i.frontImagePath = "2026/ID/" + UUID.randomUUID();
+
+        i.originalSideImagePath = request.originalSideImagePath();
+        i.sideImagePath = "2026/ID/" + UUID.randomUUID();
 
         return i;
     }
@@ -109,9 +155,10 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.productPath = this.productPath;
         copy.productTypeName = this.productTypeName;
         copy.industryDataCategory = this.industryDataCategory;
-        copy.detailImagePath = this.detailImagePath;
-        copy.frontImagePath = this.frontImagePath;
-        copy.sideImagePath = this.sideImagePath;
+
+        copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.sideImagePath = "2026/ID/" + UUID.randomUUID();
 
         return copy;
     }
@@ -160,15 +207,14 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         if (request.industryDataCategory() != null) {
             this.industryDataCategory = request.industryDataCategory();
         }
-        if (request.detailImagePath() != null) {
-            this.detailImagePath = request.detailImagePath();
+        if (request.originalDetailImagePath() != null) {
+            this.originalDetailImagePath = request.originalDetailImagePath();
         }
-        if (request.frontImagePath() != null) {
-            this.frontImagePath = request.frontImagePath();
+        if (request.originalFrontImagePath() != null) {
+            this.originalFrontImagePath = request.originalFrontImagePath();
         }
-        if (request.sideImagePath() != null) {
-            this.sideImagePath = request.sideImagePath();
+        if (request.originalSideImagePath() != null) {
+            this.originalSideImagePath = request.originalSideImagePath();
         }
-
     }
 }
