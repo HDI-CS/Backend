@@ -1,6 +1,6 @@
 package kr.co.hdi.admin.data.dto.response;
 
-public record ImageUploadUrlResponse(
+public record VisualImageUploadUrlResponse(
         String uploadUrl
 ) {
 }
