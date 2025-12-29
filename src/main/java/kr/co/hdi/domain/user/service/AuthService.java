@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final SurveyService surveyService;
 
     /*
@@ -30,9 +29,13 @@ public class AuthService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+//        if (!passwordEncoder.matches(password, user.getPassword())) {
+//            throw new AuthException(AuthErrorCode.INVALID_PASSWORD, "잘못된 비밀번호입니다.");
+//        }
+        if (!user.getPassword().equals(password)) {
             throw new AuthException(AuthErrorCode.INVALID_PASSWORD, "잘못된 비밀번호입니다.");
         }
+
 
         return AuthResponse.from(user);
     }
@@ -45,7 +48,7 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.USER_ALREADY_EXISTS, "이미 존재하는 이메일입니다.");
         }
 
-        UserEntity user = UserEntity.createUser(email, passwordEncoder.encode(password), name, type);
+        UserEntity user = UserEntity.createUser(email, password, name, type);
 
         userRepository.save(user);
         return AuthResponse.from(user);
@@ -59,7 +62,7 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.USER_ALREADY_EXISTS, "이미 존재하는 이메일입니다.");
         }
 
-        UserEntity user = UserEntity.createAdmin(email, passwordEncoder.encode(password), name, type);
+        UserEntity user = UserEntity.createAdmin(email, password, name, type);
 
         userRepository.save(user);
         return AuthResponse.from(user);
