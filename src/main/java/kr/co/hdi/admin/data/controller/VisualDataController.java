@@ -12,9 +12,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -118,5 +122,23 @@ public class VisualDataController {
         visualDataService.exportVisualDataImages(request.ids(), response.getOutputStream());
 
         response.flushBuffer();
+    }
+
+    @GetMapping("/years/{yearId}/datasets/export")
+    @Operation(summary = "시각 디자인 데이터셋 액셀 다운로드")
+    public ResponseEntity<Resource> exportVisualData(
+            @PathVariable("yearId") Long yearId) {
+
+        byte[] bytes = visualDataService.exportVisualData(yearId);
+        ByteArrayResource resource = new ByteArrayResource(bytes);
+        String filename = "visual_data.xlsx";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+                .contentLength(bytes.length)
+                .body(resource);
     }
 }
