@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
@@ -15,7 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -147,5 +151,21 @@ public class VisualDataService {
     public List<VisualDataResponse> searchVisualData(String q, VisualDataCategory category) {
 
         return visualDataRepository.search(q, category);
+    }
+
+    /*
+    시각 디자인 데이터 이미지 다운로드
+     */
+    public void exportVisualDataImages(List<Long> ids, OutputStream os) throws IOException {
+
+        List<VisualData> visualDatas = visualDataRepository.findByIdInAndDeletedAtIsNull(ids);
+
+        Map<String, String> keyNameMap = visualDatas.stream()
+                .collect(Collectors.toMap(
+                        VisualData::getLogoImage,
+                        VisualData::getOriginalLogoImage
+                ));
+
+        imageService.downloadAsZip(keyNameMap, os);
     }
 }
