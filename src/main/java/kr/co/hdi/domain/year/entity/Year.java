@@ -22,11 +22,17 @@ public class Year extends BaseTimeEntityWithDeletion {
 
     private String year;
 
+    private Integer surveyCount;
+
     public static Year create() {
         return new Year();
     }
 
     public void updateYear(String name) {
         this.year = name;
+    }
+
+    public void updateSurveyCount(int size) {
+        this.surveyCount = size;
     }
 }

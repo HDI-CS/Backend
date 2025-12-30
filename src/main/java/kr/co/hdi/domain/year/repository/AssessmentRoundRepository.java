@@ -32,4 +32,10 @@ public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound
     List<AssessmentRound> findAllWithYearByDomainType(
             @Param("type") DomainType type);
 
+    @Query("""
+        select ar.year.surveyCount
+        from AssessmentRound ar
+        where ar.id = :assessmentRoundId
+    """)
+    Integer findSurveyCountByAssessmentRoundId(Long assessmentRoundId);
 }

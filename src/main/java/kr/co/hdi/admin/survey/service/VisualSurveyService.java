@@ -176,6 +176,8 @@ public class VisualSurveyService implements SurveyService {
                 .map(req -> VisualSurvey.create(req,year))
                 .toList();
 
+        year.updateSurveyCount(request.size());
+        yearRepository.save(year);
         visualSurveyRepository.saveAll(surveys);
     }
 

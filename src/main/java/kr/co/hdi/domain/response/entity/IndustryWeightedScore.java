@@ -25,19 +25,19 @@ public class IndustryWeightedScore extends BaseTimeEntityWithDeletion {
     @Enumerated(EnumType.STRING)
     private IndustryDataCategory industryDataCategory;
 
-    private int score1;   // 심미성
+    private Integer score1;   // 심미성
 
-    private int score2;   // 조형성
+    private Integer score2;   // 조형성
 
-    private int score3;   // 독창성
+    private Integer score3;   // 독창성
 
-    private int score4;   // 사용성
+    private Integer score4;   // 사용성
 
-    private int score5;   // 기능성
+    private Integer score5;   // 기능성
 
-    private int score6;   // 윤리성
+    private Integer score6;   // 윤리성
 
-    private int score7;   // 경제성
+    private Integer score7;   // 경제성
 
-    private int score8;   // 목적성
+    private Integer score8;   // 목적성
 }

@@ -177,6 +177,8 @@ public class IndustrySurveyService implements SurveyService {
                 .map(req -> IndustrySurvey.create(req,year))
                 .toList();
 
+        year.updateSurveyCount(request.size());
+        yearRepository.save(year);
         industrySurveyRepository.saveAll(surveys);
     }
 
