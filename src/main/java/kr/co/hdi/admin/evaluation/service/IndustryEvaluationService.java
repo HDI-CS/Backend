@@ -2,8 +2,11 @@ package kr.co.hdi.admin.evaluation.service;
 
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationStatus;
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationType;
+import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusResponse;
+import kr.co.hdi.admin.evaluation.exeption.EvaluationErrorCode;
+import kr.co.hdi.admin.evaluation.exeption.EvaluationException;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
@@ -55,6 +58,7 @@ public class IndustryEvaluationService implements EvaluationService {
 
     /*
     평가 응답 전체 조회
+    0. userType 및 surveyCount 할당
     1. 데이터 조회 (전문가, 정성평가 응답, 산업디자인 가중치평가 응답, 할당된 평가데이터)
     2. 전문가별 응답문항/데이터 그룹핑
     3. 응답 생성 (createEvaluationStatus 사용)
@@ -65,8 +69,14 @@ public class IndustryEvaluationService implements EvaluationService {
             Long assessmentRoundId
     ) {
 
+        // 평가 회차 조회 및 검증 (Year Fetch Join으로 <surveyCount>에서 추가 쿼리 방지)
+        AssessmentRound assessmentRound = assessmentRoundRepository
+                .findByIdWithYear(assessmentRoundId)
+                .orElseThrow(() -> new EvaluationException(
+                        EvaluationErrorCode.ASSESSMENT_ROUND_NOT_FOUND));
+
         UserType userType = type.toUserType();
-        Integer surveyCount = assessmentRoundRepository.findSurveyCountByAssessmentRoundId(assessmentRoundId);
+        Integer surveyCount = assessmentRound.getYear().getSurveyCount();
 
         List<UserEntity> users = userRepository.findByUserTypeAndDeletedAtIsNull(userType);
         List<UserDataPair> dataAssignments = industryDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
@@ -160,4 +170,17 @@ public class IndustryEvaluationService implements EvaluationService {
                 ws.getScore5(), ws.getScore6(), ws.getScore7(), ws.getScore8()
         ).noneMatch(Objects::isNull);
     }
+
+    /*
+    특정 전문가 응답 전체 조회
+     */
+//    @Override
+//    public EvaluationAnswerByMemberResponse getEvaluationByMember(
+//            DomainType type,
+//            Long assessmentRoundId,
+//            Long memberId
+//    ) {
+
+
+
 }
