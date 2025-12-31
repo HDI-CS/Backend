@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.evaluation.service;
 
+import kr.co.hdi.admin.data.dto.response.VisualDataResponse;
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationType;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByDataResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
@@ -10,6 +11,7 @@ import kr.co.hdi.admin.evaluation.exeption.EvaluationException;
 import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
 import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
 import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
@@ -23,8 +25,11 @@ import kr.co.hdi.domain.year.entity.AssessmentRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.AssessmentRoundRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,7 +64,8 @@ public class IndustryEvaluationService implements EvaluationService {
     @Override
     public List<EvaluationStatusByMemberResponse> getEvaluationStatus(
             DomainType type,
-            Long assessmentRoundId
+            Long assessmentRoundId,
+            String q
     ) {
 
         // 평가 회차 조회 및 검증 (Year Fetch Join으로 <surveyCount>에서 추가 쿼리 방지)
@@ -71,7 +77,11 @@ public class IndustryEvaluationService implements EvaluationService {
         UserType userType = type.toUserType();
         Integer surveyCount = assessmentRound.getYear().getSurveyCount();
 
-        List<UserEntity> users = userRepository.findByUserTypeAndDeletedAtIsNull(userType);
+        List<UserEntity> users =
+                (q == null || q.isBlank())
+                        ? userRepository.findByUserTypeAndDeletedAtIsNull(userType)
+                        : userRepository.findByUserTypeAndSearch(userType, q);
+
         List<UserDataPair> dataAssignments = industryDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
         List<IndustryWeightedScore> weightedScores = industryWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
         List<IndustryResponse> qualitativeResponses = industryResponseRepository.findAllByUserYearRound(assessmentRoundId);

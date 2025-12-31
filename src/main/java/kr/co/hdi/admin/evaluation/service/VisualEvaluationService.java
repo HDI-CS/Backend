@@ -60,7 +60,8 @@ public class VisualEvaluationService implements EvaluationService {
     @Override
     public List<EvaluationStatusByMemberResponse> getEvaluationStatus(
             DomainType type,
-            Long assessmentRoundId
+            Long assessmentRoundId,
+            String q
     ) {
 
         // 평가 회차 조회 및 검증 (Year Fetch Join으로 <surveyCount>에서 추가 쿼리 방지)
@@ -72,7 +73,11 @@ public class VisualEvaluationService implements EvaluationService {
         UserType userType = type.toUserType();
         Integer surveyCount = assessmentRound.getYear().getSurveyCount();
 
-        List<UserEntity> users = userRepository.findByUserTypeAndDeletedAtIsNull(userType);
+        List<UserEntity> users =
+                (q == null || q.isBlank())
+                        ? userRepository.findByUserTypeAndDeletedAtIsNull(userType)
+                        : userRepository.findByUserTypeAndSearch(userType, q);
+
         List<UserDataPair> dataAssignments = visualDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
         List<VisualWeightedScore> weightedScores = visualWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
         List<VisualResponse> qualitativeResponses = visualResponseRepository.findAllByUserYearRound(assessmentRoundId);
