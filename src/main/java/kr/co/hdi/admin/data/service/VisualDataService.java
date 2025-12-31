@@ -9,6 +9,7 @@ import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,9 +43,15 @@ public class VisualDataService {
      */
     public List<YearResponse> getVisualDataYears() {
 
-        List<Year> years = yearRepository.findAll();
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.VISUAL);
+
         return years.stream()
-                .map(YearResponse::from)
+                .map(year -> {
+                    LocalDateTime updatedAt = visualDataRepository
+                            .findLastModifiedAtByYearId(year.getId())
+                            .orElse(year.getUpdatedAt());
+                    return YearResponse.from(year, updatedAt);
+                })
                 .toList();
     }
 

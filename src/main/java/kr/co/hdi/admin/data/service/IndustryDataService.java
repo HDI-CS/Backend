@@ -9,6 +9,7 @@ import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,9 +39,15 @@ public class IndustryDataService {
      */
     public List<YearResponse> getIndustryDataYears() {
 
-        List<Year> years = yearRepository.findAll();
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.INDUSTRY);
+
         return years.stream()
-                .map(YearResponse::from)
+                .map(year -> {
+                    LocalDateTime updatedAt = industryDataRepository
+                            .findLastModifiedAtByYearId(year.getId())
+                            .orElse(year.getUpdatedAt());
+                    return YearResponse.from(year, updatedAt);
+                })
                 .toList();
     }
 
