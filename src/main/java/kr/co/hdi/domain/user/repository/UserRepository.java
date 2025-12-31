@@ -4,6 +4,7 @@ import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.entity.UserType;
+import kr.co.hdi.domain.year.enums.DomainType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,4 +47,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
             @Param("name") String name,
             @Param("role")Role role
     );
+
+    Optional<UserEntity> findByIdAndUserTypeAndDeletedAtIsNull(Long id, UserType userType);
 }
