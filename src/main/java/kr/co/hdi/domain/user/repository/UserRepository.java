@@ -45,8 +45,20 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<ExpertNameResponse> findExpertNamesByUserTypeAndName(
             @Param("userType") UserType userType,
             @Param("name") String name,
-            @Param("role")Role role
+            @Param("role") Role role
     );
 
     Optional<UserEntity> findByIdAndUserTypeAndDeletedAtIsNull(Long id, UserType userType);
+
+    @Query("""
+    select u
+    from UserEntity u
+    where u.userType = :userType
+      and u.deletedAt is null
+      and u.name like concat('%', :q, '%')
+    """)
+    List<UserEntity> findByUserTypeAndSearch(
+            @Param("userType") UserType userType,
+            @Param("q") String q
+    );
 }

@@ -16,7 +16,8 @@ public interface EvaluationService {
     DomainType getDomainType();
     List<EvaluationStatusByMemberResponse> getEvaluationStatus(
             DomainType type,
-            Long assessmentRoundId
+            Long assessmentRoundId,
+            String q
     );
     EvaluationAnswerByMemberResponse getEvaluationByMember(
             DomainType type,
