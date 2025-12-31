@@ -9,6 +9,6 @@ public interface IndustryDataAssignmentRepositoryCustom {
 
     LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId);
 
-    List<AssignmentRow> findIndustryDataAssignment(Long assessmentRoundId);
+    List<AssignmentRow> findIndustryDataAssignment(Long assessmentRoundId, String q);
     List<AssignmentRow> findIndustryDataAssignmentByUser(Long assessmentRoundId, Long userId);
 }

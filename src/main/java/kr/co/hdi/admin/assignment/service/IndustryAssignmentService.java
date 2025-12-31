@@ -137,9 +137,9 @@ public class IndustryAssignmentService implements AssignmentService {
     해당 차수의 데이터셋 매칭 전체 조회
      */
     @Override
-    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId) {
+    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId, String q) {
 
-        List<AssignmentRow> rows = industryDataAssignmentRepository.findIndustryDataAssignment(assessmentRoundId);
+        List<AssignmentRow> rows = industryDataAssignmentRepository.findIndustryDataAssignment(assessmentRoundId, q);
         if (rows.isEmpty()) {
             return List.of();
         }

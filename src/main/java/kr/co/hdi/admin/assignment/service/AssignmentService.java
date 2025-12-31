@@ -17,7 +17,7 @@ public interface AssignmentService {
     DomainType getDomainType();
     List<ExpertNameResponse> searchExpertByName(UserType type, String q);
     List<SurveyResponse> getAssignmentYearRoundList(DomainType type);
-    List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId);
+    List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId, String q);
     AssignmentResponse getDatasetAssignmentByUser(Long assessmentRoundId, Long userId);
     void updateDatasetAssignment(Long assessmentRoundId, Long memberId, DataIdsRequest request);
     void createDatasetAssignment(Long assessmentRoundId, AssignmentDataRequest request);

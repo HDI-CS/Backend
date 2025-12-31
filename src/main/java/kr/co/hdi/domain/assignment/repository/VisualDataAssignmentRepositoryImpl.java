@@ -1,6 +1,7 @@
 package kr.co.hdi.domain.assignment.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.domain.year.enums.DomainType;
@@ -36,7 +37,7 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
     }
 
     @Override
-    public List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId) {
+    public List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId, String q) {
 
         return queryFactory
                 .select(Projections.constructor(
@@ -66,13 +67,21 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
                 .where(
                         assessmentRound1.id.eq(assessmentRoundId),
                         assessmentRound1.domainType.eq(DomainType.VISUAL),
-                        assessmentRound1.deletedAt.isNull()
+                        assessmentRound1.deletedAt.isNull(),
+                        nameContains(q)
                 )
                 .orderBy(
                         userEntity.id.asc(),
                         visualData.id.asc()
                 )
                 .fetch();
+    }
+
+    private BooleanExpression nameContains(String q) {
+        if (q == null || q.isBlank()) {
+            return null;
+        }
+        return userEntity.name.containsIgnoreCase(q);
     }
 
     @Override

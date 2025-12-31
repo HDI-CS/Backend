@@ -53,10 +53,11 @@ public class AssignmentController {
     @Operation(summary = "해당 차수의 데이터셋 매칭 전체 조회")
     public ResponseEntity<List<AssignmentResponse>> getDatasetAssignment(
             @PathVariable DomainType type,
-            @PathVariable Long assessmentRoundId) {
+            @PathVariable Long assessmentRoundId,
+            @RequestParam(required = false) String q) {
 
         AssignmentService service = resolver.resolve(type);
-        List<AssignmentResponse> responses = service.getDatasetAssignment(assessmentRoundId);
+        List<AssignmentResponse> responses = service.getDatasetAssignment(assessmentRoundId, q);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
