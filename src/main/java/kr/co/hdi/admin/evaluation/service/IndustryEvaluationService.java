@@ -2,6 +2,7 @@ package kr.co.hdi.admin.evaluation.service;
 
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationStatus;
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationType;
+import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByDataResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusResponse;
@@ -13,6 +14,7 @@ import kr.co.hdi.admin.survey.dto.response.*;
 import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
+import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
@@ -50,6 +52,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private final IndustryWeightedScoreRepository industryWeightedScoreRepository;
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
+    private final IndustrySurveyRepository industrySurveyRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -174,13 +177,41 @@ public class IndustryEvaluationService implements EvaluationService {
     /*
     특정 전문가 응답 전체 조회
      */
-//    @Override
-//    public EvaluationAnswerByMemberResponse getEvaluationByMember(
-//            DomainType type,
-//            Long assessmentRoundId,
-//            Long memberId
-//    ) {
+    @Override
+    public EvaluationAnswerByMemberResponse getEvaluationByMember(
+            DomainType type,
+            Long assessmentRoundId,
+            Long memberId
+    ) {
 
+        // 평가 회차 조회 및 검증 (Year Fetch Join으로 <surveyCount>에서 추가 쿼리 방지)
+        AssessmentRound assessmentRound = assessmentRoundRepository
+                .findByIdWithYear(assessmentRoundId)
+                .orElseThrow(() -> new EvaluationException(
+                        EvaluationErrorCode.ASSESSMENT_ROUND_NOT_FOUND));
 
+        UserType userType = type.toUserType();
+        UserEntity user = userRepository.findByIdAndUserTypeAndDeletedAtIsNull(memberId, userType)
+                .orElseThrow(() -> new EvaluationException(EvaluationErrorCode.USER_NOT_FOUND));
+
+        List<DataIdCodePair> pairs = industryDataAssignmentRepository.findDataIdCodePairsByAssessmentRoundIdAndUserId(assessmentRoundId, memberId);
+        List<IndustrySurvey> surveys = industrySurveyRepository.findAllByYear(assessmentRound.getYear().getId());
+        System.out.println(surveys);
+        List<IndustryResponse> responses = industryResponseRepository.findAllByAssessmentRoundIdAndMemberId(assessmentRoundId, memberId);
+
+        Map<Long, List<IndustryResponse>> responsesByDataId = responses.stream()
+                .filter(r -> r.getIndustryData() != null)
+                .collect(Collectors.groupingBy(r -> r.getIndustryData().getId()));
+
+        List<EvaluationAnswerByDataResponse> surveyDatas = pairs.stream()
+                .map(pair -> EvaluationAnswerByDataResponse.of(
+                        pair,
+                        surveys,
+                        responsesByDataId.getOrDefault(pair.dataId(), List.of())
+                ))
+                .toList();
+
+        return EvaluationAnswerByMemberResponse.of(user, surveyDatas);
+    }
 
 }

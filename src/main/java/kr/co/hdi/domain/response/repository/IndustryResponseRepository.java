@@ -16,10 +16,24 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
     JOIN FETCH uyr.user u
     JOIN FETCH ir.industryData
     WHERE uyr.assessmentRound.id = :assessmentRoundId
-    AND u.deletedAt IS NULL
+    AND ir.deletedAt IS NULL
     order by ir.id asc
     """)
     List<IndustryResponse> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
+    );
+
+    @Query("""
+    select ir
+    from IndustryResponse ir
+    JOIN FETCH ir.industryData
+    WHERE ir.userYearRound.assessmentRound.id = :assessmentRoundId
+    AND ir.userYearRound.user.id = :userId
+    AND ir.deletedAt IS NULL
+    order by ir.id asc
+    """)
+    List<IndustryResponse> findAllByAssessmentRoundIdAndMemberId(
+            @Param("assessmentRoundId") Long assessmentRoundId,
+            @Param("userId") Long userId
     );
 }

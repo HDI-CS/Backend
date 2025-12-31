@@ -1,6 +1,7 @@
 package kr.co.hdi.admin.evaluation.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusByMemberResponse;
 import kr.co.hdi.admin.evaluation.service.EvaluationService;
 import kr.co.hdi.admin.evaluation.service.EvaluationServiceResolver;
@@ -33,5 +34,17 @@ public class EvaluationController {
         List<EvaluationStatusByMemberResponse> responses =
                 evaluationService.getEvaluationStatus(type, assessmentRoundId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
+
+    @GetMapping("/assessment/{assessmentRoundId}/members/{memberId}")
+    public ResponseEntity<EvaluationAnswerByMemberResponse> getEvaluationByMember(
+            @PathVariable("type") DomainType type,
+            @PathVariable("assessmentRoundId") Long assessmentRoundId,
+            @PathVariable("memberId") Long memberId
+    ){
+        EvaluationService evaluationService = resolver.resolve(type);
+        EvaluationAnswerByMemberResponse response =
+                evaluationService.getEvaluationByMember(type, assessmentRoundId, memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

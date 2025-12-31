@@ -1,4 +1,5 @@
 package kr.co.hdi.admin.evaluation.service;
+import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusByMemberResponse;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
@@ -17,4 +18,10 @@ public interface EvaluationService {
             DomainType type,
             Long assessmentRoundId
     );
+    EvaluationAnswerByMemberResponse getEvaluationByMember(
+            DomainType type,
+            Long assessmentRoundId,
+            Long memberId
+    );
+
 }
