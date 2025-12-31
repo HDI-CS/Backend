@@ -10,6 +10,8 @@ import kr.co.hdi.admin.assignment.service.AssignmentServiceResolver;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,17 @@ import java.util.List;
 public class AssignmentController {
 
     private final AssignmentServiceResolver resolver;
+
+    @GetMapping("/search")
+    @Operation(summary = "평가에 참여할 전문가 후보 검색")
+    public ResponseEntity<List<ExpertNameResponse>> searchExpertByName(
+            @PathVariable UserType type,
+            @RequestParam String q) {
+
+        AssignmentService service = resolver.resolve(type.toDomainType());
+        List<ExpertNameResponse> responses = service.searchExpertByName(type, q);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
 
     @GetMapping("/all")
     @Operation(summary = "전체 매칭 폴더 조회")

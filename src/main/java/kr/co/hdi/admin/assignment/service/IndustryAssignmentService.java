@@ -12,11 +12,14 @@ import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyRoundResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
+import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.exception.AuthException;
 import kr.co.hdi.domain.user.repository.UserRepository;
@@ -51,6 +54,14 @@ public class IndustryAssignmentService implements AssignmentService {
     @Override
     public DomainType getDomainType() {
         return DomainType.INDUSTRY;
+    }
+
+    /*
+    전문가 검색 (이름으로)
+     */
+    public List<ExpertNameResponse> searchExpertByName(UserType type, String q) {
+
+        return userRepository.findExpertNamesByUserTypeAndName(type, q, Role.USER);
     }
 
     /*

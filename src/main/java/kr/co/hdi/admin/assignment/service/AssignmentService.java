@@ -6,6 +6,8 @@ import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.year.enums.DomainType;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 public interface AssignmentService {
 
     DomainType getDomainType();
+    List<ExpertNameResponse> searchExpertByName(UserType type, String q);
     List<SurveyResponse> getAssignmentYearRoundList(DomainType type);
     List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId);
     AssignmentResponse getDatasetAssignmentByUser(Long assessmentRoundId, Long userId);
