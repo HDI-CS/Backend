@@ -22,24 +22,6 @@ public record EvaluationAnswerResponse(
         );
     }
 
-    public static EvaluationAnswerResponse unanswered(
-            Long surveyId,
-            SurveyType type,
-            Integer surveyNumber,
-            String surveyContent
-    ) {
-        return of(surveyId, type, surveyNumber, surveyContent, null);
-    }
-
-    public static EvaluationAnswerResponse fromSurvey(IndustrySurvey s) {
-        return unanswered(
-                s.getId(),
-                s.getSurveyType(),
-                s.getSurveyNumber(),
-                s.getSurveyContent()
-        );
-    }
-
     public static EvaluationAnswerResponse fromSurveyAndResponse(
             IndustrySurvey s,
             IndustryResponse r

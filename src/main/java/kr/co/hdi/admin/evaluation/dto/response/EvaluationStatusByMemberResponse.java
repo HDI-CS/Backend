@@ -1,11 +1,5 @@
 package kr.co.hdi.admin.evaluation.dto.response;
-
-import kr.co.hdi.admin.evaluation.dto.enums.EvaluationType;
-import kr.co.hdi.domain.response.entity.IndustryResponse;
-import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
 import kr.co.hdi.domain.user.entity.UserEntity;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public record EvaluationStatusByMemberResponse(

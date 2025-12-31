@@ -1,5 +1,4 @@
 package kr.co.hdi.admin.evaluation.dto.response;
-
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationStatus;
 import kr.co.hdi.admin.evaluation.dto.enums.EvaluationType;
 
