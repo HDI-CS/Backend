@@ -186,7 +186,6 @@ public class IndustryEvaluationService implements EvaluationService {
 
         List<DataIdCodePair> pairs = industryDataAssignmentRepository.findDataIdCodePairsByAssessmentRoundIdAndUserId(assessmentRoundId, memberId);
         List<IndustrySurvey> surveys = industrySurveyRepository.findAllByYear(assessmentRound.getYear().getId());
-        System.out.println(surveys);
         List<IndustryResponse> responses = industryResponseRepository.findAllByAssessmentRoundIdAndMemberId(assessmentRoundId, memberId);
 
         Map<Long, List<IndustryResponse>> responsesByDataId = responses.stream()
@@ -194,7 +193,7 @@ public class IndustryEvaluationService implements EvaluationService {
                 .collect(Collectors.groupingBy(r -> r.getIndustryData().getId()));
 
         List<EvaluationAnswerByDataResponse> surveyDatas = pairs.stream()
-                .map(pair -> EvaluationAnswerByDataResponse.of(
+                .map(pair -> EvaluationAnswerByDataResponse.ofIndustry(
                         pair,
                         surveys,
                         responsesByDataId.getOrDefault(pair.dataId(), List.of())
