@@ -1,9 +1,7 @@
 package kr.co.hdi.domain.year.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +19,9 @@ public class Year extends BaseTimeEntityWithDeletion {
     private Long id;
 
     private String year;
+
+    @Enumerated(EnumType.STRING)
+    private DomainType type;
 
     public static Year create() {
         return new Year();
