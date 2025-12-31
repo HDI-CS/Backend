@@ -12,11 +12,14 @@ import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyRoundResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
+import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.exception.AuthException;
 import kr.co.hdi.domain.user.repository.UserRepository;
@@ -52,6 +55,14 @@ public class VisualAssignmentService implements AssignmentService {
     @Override
     public DomainType getDomainType() {
         return DomainType.VISUAL;
+    }
+
+    /*
+    전문가 검색 (이름으로)
+     */
+    public List<ExpertNameResponse> searchExpertByName(UserType type, String q) {
+
+        return userRepository.findExpertNamesByUserTypeAndName(type, q, Role.USER);
     }
 
     /*
@@ -127,9 +138,9 @@ public class VisualAssignmentService implements AssignmentService {
     해당 차수의 데이터셋 매칭 전체 조회
      */
     @Override
-    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId) {
+    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId, String q) {
 
-        List<AssignmentRow> rows = visualDataAssignmentRepository.findVisualDataAssignment(assessmentRoundId);
+        List<AssignmentRow> rows = visualDataAssignmentRepository.findVisualDataAssignment(assessmentRoundId, q);
         if (rows.isEmpty()) {
             return List.of();
         }

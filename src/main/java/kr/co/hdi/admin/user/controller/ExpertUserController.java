@@ -51,12 +51,13 @@ public class ExpertUserController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "평가에 참여할 전문가 후보 검색")
-    public ResponseEntity<List<ExpertNameResponse>> searchExpertByName(
+    @Operation(summary = "전문가 페이지에서 검색")
+    public ResponseEntity<List<ExpertInfoResponse>> searchExpert(
             @PathVariable UserType type,
-            @RequestParam String q) {
+            @RequestParam String q
+    ) {
 
-        List<ExpertNameResponse> responses = expertUserService.searchExpertByName(type, q);
+        List<ExpertInfoResponse> responses = expertUserService.searchExpert(type, q);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 }

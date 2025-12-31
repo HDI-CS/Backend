@@ -8,6 +8,6 @@ import java.util.List;
 public interface VisualDataAssignmentRepositoryCustom {
 
     LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId);
-    List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId);
+    List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId, String q);
     List<AssignmentRow> findVisualDataAssignmentByUser(Long assessmentRoundId, Long userId);
 }

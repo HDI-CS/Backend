@@ -34,7 +34,22 @@ public class ExpertUserService {
     public List<ExpertInfoResponse> getExpertInfo(UserType type) {
 
         List<UserEntity> users = userRepository.findExpertByType(type, Role.USER);
-        List<UserYearRound> userYearRounds = userYearRoundRepository.findAllByUserType(type);
+        return attachRounds(type, users);
+    }
+
+    /*
+    전문가 페이지 검색
+     */
+    public List<ExpertInfoResponse> searchExpert(UserType type, String q) {
+
+        List<UserEntity> users = userRepository.searchExperts(type, q);
+        return attachRounds(type, users);
+    }
+
+    private List<ExpertInfoResponse> attachRounds(UserType type, List<UserEntity> users) {
+
+        List<UserYearRound> userYearRounds =
+                userYearRoundRepository.findAllByUserType(type);
 
         Map<UserEntity, List<UserYearRound>> grouped =
                 userYearRounds.stream()
@@ -84,13 +99,5 @@ public class ExpertUserService {
 
         user.updateInfo(request);
         userRepository.save(user);
-    }
-
-    /*
-    전문가 검색 (이름으로)
-     */
-    public List<ExpertNameResponse> searchExpertByName(UserType type, String q) {
-
-        return userRepository.findExpertNamesByUserTypeAndName(type, q, Role.USER);
     }
 }
