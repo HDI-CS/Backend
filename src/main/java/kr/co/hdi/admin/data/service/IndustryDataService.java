@@ -5,6 +5,7 @@ import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
+import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
@@ -20,8 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -239,5 +243,31 @@ public class IndustryDataService {
     public List<IndustryDataResponse> searchIndustryData(String q, IndustryDataCategory category) {
 
         return industryDataRepository.search(q, category);
+    }
+
+    /*
+    산업 디자인 데이터 이미지 다운로드
+     */
+    public void exportIndustryDataImages(List<Long> ids, OutputStream os) throws IOException {
+
+        List<IndustryData> industryData = industryDataRepository.findByIdInAndDeletedAtIsNull(ids);
+
+        Map<String, String> keyNameMap = new LinkedHashMap<>();
+
+        for (IndustryData data : industryData) {
+
+            putIfNotBlank(keyNameMap, data.getFrontImagePath(),  data.getOriginalFrontImagePath());
+            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
+            putIfNotBlank(keyNameMap, data.getDetailImagePath(), data.getOriginalDetailImagePath());
+        }
+
+        imageService.downloadAsZip(keyNameMap, os);
+    }
+
+    private void putIfNotBlank(Map<String, String> map, String key, String originalName) {
+        if (key == null || key.isBlank()) return;
+        if (originalName == null || originalName.isBlank()) return;
+
+        map.put(key, originalName);
     }
 }

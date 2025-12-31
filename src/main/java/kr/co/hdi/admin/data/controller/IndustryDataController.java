@@ -2,6 +2,7 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
@@ -110,6 +111,23 @@ public class IndustryDataController {
 
         industryDataService.duplicateIndustryData(request.ids());
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/datasets/image/export")
+    @Operation(summary = "산업 디자인 이미지 데이터 zip 다운로드")
+    public void exportIndustryDataImages(
+            @RequestBody DataIdsRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/zip");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=industry_images.zip");
+
+        industryDataService.exportIndustryDataImages(request.ids(), response.getOutputStream());
+
+        response.flushBuffer();
     }
 
     /*
