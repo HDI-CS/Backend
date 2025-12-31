@@ -1,11 +1,13 @@
 package kr.co.hdi.domain.assignment.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static kr.co.hdi.domain.assignment.entity.QVisualDataAssignment.visualDataAssignment;
@@ -20,7 +22,22 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId) {
+    public LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId) {
+        return queryFactory
+                .select(visualDataAssignment.updatedAt.max())
+                .from(visualDataAssignment)
+                .join(visualDataAssignment.userYearRound, userYearRound)
+                .join(userYearRound.assessmentRound, assessmentRound1)
+                .where(
+                        assessmentRound1.id.eq(assessmentRoundId),
+                        assessmentRound1.deletedAt.isNull(),
+                        visualDataAssignment.deletedAt.isNull()
+                )
+                .fetchOne();
+    }
+
+    @Override
+    public List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId, String q) {
 
         return queryFactory
                 .select(Projections.constructor(
@@ -50,13 +67,21 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
                 .where(
                         assessmentRound1.id.eq(assessmentRoundId),
                         assessmentRound1.domainType.eq(DomainType.VISUAL),
-                        assessmentRound1.deletedAt.isNull()
+                        assessmentRound1.deletedAt.isNull(),
+                        nameContains(q)
                 )
                 .orderBy(
                         userEntity.id.asc(),
                         visualData.id.asc()
                 )
                 .fetch();
+    }
+
+    private BooleanExpression nameContains(String q) {
+        if (q == null || q.isBlank()) {
+            return null;
+        }
+        return userEntity.name.containsIgnoreCase(q);
     }
 
     @Override

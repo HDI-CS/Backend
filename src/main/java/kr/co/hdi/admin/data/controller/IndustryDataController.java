@@ -2,6 +2,7 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
@@ -95,12 +96,12 @@ public class IndustryDataController {
     */
     @PostMapping("/years/{yearId}/datasets")
     @Operation(summary = "산업 디자인 데이터셋 생성")
-    public ResponseEntity<Void> createIndustryData(
+    public ResponseEntity<IndustryImageUploadUrlResponse> createIndustryData(
             @PathVariable Long yearId,
             @RequestBody IndustryDataRequest request) {
 
-        industryDataService.createIndustryData(yearId, request);
-        return ResponseEntity.ok().build();
+        IndustryImageUploadUrlResponse response = industryDataService.createIndustryData(yearId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/datasets/duplicate")
@@ -112,17 +113,35 @@ public class IndustryDataController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/datasets/image/export")
+    @Operation(summary = "산업 디자인 이미지 데이터 zip 다운로드")
+    public void exportIndustryDataImages(
+            @RequestBody DataIdsRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/zip");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=industry_images.zip");
+
+        industryDataService.exportIndustryDataImages(request.ids(), response.getOutputStream());
+
+        response.flushBuffer();
+    }
+
     /*
     PATCH method
     */
     @PatchMapping("/datasets/{datasetId}")
     @Operation(summary = "산업 디자인 데이터셋 수정")
-    public ResponseEntity<Void> updateIndustryData(
+    public ResponseEntity<IndustryImageUploadUrlResponse> updateIndustryData(
             @PathVariable("datasetId") Long datasetId,
-            @RequestBody IndustryDataRequest request) {
+            @RequestBody IndustryDataRequest request,
+            @RequestParam(defaultValue = "") List<String> image) {
 
-        industryDataService.updateIndustryData(datasetId, request);
-        return ResponseEntity.ok().build();
+        IndustryImageUploadUrlResponse response = industryDataService.updateIndustryData(datasetId, request, image);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     /*

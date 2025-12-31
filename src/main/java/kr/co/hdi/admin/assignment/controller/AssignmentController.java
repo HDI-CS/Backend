@@ -9,6 +9,9 @@ import kr.co.hdi.admin.assignment.service.AssignmentService;
 import kr.co.hdi.admin.assignment.service.AssignmentServiceResolver;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,23 +28,24 @@ public class AssignmentController {
 
     private final AssignmentServiceResolver resolver;
 
-    @GetMapping("/years")
-    @Operation(summary = "매칭 연도 목록 조회")
-    public ResponseEntity<List<YearResponse>> getAssignmentYearList(@PathVariable DomainType type) {
+    @GetMapping("/search")
+    @Operation(summary = "평가에 참여할 전문가 후보 검색")
+    public ResponseEntity<List<ExpertNameResponse>> searchExpertByName(
+            @PathVariable UserType type,
+            @RequestParam String q) {
 
-        AssignmentService service = resolver.resolve(type);
-        List<YearResponse> responses = service.getAssignmentYearList();
+        AssignmentService service = resolver.resolve(type.toDomainType());
+        List<ExpertNameResponse> responses = service.searchExpertByName(type, q);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
-    @GetMapping("/years/{yearId}")
-    @Operation(summary = "해당 연도의 매칭 차수 목록 조회")
-    public ResponseEntity<List<AssessmentRoundResponse>> getAssessmentRoundList(
-            @PathVariable DomainType type,
-            @PathVariable Long yearId) {
+    @GetMapping("/all")
+    @Operation(summary = "전체 매칭 폴더 조회")
+    public ResponseEntity<List<SurveyResponse>> getAssessmentList(
+            @PathVariable DomainType type) {
 
         AssignmentService service = resolver.resolve(type);
-        List<AssessmentRoundResponse> responses = service.getAssessmentRoundList(yearId);
+        List<SurveyResponse> responses = service.getAssignmentYearRoundList(type);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
@@ -49,10 +53,11 @@ public class AssignmentController {
     @Operation(summary = "해당 차수의 데이터셋 매칭 전체 조회")
     public ResponseEntity<List<AssignmentResponse>> getDatasetAssignment(
             @PathVariable DomainType type,
-            @PathVariable Long assessmentRoundId) {
+            @PathVariable Long assessmentRoundId,
+            @RequestParam(required = false) String q) {
 
         AssignmentService service = resolver.resolve(type);
-        List<AssignmentResponse> responses = service.getDatasetAssignment(assessmentRoundId);
+        List<AssignmentResponse> responses = service.getDatasetAssignment(assessmentRoundId, q);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 

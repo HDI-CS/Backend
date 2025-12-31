@@ -1,14 +1,17 @@
 package kr.co.hdi.domain.assignment.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static kr.co.hdi.domain.assignment.entity.QIndustryDataAssignment.industryDataAssignment;
+import static kr.co.hdi.domain.assignment.entity.QVisualDataAssignment.visualDataAssignment;
 import static kr.co.hdi.domain.data.entity.QIndustryData.industryData;
 import static kr.co.hdi.domain.user.entity.QUserEntity.userEntity;
 import static kr.co.hdi.domain.year.entity.QAssessmentRound.assessmentRound1;
@@ -20,7 +23,22 @@ public class IndustryDataAssignmentRepositoryImpl implements IndustryDataAssignm
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<AssignmentRow> findIndustryDataAssignment(Long assessmentRoundId) {
+    public LocalDateTime findLastModifiedAtByAssessmentRound(Long assessmentRoundId) {
+        return queryFactory
+                .select(industryDataAssignment.updatedAt.max())
+                .from(industryDataAssignment)
+                .join(industryDataAssignment.userYearRound, userYearRound)
+                .join(userYearRound.assessmentRound, assessmentRound1)
+                .where(
+                        assessmentRound1.id.eq(assessmentRoundId),
+                        assessmentRound1.deletedAt.isNull(),
+                        industryDataAssignment.deletedAt.isNull()
+                )
+                .fetchOne();
+    }
+
+    @Override
+    public List<AssignmentRow> findIndustryDataAssignment(Long assessmentRoundId, String q) {
 
         return queryFactory
                 .select(Projections.constructor(
@@ -50,13 +68,21 @@ public class IndustryDataAssignmentRepositoryImpl implements IndustryDataAssignm
                 .where(
                         assessmentRound1.id.eq(assessmentRoundId),
                         assessmentRound1.domainType.eq(DomainType.INDUSTRY),
-                        assessmentRound1.deletedAt.isNull()
+                        assessmentRound1.deletedAt.isNull(),
+                        nameContains(q)
                 )
                 .orderBy(
                         userEntity.id.asc(),
                         industryData.id.asc()
                 )
                 .fetch();
+    }
+
+    private BooleanExpression nameContains(String q) {
+        if (q == null || q.isBlank()) {
+            return null;
+        }
+        return userEntity.name.containsIgnoreCase(q);
     }
 
     @Override

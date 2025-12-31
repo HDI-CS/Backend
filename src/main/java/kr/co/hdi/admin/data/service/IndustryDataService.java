@@ -5,11 +5,14 @@ import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
+import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.YearRepository;
+import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,13 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class IndustryDataService {
+
+    private final ImageService imageService;
 
     private final YearRepository yearRepository;
     private final IndustryDataRepository industryDataRepository;
@@ -34,9 +43,15 @@ public class IndustryDataService {
      */
     public List<YearResponse> getIndustryDataYears() {
 
-        List<Year> years = yearRepository.findAll();
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.INDUSTRY);
+
         return years.stream()
-                .map(YearResponse::from)
+                .map(year -> {
+                    LocalDateTime updatedAt = industryDataRepository
+                            .findLastModifiedAtByYearId(year.getId())
+                            .orElse(year.getUpdatedAt());
+                    return YearResponse.from(year, updatedAt);
+                })
                 .toList();
     }
 
@@ -54,7 +69,12 @@ public class IndustryDataService {
                 .map(entry -> new IndustryDataWithCategoryResponse(
                         entry.getKey().name(),
                         entry.getValue().stream()
-                                .map(IndustryDataResponse::from)
+                                .map(i -> IndustryDataResponse.from(
+                                        i,
+                                        imageService.getImageUrl(i.getDetailImagePath()),
+                                        imageService.getImageUrl(i.getFrontImagePath()),
+                                        imageService.getImageUrl(i.getSideImagePath())
+                                ))
                                 .toList()
                 ))
                 .toList();
@@ -68,7 +88,12 @@ public class IndustryDataService {
         IndustryData industryData = industryDataRepository.findById(dataId)
                 .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
 
-        return IndustryDataResponse.from(industryData);
+        return IndustryDataResponse.from(
+                industryData,
+                imageService.getImageUrl(industryData.getDetailImagePath()),
+                imageService.getImageUrl(industryData.getFrontImagePath()),
+                imageService.getImageUrl(industryData.getSideImagePath())
+        );
     }
 
     /*
@@ -83,25 +108,43 @@ public class IndustryDataService {
     산업 디자인 데이터셋 생성
      */
     @Transactional
-    public void createIndustryData(Long yearId, IndustryDataRequest requst) {
+    public IndustryImageUploadUrlResponse createIndustryData(Long yearId, IndustryDataRequest requst) {
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
 
         IndustryData industryData = IndustryData.create(year, requst);
         industryDataRepository.save(industryData);
+
+        return new IndustryImageUploadUrlResponse(
+                imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+        );
     }
 
     /*
     산업 디자인 데이터셋 수정
      */
     @Transactional
-    public void updateIndustryData(Long datasetId, IndustryDataRequest request) {
+    public IndustryImageUploadUrlResponse updateIndustryData(Long datasetId, IndustryDataRequest request, List<String> image) {
 
         IndustryData industryData = industryDataRepository.findByIdAndDeletedAtIsNull(datasetId)
                 .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
 
         industryData.updatePartial(request);
+        for(String imageStatus : image) {
+            String key = industryData.deleteImage(imageStatus);
+            if (key != null) {
+                imageService.deleteImage(key);
+            }
+        }
         industryDataRepository.save(industryData);
+
+        return new IndustryImageUploadUrlResponse(
+                imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+        );
     }
 
     /*
@@ -164,7 +207,7 @@ public class IndustryDataService {
                 Row row = sheet.createRow(r++);
 
                 int c = 0;
-                row.createCell(c++).setCellValue(nvl(i.getId()));
+                row.createCell(c++).setCellValue(nvl(i.getOriginalId()));
                 row.createCell(c++).setCellValue(nvl(i.getProductName()));
                 row.createCell(c++).setCellValue(nvl(i.getCompanyName()));
                 row.createCell(c++).setCellValue(nvl(i.getModelName()));
@@ -200,5 +243,31 @@ public class IndustryDataService {
     public List<IndustryDataResponse> searchIndustryData(String q, IndustryDataCategory category) {
 
         return industryDataRepository.search(q, category);
+    }
+
+    /*
+    산업 디자인 데이터 이미지 다운로드
+     */
+    public void exportIndustryDataImages(List<Long> ids, OutputStream os) throws IOException {
+
+        List<IndustryData> industryData = industryDataRepository.findByIdInAndDeletedAtIsNull(ids);
+
+        Map<String, String> keyNameMap = new LinkedHashMap<>();
+
+        for (IndustryData data : industryData) {
+
+            putIfNotBlank(keyNameMap, data.getFrontImagePath(),  data.getOriginalFrontImagePath());
+            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
+            putIfNotBlank(keyNameMap, data.getDetailImagePath(), data.getOriginalDetailImagePath());
+        }
+
+        imageService.downloadAsZip(keyNameMap, os);
+    }
+
+    private void putIfNotBlank(Map<String, String> map, String key, String originalName) {
+        if (key == null || key.isBlank()) return;
+        if (originalName == null || originalName.isBlank()) return;
+
+        map.put(key, originalName);
     }
 }

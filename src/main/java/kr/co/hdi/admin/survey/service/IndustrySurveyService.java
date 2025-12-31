@@ -42,7 +42,7 @@ public class IndustrySurveyService implements SurveyService {
      */
     @Override
     public List<SurveyResponse> getSurveys(DomainType type){
-        List<Year> years = yearRepository.findAll();
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(type);
 
         Map<Long, List<SurveyRoundResponse>> roundsByYearId =
                 assessmentRoundRepository.findAllWithYearByDomainType(type)
@@ -177,6 +177,8 @@ public class IndustrySurveyService implements SurveyService {
                 .map(req -> IndustrySurvey.create(req,year))
                 .toList();
 
+        year.updateSurveyCount(request.size());
+        yearRepository.save(year);
         industrySurveyRepository.saveAll(surveys);
     }
 

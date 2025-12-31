@@ -15,9 +15,9 @@ public record IndustryDataRequest(
         String registeredAt,
         String productPath,
         String productTypeName,
-        String detailImagePath,
-        String frontImagePath,
-        String sideImagePath,
+        String originalDetailImagePath,
+        String originalFrontImagePath,
+        String originalSideImagePath,
         IndustryDataCategory industryDataCategory
 ) {
 }

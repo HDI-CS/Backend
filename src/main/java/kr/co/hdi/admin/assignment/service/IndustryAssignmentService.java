@@ -10,11 +10,16 @@ import kr.co.hdi.admin.assignment.exception.AssignmentErrorCode;
 import kr.co.hdi.admin.assignment.exception.AssignmentException;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.response.YearResponse;
+import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
+import kr.co.hdi.admin.survey.dto.response.SurveyRoundResponse;
+import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
+import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
+import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.exception.AuthException;
 import kr.co.hdi.domain.user.repository.UserRepository;
@@ -29,9 +34,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static kr.co.hdi.admin.assignment.exception.AssignmentErrorCode.USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND;
@@ -53,29 +57,79 @@ public class IndustryAssignmentService implements AssignmentService {
     }
 
     /*
-   매칭 연도 목록 조회
-    */
-    @Override
-    public List<YearResponse> getAssignmentYearList() {
+    전문가 검색 (이름으로)
+     */
+    public List<ExpertNameResponse> searchExpertByName(UserType type, String q) {
 
-        List<Year> years = yearRepository.findAll();
-        return years.stream()
-                .map(YearResponse::from)
-                .toList();
+        return userRepository.findExpertNamesByUserTypeAndName(type, q, Role.USER);
     }
 
     /*
-    해당 연도의 매칭 차수 목록 조회
+    매칭 연도-차수 목록 전체 조회
      */
-    @Override
-    public List<AssessmentRoundResponse> getAssessmentRoundList(Long yearId) {
+    public List<SurveyResponse> getAssignmentYearRoundList(DomainType type) {
 
-        List<AssessmentRound> assessmentRounds = assessmentRoundRepository.findByDomainTypeAndYear(DomainType.INDUSTRY, yearId);
-        return assessmentRounds.stream()
-                .map(ar -> new AssessmentRoundResponse(
-                        ar.getId(),
-                        ar.getAssessmentRound()
-                ))
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(type);
+        List<AssessmentRound> rounds = assessmentRoundRepository.findAllWithYearByDomainType(type);
+
+        Map<Long, LocalDateTime> roundUpdatedMap = getRoundUpdatedMap(rounds);
+        Map<Long, List<SurveyRoundResponse>> roundsByYearId = groupRoundsByYear(rounds, roundUpdatedMap);
+
+        return buildSurveyResponses(years, roundsByYearId);
+    }
+
+    private Map<Long, LocalDateTime> getRoundUpdatedMap(List<AssessmentRound> rounds) {
+        return rounds.stream()
+                .collect(Collectors.toMap(
+                        AssessmentRound::getId,
+                        r -> Optional.ofNullable(
+                                industryDataAssignmentRepository
+                                        .findLastModifiedAtByAssessmentRound(r.getId())
+                        ).orElse(r.getUpdatedAt())
+                ));
+    }
+
+    private Map<Long, List<SurveyRoundResponse>> groupRoundsByYear(
+            List<AssessmentRound> rounds,
+            Map<Long, LocalDateTime> roundUpdatedMap
+    ) {
+        return rounds.stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getYear().getId(),
+                        LinkedHashMap::new,
+                        Collectors.mapping(
+                                r -> SurveyRoundResponse.of(
+                                        r,
+                                        roundUpdatedMap.get(r.getId())
+                                ),
+                                Collectors.toList()
+                        )
+                ));
+    }
+
+    private List<SurveyResponse> buildSurveyResponses(
+            List<Year> years,
+            Map<Long, List<SurveyRoundResponse>> roundsByYearId
+    ) {
+        return years.stream()
+                .map(y -> {
+
+                    List<SurveyRoundResponse> roundResponses =
+                            roundsByYearId.getOrDefault(y.getId(), List.of());
+
+                    LocalDateTime yearUpdatedAt = roundResponses.stream()
+                            .map(SurveyRoundResponse::updatedAt)
+                            .max(LocalDateTime::compareTo)
+                            .orElse(y.getUpdatedAt());
+
+                    return new SurveyResponse(
+                            y.getId(),
+                            y.getYear(),
+                            yearUpdatedAt,
+                            y.getCreatedAt(),
+                            roundResponses
+                    );
+                })
                 .toList();
     }
 
@@ -83,9 +137,9 @@ public class IndustryAssignmentService implements AssignmentService {
     해당 차수의 데이터셋 매칭 전체 조회
      */
     @Override
-    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId) {
+    public List<AssignmentResponse> getDatasetAssignment(Long assessmentRoundId, String q) {
 
-        List<AssignmentRow> rows = industryDataAssignmentRepository.findIndustryDataAssignment(assessmentRoundId);
+        List<AssignmentRow> rows = industryDataAssignmentRepository.findIndustryDataAssignment(assessmentRoundId, q);
         if (rows.isEmpty()) {
             return List.of();
         }

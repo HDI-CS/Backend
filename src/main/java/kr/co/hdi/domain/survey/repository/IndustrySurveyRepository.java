@@ -19,5 +19,7 @@ public interface IndustrySurveyRepository extends JpaRepository<IndustrySurvey, 
         AND is.year.id = :yearId
     order by is.surveyType asc, is.surveyNumber asc
     """)
-    List<IndustrySurvey> findAllByYear(@Param("yearId") Long yearId);
+    List<IndustrySurvey> findAllByYear(
+            @Param("yearId") Long yearId
+    );
 }

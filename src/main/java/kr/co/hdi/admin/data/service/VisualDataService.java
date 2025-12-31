@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
@@ -8,6 +9,7 @@ import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.global.s3.service.ImageService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,9 +43,15 @@ public class VisualDataService {
      */
     public List<YearResponse> getVisualDataYears() {
 
-        List<Year> years = yearRepository.findAll();
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.VISUAL);
+
         return years.stream()
-                .map(YearResponse::from)
+                .map(year -> {
+                    LocalDateTime updatedAt = visualDataRepository
+                            .findLastModifiedAtByYearId(year.getId())
+                            .orElse(year.getUpdatedAt());
+                    return YearResponse.from(year, updatedAt);
+                })
                 .toList();
     }
 
@@ -103,7 +115,7 @@ public class VisualDataService {
     시각 디자인 데이터셋 생성
      */
     @Transactional
-    public ImageUploadUrlResponse createVisualData(Long yearId, VisualDataRequest request) {
+    public VisualImageUploadUrlResponse createVisualData(Long yearId, VisualDataRequest request) {
 
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
@@ -112,14 +124,14 @@ public class VisualDataService {
         visualDataRepository.save(visualData);
 
         String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
-        return new ImageUploadUrlResponse(imageUploadUrl);
+        return new VisualImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
     시각 디자인 데이터셋 수정
      */
     @Transactional
-    public ImageUploadUrlResponse updateVisualData(Long datasetId, VisualDataRequest request, String image) {
+    public VisualImageUploadUrlResponse updateVisualData(Long datasetId, VisualDataRequest request, String image) {
 
         VisualData visualData = visualDataRepository.findByIdAndDeletedAtIsNull(datasetId)
                         .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
@@ -132,7 +144,7 @@ public class VisualDataService {
         visualDataRepository.save(visualData);
 
         String imageUploadUrl = imageService.generateUploadPresignedUrl(visualData.getLogoImage());
-        return new ImageUploadUrlResponse(imageUploadUrl);
+        return new VisualImageUploadUrlResponse(imageUploadUrl);
     }
 
     /*
@@ -151,6 +163,22 @@ public class VisualDataService {
     public List<VisualDataResponse> searchVisualData(String q, VisualDataCategory category) {
 
         return visualDataRepository.search(q, category);
+    }
+
+    /*
+    시각 디자인 데이터 이미지 다운로드
+     */
+    public void exportVisualDataImages(List<Long> ids, OutputStream os) throws IOException {
+
+        List<VisualData> visualDatas = visualDataRepository.findByIdInAndDeletedAtIsNull(ids);
+
+        Map<String, String> keyNameMap = visualDatas.stream()
+                .collect(Collectors.toMap(
+                        VisualData::getLogoImage,
+                        VisualData::getOriginalLogoImage
+                ));
+
+        imageService.downloadAsZip(keyNameMap, os);
     }
 
     /*
