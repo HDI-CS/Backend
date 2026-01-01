@@ -172,12 +172,13 @@ public class VisualSurveyService implements SurveyService {
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
 
+        visualSurveyRepository.deleteAllByYearId(yearId);
+
         List<VisualSurvey> surveys = request.stream()
                 .map(req -> VisualSurvey.create(req,year))
                 .toList();
 
         year.updateSurveyCount(request.size());
-        yearRepository.save(year);
         visualSurveyRepository.saveAll(surveys);
     }
 

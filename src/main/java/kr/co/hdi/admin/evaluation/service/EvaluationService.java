@@ -19,10 +19,16 @@ public interface EvaluationService {
             Long assessmentRoundId,
             String q
     );
+
     EvaluationAnswerByMemberResponse getEvaluationByMember(
             DomainType type,
             Long assessmentRoundId,
             Long memberId
+    );
+
+    byte[] exportEvaluationExcelsZip(
+            DomainType type,
+            Long assessmentRoundId
     );
 
 }

@@ -3,6 +3,7 @@ package kr.co.hdi.domain.survey.repository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,4 +21,11 @@ public interface VisualSurveyRepository extends JpaRepository<VisualSurvey, Long
     order by vs.surveyType asc, vs.surveyNumber asc
     """)
     List<VisualSurvey> findAllByYear(@Param("yearId") Long yearId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        delete from VisualSurvey vs
+        where vs.year.id = :yearId
+    """)
+    void deleteAllByYearId(Long yearId);
 }
