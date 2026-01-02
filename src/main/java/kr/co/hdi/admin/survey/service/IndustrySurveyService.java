@@ -70,7 +70,7 @@ public class IndustrySurveyService implements SurveyService {
     @Override
     @Transactional
     public SurveyYearIdResponse createSurvey(DomainType type) {
-        Year year = Year.create();
+        Year year = Year.create(type);
         yearRepository.save(year);
         return new SurveyYearIdResponse(year.getId());
     }
