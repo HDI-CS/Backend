@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound, Long> {
 
@@ -32,4 +33,22 @@ public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound
     List<AssessmentRound> findAllWithYearByDomainType(
             @Param("type") DomainType type);
 
+    @Query("""
+        select ar.year.surveyCount
+        from AssessmentRound ar
+        where ar.id = :assessmentRoundId
+    """)
+    Integer findSurveyCountByAssessmentRoundId(
+            @Param("assessmentRoundId") Long assessmentRoundId
+    );
+
+    @Query("""
+        SELECT ar
+        FROM AssessmentRound ar
+        JOIN FETCH ar.year
+        WHERE ar.id = :assessmentRoundId
+    """)
+    Optional<AssessmentRound> findByIdWithYear(
+            @Param("assessmentRoundId") Long assessmentRoundId
+    );
 }

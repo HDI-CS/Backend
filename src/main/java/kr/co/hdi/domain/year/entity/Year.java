@@ -21,6 +21,8 @@ public class Year extends BaseTimeEntityWithDeletion {
 
     private String year;
 
+    private Integer surveyCount;
+
     @Enumerated(EnumType.STRING)
     private DomainType type;
 
@@ -39,5 +41,9 @@ public class Year extends BaseTimeEntityWithDeletion {
     public Year(String year, DomainType type) {
         this.year = year;
         this.type = type;
+    }
+
+    public void updateSurveyCount(int size) {
+        this.surveyCount = size;
     }
 }

@@ -4,6 +4,7 @@ import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.entity.UserType;
+import kr.co.hdi.domain.year.enums.DomainType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,6 +45,20 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRep
     List<ExpertNameResponse> findExpertNamesByUserTypeAndName(
             @Param("userType") UserType userType,
             @Param("name") String name,
-            @Param("role")Role role
+            @Param("role") Role role
+    );
+
+    Optional<UserEntity> findByIdAndUserTypeAndDeletedAtIsNull(Long id, UserType userType);
+
+    @Query("""
+    select u
+    from UserEntity u
+    where u.userType = :userType
+      and u.deletedAt is null
+      and u.name like concat('%', :q, '%')
+    """)
+    List<UserEntity> findByUserTypeAndSearch(
+            @Param("userType") UserType userType,
+            @Param("q") String q
     );
 }
