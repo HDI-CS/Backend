@@ -70,7 +70,7 @@ public class IndustrySurveyService implements SurveyService {
     @Override
     @Transactional
     public SurveyYearIdResponse createSurvey(DomainType type) {
-        Year year = Year.create();
+        Year year = Year.create(type);
         yearRepository.save(year);
         return new SurveyYearIdResponse(year.getId());
     }
@@ -173,12 +173,13 @@ public class IndustrySurveyService implements SurveyService {
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
 
+        industrySurveyRepository.deleteAllByYearId(yearId);
+
         List<IndustrySurvey> surveys = request.stream()
                 .map(req -> IndustrySurvey.create(req,year))
                 .toList();
 
         year.updateSurveyCount(request.size());
-        yearRepository.save(year);
         industrySurveyRepository.saveAll(surveys);
     }
 
