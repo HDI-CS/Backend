@@ -81,8 +81,9 @@ public class ExpertUserService {
     public void registerExpert(
             UserType type, ExpertInfoRequest request
     ) {
-        userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ALREADY_EXISTS));
+        if (userRepository.existsByEmail(request.email())) {
+            throw new AuthException(AuthErrorCode.USER_ALREADY_EXISTS);
+        }
 
         UserEntity newUser = UserEntity.createExpert(request, type, request.password());
         userRepository.save(newUser);
