@@ -81,7 +81,7 @@ public class ExpertUserService {
     public void registerExpert(
             UserType type, ExpertInfoRequest request
     ) {
-환        if (userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new AuthException(AuthErrorCode.USER_ALREADY_EXISTS);
         }
 
