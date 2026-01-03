@@ -201,9 +201,10 @@ public class IndustryAssignmentService implements AssignmentService {
 
         UserYearRound userYearRound = getUserYearRound(assessmentRoundId, memberId);
         AssignmentDiff diff = calculateDiff(userYearRound, request);
+        AssessmentRound assessmentRound = userYearRound.getAssessmentRound();
 
         deleteRemovedAssignments(userYearRound, diff);
-        addNewAssignments(userYearRound, diff);
+        addNewAssignments(userYearRound, diff, assessmentRound.getYear());
     }
 
     private UserYearRound getUserYearRound(Long assessmentRoundId, Long memberId) {
@@ -234,7 +235,7 @@ public class IndustryAssignmentService implements AssignmentService {
         industryDataAssignmentRepository.deleteByUserYearRoundAndIndustryDataIds(userYearRound, diff.toRemove());
     }
 
-    private void addNewAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
+    private void addNewAssignments(UserYearRound userYearRound, AssignmentDiff diff, Year year) {
 
         if (diff.toAdd().isEmpty()) {
             return;
@@ -242,7 +243,7 @@ public class IndustryAssignmentService implements AssignmentService {
 
         List<IndustryData> industryDataList = industryDataRepository.findAllById(diff.toAdd());
         industryDataAssignmentRepository.saveAll(
-                IndustryDataAssignment.createAll(userYearRound, industryDataList)
+                IndustryDataAssignment.createAll(userYearRound, industryDataList, year.getSurveyCount())
         );
     }
 
@@ -263,7 +264,7 @@ public class IndustryAssignmentService implements AssignmentService {
 
         UserYearRound userYearRound = createUserYearRound(user, assessmentRound);
 
-        createIndustryDataAssignments(userYearRound, industryDataList);
+        createIndustryDataAssignments(userYearRound, industryDataList, assessmentRound.getYear());
     }
 
     private UserEntity getUser(Long userId) {
@@ -294,10 +295,11 @@ public class IndustryAssignmentService implements AssignmentService {
 
     private void createIndustryDataAssignments(
             UserYearRound userYearRound,
-            List<IndustryData> industryDataList) {
+            List<IndustryData> industryDataList,
+            Year year) {
 
         industryDataAssignmentRepository.saveAll(
-                IndustryDataAssignment.createAll(userYearRound, industryDataList)
+                IndustryDataAssignment.createAll(userYearRound, industryDataList, year.getSurveyCount())
         );
     }
 
