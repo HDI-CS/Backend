@@ -1,11 +1,13 @@
 package kr.co.hdi.domain.response.repository;
 
 import kr.co.hdi.domain.response.entity.IndustryResponse;
+import kr.co.hdi.domain.response.entity.VisualResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IndustryResponseRepository extends JpaRepository<IndustryResponse, Long> {
 
@@ -35,5 +37,20 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
     List<IndustryResponse> findAllByAssessmentRoundIdAndMemberId(
             @Param("assessmentRoundId") Long assessmentRoundId,
             @Param("userId") Long userId
+    );
+
+    @Query("""
+        SELECT ir
+        FROM IndustryResponse ir
+        JOIN ir.userYearRound uyr
+        WHERE ir.industryData.id = :dataId
+          AND uyr.user.id = :userId
+        """)
+    List<IndustryResponse> findAllByIndustryDataIdAndUserId(@Param("dataId") Long dataId, @Param("userId") Long userId);
+
+    Optional<IndustryResponse> findByUserYearRoundIdAndIndustrySurveyIdAndIndustryDataId(
+            Long userYearRoundId,
+            Long industrySurveyId,
+            Long industryDataId
     );
 }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VisualResponseRepository extends JpaRepository<VisualResponse, Long> {
 
@@ -35,5 +36,20 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
     """)
     List<VisualResponse> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
+    );
+
+    @Query("""
+        SELECT vr
+        FROM VisualResponse vr
+        JOIN vr.userYearRound uyr
+        WHERE vr.visualData.id = :dataId
+          AND uyr.user.id = :userId
+        """)
+    List<VisualResponse> findAllByVisualDataIdAndUserId(@Param("dataId") Long dataId, @Param("userId") Long userId);
+
+    Optional<VisualResponse> findByUserYearRoundIdAndVisualSurveyIdAndVisualDataId(
+            Long userYearRoundId,
+            Long visualSurveyId,
+            Long visualDataId
     );
 }

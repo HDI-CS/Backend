@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IndustryDataAssignmentRepository extends JpaRepository<IndustryDataAssignment, Long>, IndustryDataAssignmentRepositoryCustom {
@@ -84,4 +85,6 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
     List<UserDataIdCodePair> findDataIdCodePairsByAssessmentRoundId(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    Optional<IndustryDataAssignment> findByUserYearRoundIdAndIndustryDataId(Long userYearRoundId, Long industryDataId);
 }

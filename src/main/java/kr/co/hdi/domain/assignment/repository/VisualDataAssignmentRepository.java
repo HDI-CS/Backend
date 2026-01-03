@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface VisualDataAssignmentRepository extends JpaRepository<VisualDataAssignment, Long>, VisualDataAssignmentRepositoryCustom {
@@ -85,4 +86,6 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
     List<UserDataIdCodePair> findDataIdCodePairsByAssessmentRoundId(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    Optional<VisualDataAssignment> findByUserYearRoundIdAndVisualDataId(Long userYearRoundId, Long visualDataId);
 }

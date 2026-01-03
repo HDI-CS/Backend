@@ -33,6 +33,14 @@ public class IndustryDataAssignment extends BaseTimeEntityWithDeletion {
     private Integer surveyCount;   // 설문 문항 개수
     private Integer responseCount;   // 응답 개수
 
+    public void incrementResponseCount() {
+        if (this.responseCount == null) {
+            this.responseCount = 1;
+        } else {
+            this.responseCount += 1;
+        }
+    }
+
     @Builder
     private IndustryDataAssignment(UserYearRound userYearRound, IndustryData industryData, Integer surveyCount) {
         this.userYearRound = userYearRound;
