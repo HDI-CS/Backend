@@ -32,6 +32,14 @@ public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
     private Integer surveyCount;   // 설문 문항 개수
     private Integer responseCount;   // 응답 개수
 
+    public void incrementResponseCount() {
+        if (this.responseCount == null) {
+            this.responseCount = 1;
+        } else {
+            this.responseCount += 1;
+        }
+    }
+
     @Builder
     private VisualDataAssignment(UserYearRound userYearRound, VisualData visualData) {
         this.userYearRound = userYearRound;

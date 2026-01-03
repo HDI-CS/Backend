@@ -208,19 +208,28 @@ public class SurveyService {
         UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
                 .orElseThrow();
 
+        //
+        VisualDataAssignment assignment = visualDataAssignmentRepository.findByUserYearRoundIdAndVisualDataId(userYearRound.getId(), dataId)
+                .orElseThrow();
+
+        // 응답 조회 (없으면 생성)
         VisualResponse visualResponse = visualResponseRepository
                 .findByUserYearRoundIdAndVisualSurveyIdAndVisualDataId(
                         userYearRound.getId(),
                         request.surveyId(),
                         dataId
                 )
-                .orElseGet(() -> VisualResponse.builder()
-                        .userYearRound(userYearRound)
-                        .visualSurvey(visualSurveyRepository.getReferenceById(request.surveyId()))
-                        .visualData(visualDataRepository.getReferenceById(dataId))
-                        .build()
-                );
+                .orElseGet(() -> {
+                    assignment.incrementResponseCount();
 
+                    return VisualResponse.builder()
+                            .userYearRound(userYearRound)
+                            .visualSurvey(visualSurveyRepository.getReferenceById(request.surveyId()))
+                            .visualData(visualDataRepository.getReferenceById(dataId))
+                            .build();
+                });
+
+        // 응답값 갱신
         VisualSurvey survey = visualResponse.getVisualSurvey();
         if (survey.getSurveyType() == SurveyType.NUMBER) {
             visualResponse.updateNumberResponse(request.response());
@@ -240,19 +249,27 @@ public class SurveyService {
         UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
                 .orElseThrow();
 
+        IndustryDataAssignment assignment = industryDataAssignmentRepository.findByUserYearRoundIdAndIndustryDataId(userYearRound.getId(), dataId)
+                .orElseThrow();
+
+        // 응답 조회 (없으면 생성)
         IndustryResponse industryResponse = industryResponseRepository
                 .findByUserYearRoundIdAndIndustrySurveyIdAndIndustryDataId(
                         userYearRound.getId(),
                         request.surveyId(),
                         dataId
                 )
-                .orElseGet(() -> IndustryResponse.builder()
-                        .userYearRound(userYearRound)
-                        .industrySurvey(industrySurveyRepository.getReferenceById(request.surveyId()))
-                        .industryData(industryDataRepository.getReferenceById(dataId))
-                        .build()
-                );
+                .orElseGet(() -> {
+                    assignment.incrementResponseCount();
 
+                    return IndustryResponse.builder()
+                                .userYearRound(userYearRound)
+                                .industrySurvey(industrySurveyRepository.getReferenceById(request.surveyId()))
+                                .industryData(industryDataRepository.getReferenceById(dataId))
+                                .build();
+                });
+
+        // 응답값 갱신
         IndustrySurvey survey = industryResponse.getIndustrySurvey();
         if (survey.getSurveyType() == SurveyType.NUMBER) {
             industryResponse.updateNumberResponse(request.response());
