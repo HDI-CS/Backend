@@ -5,6 +5,7 @@ import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -34,4 +35,21 @@ public class IndustryResponse extends BaseTimeEntityWithDeletion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private UserYearRound userYearRound;
+
+    public void updateNumberResponse(Integer numberResponse) {
+        this.numberResponse = numberResponse;
+    }
+
+    public void updateTextResponse(String textResponse) {
+        this.textResponse = textResponse;
+    }
+
+    @Builder
+    public IndustryResponse(Integer numberResponse, String textResponse, IndustryData industryData, IndustrySurvey industrySurvey, UserYearRound userYearRound) {
+        this.numberResponse = numberResponse;
+        this.textResponse = textResponse;
+        this.industryData = industryData;
+        this.industrySurvey = industrySurvey;
+        this.userYearRound = userYearRound;
+    }
 }

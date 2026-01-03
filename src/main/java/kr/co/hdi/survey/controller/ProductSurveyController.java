@@ -44,13 +44,13 @@ public class ProductSurveyController {
     }
 
     @Operation(summary = "제품 설문 응답 한개 저장")
-    @PostMapping("/product/{productResponseId}")
+    @PostMapping("/industry/{dataId}")
     public ResponseEntity<Void> saveProductSurveyResponse(
-            @PathVariable Long productResponseId,
+            @PathVariable Long dataId,
             @RequestBody SurveyResponseRequest request,
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
-        surveyService.saveProductSurveyResponse(productResponseId, request, userId);
+        surveyService.saveIndustrySurveyResponse(dataId, userId, request);
         return ResponseEntity.ok().build();
     }
 

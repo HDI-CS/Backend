@@ -45,12 +45,13 @@ public class BrandSurveyController {
     }
 
     @Operation(summary = "브랜드 설문 응답 한개 저장")
-    @PostMapping("/brand/{brandResponseId}")
+    @PostMapping("/visual/{dataId}")
     public ResponseEntity<Void> saveBrandSurveyResponse(
-            @PathVariable Long brandResponseId,
-            @RequestBody SurveyResponseRequest request) {
+            @PathVariable Long dataId,
+            @RequestBody SurveyResponseRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId) {
 
-        surveyService.saveBrandSurveyResponse(brandResponseId, request);
+        surveyService.saveVisualSurveyResponse(dataId, userId, request);
         return ResponseEntity.ok().build();
     }
 

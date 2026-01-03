@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IndustryResponseRepository extends JpaRepository<IndustryResponse, Long> {
 
@@ -46,4 +47,10 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
           AND uyr.user.id = :userId
         """)
     List<IndustryResponse> findAllByIndustryDataIdAndUserId(@Param("dataId") Long dataId, @Param("userId") Long userId);
+
+    Optional<IndustryResponse> findByUserYearRoundIdAndIndustrySurveyIdAndIndustryDataId(
+            Long userYearRoundId,
+            Long industrySurveyId,
+            Long industryDataId
+    );
 }

@@ -22,6 +22,7 @@ import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
 import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
+import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import kr.co.hdi.survey.domain.*;
@@ -123,55 +124,6 @@ public class SurveyService {
                 .toList();
     }
 
-    @Transactional
-    public void saveProductSurveyResponse(Long productResponseId, SurveyResponseRequest request, Long userId) {
-
-        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
-
-        checkUserAuthorization(productResponse, userId);
-
-        // 정량 평가
-        if (request.index() != null) {
-            productResponse.updateResponse(request.index(), request.response());
-        } else {  // 정성 평가
-            productResponse.updateTextResponse(request.textResponse());
-        }
-
-        productResponse.updateResponseStatus();
-        productResponseRepository.save(productResponse);
-    }
-
-    private void checkUserAuthorization(ProductResponse productResponse, Long userId) {
-        if (!productResponse.getUser().getId().equals(userId)) {
-            throw new SurveyException(SurveyErrorCode.UNAUTHORIZED_ACCESS);
-        }
-    }
-
-    // 제품 응답 최종 제출
-    @Transactional
-    public void setProductResponseStatusDone(Long productResponseId, Long userId) {
-
-        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
-
-        if (!productResponse.checkAllResponsesFilled())
-            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
-
-        productResponse.updateResponseStatusToDone();
-        productResponseRepository.save(productResponse);
-
-        // 모든 설문에 응답했는지
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        long datasetCount = productDatasetAssignmentRepository.countByUser(user);
-        long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
-        if (datasetCount == responsedDatasetCount)
-            user.updateSurveyDoneStatus();
-        userRepository.save(user);
-    }
-
     /*
     시각 디자인 평가 데이터셋 + 응답 조회
      */
@@ -246,22 +198,68 @@ public class SurveyService {
                 ));
     }
 
-    // 브랜드 응답 저장
+    /*
+    시각 디자인 응답 저장
+     */
     @Transactional
-    public void saveBrandSurveyResponse(Long brandResponseId, SurveyResponseRequest request) {
+    public void saveVisualSurveyResponse(Long dataId, Long userId, SurveyResponseRequest request) {
 
-        BrandResponse brandResponse = brandResponseRepository.findById(brandResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.BRAND_RESPONSE_NOT_FOUND));
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow();
 
-        // 정량 평가
-        if (request.index() != null) {
-            brandResponse.updateResponse(request.index(), request.response());
-        } else {   // 정성 평가
-            brandResponse.updateTextResponse(request.textResponse());
+        VisualResponse visualResponse = visualResponseRepository
+                .findByUserYearRoundIdAndVisualSurveyIdAndVisualDataId(
+                        userYearRound.getId(),
+                        request.surveyId(),
+                        dataId
+                )
+                .orElseGet(() -> VisualResponse.builder()
+                        .userYearRound(userYearRound)
+                        .visualSurvey(visualSurveyRepository.getReferenceById(request.surveyId()))
+                        .visualData(visualDataRepository.getReferenceById(dataId))
+                        .build()
+                );
+
+        VisualSurvey survey = visualResponse.getVisualSurvey();
+        if (survey.getSurveyType() == SurveyType.NUMBER) {
+            visualResponse.updateNumberResponse(request.response());
+        } else if (survey.getSurveyType() == SurveyType.TEXT) {
+            visualResponse.updateTextResponse(request.textResponse());
         }
+        visualResponseRepository.save(visualResponse);
+    }
 
-        brandResponse.updateResponseStatus();
-        brandResponseRepository.save(brandResponse);
+    /*
+    산업 디자인 응답 저장
+     */
+    @Transactional
+    public void saveIndustrySurveyResponse(Long dataId, Long userId, SurveyResponseRequest request) {
+
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow();
+
+        IndustryResponse industryResponse = industryResponseRepository
+                .findByUserYearRoundIdAndIndustrySurveyIdAndIndustryDataId(
+                        userYearRound.getId(),
+                        request.surveyId(),
+                        dataId
+                )
+                .orElseGet(() -> IndustryResponse.builder()
+                        .userYearRound(userYearRound)
+                        .industrySurvey(industrySurveyRepository.getReferenceById(request.surveyId()))
+                        .industryData(industryDataRepository.getReferenceById(dataId))
+                        .build()
+                );
+
+        IndustrySurvey survey = industryResponse.getIndustrySurvey();
+        if (survey.getSurveyType() == SurveyType.NUMBER) {
+            industryResponse.updateNumberResponse(request.response());
+        } else if (survey.getSurveyType() == SurveyType.TEXT) {
+            industryResponse.updateTextResponse(request.textResponse());
+        }
+        industryResponseRepository.save(industryResponse);
     }
 
     // 브랜드 응답 최종 제출
@@ -283,6 +281,30 @@ public class SurveyService {
 
         long datasetCount = brandDatasetAssignmentRepository.countByUser(user);
         long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
+        if (datasetCount == responsedDatasetCount)
+            user.updateSurveyDoneStatus();
+        userRepository.save(user);
+    }
+
+    // 제품 응답 최종 제출
+    @Transactional
+    public void setProductResponseStatusDone(Long productResponseId, Long userId) {
+
+        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
+
+        if (!productResponse.checkAllResponsesFilled())
+            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+
+        productResponse.updateResponseStatusToDone();
+        productResponseRepository.save(productResponse);
+
+        // 모든 설문에 응답했는지
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        long datasetCount = productDatasetAssignmentRepository.countByUser(user);
+        long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
         if (datasetCount == responsedDatasetCount)
             user.updateSurveyDoneStatus();
         userRepository.save(user);
@@ -333,19 +355,6 @@ public class SurveyService {
                 );
             }
             scores.add(score);
-//            scores.add(
-//                    WeightedScore.createWeightedScore(
-//                            user,
-//                            request.category(),
-//                            request.score1(),
-//                            request.score2(),
-//                            request.score3(),
-//                            request.score4(),
-//                            request.score5(),
-//                            request.score6(),
-//                            request.score7(),
-//                            request.score8())
-//            );
         }
         weightedScoreRepository.saveAll(scores);
     }
