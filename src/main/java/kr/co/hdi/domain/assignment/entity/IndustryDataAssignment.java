@@ -30,10 +30,15 @@ public class IndustryDataAssignment extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private IndustryData industryData;
 
+    private Integer surveyCount;   // 설문 문항 개수
+    private Integer responseCount;   // 응답 개수
+
     @Builder
     private IndustryDataAssignment(UserYearRound userYearRound, IndustryData industryData) {
         this.userYearRound = userYearRound;
         this.industryData = industryData;
+        this.surveyCount = 0;
+        this.responseCount = 0;
     }
 
     public static IndustryDataAssignment create(
