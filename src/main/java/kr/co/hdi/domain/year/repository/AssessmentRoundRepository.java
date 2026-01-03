@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,4 +52,17 @@ public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound
     Optional<AssessmentRound> findByIdWithYear(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    @Query("""
+        select ar
+        from AssessmentRound ar
+        where ar.domainType = :domainType
+          and ar.startDate <= :today
+          and (ar.endDate is null or ar.endDate >= :today)
+          and ar.deletedAt is null
+        order by ar.startDate desc
+    """)
+    Optional<AssessmentRound> findCurrentRound(
+            @Param("domainType") DomainType domainType,
+            @Param("today") LocalDate today);
 }

@@ -202,9 +202,10 @@ public class VisualAssignmentService implements AssignmentService {
 
         UserYearRound userYearRound = getUserYearRound(assessmentRoundId, memberId);
         AssignmentDiff diff = calculateDiff(userYearRound, request);
+        AssessmentRound assessmentRound = userYearRound.getAssessmentRound();
 
         deleteRemovedAssignments(userYearRound, diff);
-        addNewAssignments(userYearRound, diff);
+        addNewAssignments(userYearRound, diff, assessmentRound.getYear());
     }
 
     private UserYearRound getUserYearRound(Long assessmentRoundId, Long memberId) {
@@ -235,7 +236,7 @@ public class VisualAssignmentService implements AssignmentService {
         visualDataAssignmentRepository.deleteByUserYearRoundAndVisualDataIds(userYearRound, diff.toRemove());
     }
 
-    private void addNewAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
+    private void addNewAssignments(UserYearRound userYearRound, AssignmentDiff diff, Year year) {
 
         if (diff.toAdd().isEmpty()) {
             return;
@@ -243,7 +244,7 @@ public class VisualAssignmentService implements AssignmentService {
 
         List<VisualData> visualDataList = visualDataRepository.findAllById(diff.toAdd());
         visualDataAssignmentRepository.saveAll(
-                VisualDataAssignment.createAll(userYearRound, visualDataList)
+                VisualDataAssignment.createAll(userYearRound, visualDataList, year.getSurveyCount())
         );
     }
 
@@ -264,7 +265,7 @@ public class VisualAssignmentService implements AssignmentService {
 
         UserYearRound userYearRound = createUserYearRound(user, assessmentRound);
 
-        createVisualDataAssignments(userYearRound, visualDataList);
+        createVisualDataAssignments(userYearRound, visualDataList, assessmentRound.getYear());
     }
 
     private UserEntity getUser(Long userId) {
@@ -295,10 +296,11 @@ public class VisualAssignmentService implements AssignmentService {
 
     private void createVisualDataAssignments(
             UserYearRound userYearRound,
-            List<VisualData> visualDataList) {
+            List<VisualData> visualDataList,
+            Year year) {
 
         visualDataAssignmentRepository.saveAll(
-                VisualDataAssignment.createAll(userYearRound, visualDataList)
+                VisualDataAssignment.createAll(userYearRound, visualDataList, year.getSurveyCount())
         );
     }
 

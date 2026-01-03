@@ -5,6 +5,8 @@ import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
 import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
@@ -31,6 +33,7 @@ public class IndustrySurveyService implements SurveyService {
     private final YearRepository yearRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
+    private final CurrentSurveyRepository currentSurveyRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -120,8 +123,8 @@ public class IndustrySurveyService implements SurveyService {
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
 
-        AssessmentRound assessmentRound = AssessmentRound.create(year);
-        assessmentRoundRepository.save(assessmentRound );
+        AssessmentRound assessmentRound = AssessmentRound.create(year, type);
+        assessmentRoundRepository.save(assessmentRound);
         return new SurveyRoundIdResponse(assessmentRound.getId());
     }
 
@@ -137,6 +140,13 @@ public class IndustrySurveyService implements SurveyService {
 
         IndustrySurvey industrySurvey = industrySurveyRepository.findById(questionId)
                         .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+
+        CurrentSurvey startStatus = currentSurveyRepository.findByDomainType(type)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
+
+        if (startStatus.isSurveyStatus()) {
+            throw new SurveyException(SurveyErrorCode.CANNOT_UPDATE_DURING_PROGRESS);
+        }
 
         industrySurvey.updateSurvey(surveyContent);
         industrySurveyRepository.save(industrySurvey);
