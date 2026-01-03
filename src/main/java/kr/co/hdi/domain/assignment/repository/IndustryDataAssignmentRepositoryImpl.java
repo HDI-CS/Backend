@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 
@@ -55,7 +56,8 @@ public class IndustryDataAssignmentRepositoryImpl implements IndustryDataAssignm
                 )
                 .join(userEntity).on(
                         userYearRound.user.eq(userEntity),
-                        userEntity.deletedAt.isNull()
+                        userEntity.deletedAt.isNull(),
+                        userEntity.role.eq(Role.USER)
                 )
                 .join(industryDataAssignment).on(
                         industryDataAssignment.userYearRound.eq(userYearRound),
