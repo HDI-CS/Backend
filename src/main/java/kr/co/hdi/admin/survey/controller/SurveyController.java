@@ -90,22 +90,21 @@ public class SurveyController {
     public ResponseEntity<?> updateYearFolderName(
             @PathVariable DomainType type,
             @PathVariable Long yearId,
-            @RequestBody SurveyFolderNameRequest request
+            @RequestBody SurveyFolderNameRequest request햐
     ){
         SurveyService surveyService = resolver.resolve(type);
         surveyService.updateYearFolderName(type, yearId, request.folderName());
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/question/{questionId}")
-    @Operation(summary = "년도 평가 단일 설문 문항 수정")
+    @PutMapping("/questions")
+    @Operation(summary = "년도 단일 설문 문항 수정")
     public ResponseEntity<?> updateSurveyContent(
             @PathVariable DomainType type,
-            @PathVariable Long questionId,
-            @RequestBody SurveyContentResquest request
+            @RequestBody List<SurveyContentResquest> requests
     ){
         SurveyService surveyService = resolver.resolve(type);
-        surveyService.updateSurveyContent(type,questionId, request.surveyContent());
+        surveyService.updateSurveyContent(type, requests);
         return ResponseEntity.ok().build();
     }
 

@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.survey.service;
 
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
@@ -20,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -136,11 +134,7 @@ public class VisualSurveyService implements SurveyService {
     @Transactional
     public void updateSurveyContent(
             DomainType type,
-            Long questionId,
-            String surveyContent) {
-
-        VisualSurvey visualSurvey = visualSurveyRepository.findById(questionId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+            List<SurveyContentResquest> requests) {
 
         CurrentSurvey startStatus = currentSurveyRepository.findByDomainType(type)
                         .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
@@ -149,8 +143,17 @@ public class VisualSurveyService implements SurveyService {
             throw new SurveyException(SurveyErrorCode.CANNOT_UPDATE_DURING_PROGRESS);
         }
 
-        visualSurvey.updateSurvey(surveyContent);
-        visualSurveyRepository.save(visualSurvey);
+        List<VisualSurvey> toUpdate = new ArrayList<>();
+
+        for (SurveyContentResquest req : requests) {
+            VisualSurvey visualSurvey = visualSurveyRepository.findById(req.surveyId())
+                    .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+
+            visualSurvey.updateSurvey(req.surveyContent());
+            toUpdate.add(visualSurvey);
+        }
+
+        visualSurveyRepository.saveAll(toUpdate);
     }
 
     /*

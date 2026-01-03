@@ -1,4 +1,5 @@
 package kr.co.hdi.admin.survey.service;
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.SurveyQuestionsByYearResponse;
@@ -17,7 +18,7 @@ public interface SurveyService {
     public void updateYearFolderName(DomainType type, Long yearId, String newFolderName);
     public void updateRoundFolderName(DomainType type, Long assessmentRoundId, String newFolderName);
     public SurveyRoundIdResponse createRound(DomainType type, Long yearId);
-    public void updateSurveyContent(DomainType type, Long questionId, String surveyContent);
+    public void updateSurveyContent(DomainType type, List<SurveyContentResquest> requests);
     public void upsertSurveyDate(DomainType type, Long assessmentRoundId, SurveyDateRequest request);
     public void createSurveyQuestion(DomainType type, Long yearId, List<SurveyQuestionRequest> request);
     public SurveyQuestionsByYearResponse getSurveyQuestions(DomainType type, Long yearId);
