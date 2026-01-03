@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.year.enums.DomainType;
@@ -129,28 +130,18 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
     }
 
     @Override
-    public List<VisualData> findVisualDataByUserAndAssessmentRound(Long userId, Long assessmentRoundId) {
+    public List<VisualDataAssignment> findAssignmentsByUserAndAssessmentRound(Long userId, Long assessmentRoundId) {
 
         return queryFactory
-                .select(visualData)
-                .from(assessmentRound1)
-                .join(userYearRound).on(
-                        userYearRound.assessmentRound.eq(assessmentRound1),
-                        userYearRound.deletedAt.isNull()
-                )
-                .join(visualDataAssignment).on(
-                        visualDataAssignment.userYearRound.eq(userYearRound),
-                        visualDataAssignment.deletedAt.isNull()
-                )
-                .join(visualData).on(
-                        visualDataAssignment.visualData.eq(visualData),
-                        visualData.deletedAt.isNull()
-                )
+                .selectFrom(visualDataAssignment)
+                .join(visualDataAssignment.userYearRound, userYearRound)
+                .join(visualDataAssignment.visualData, visualData)
                 .where(
                         userYearRound.user.id.eq(userId),
-                        assessmentRound1.id.eq(assessmentRoundId),
-                        assessmentRound1.domainType.eq(DomainType.VISUAL),
-                        assessmentRound1.deletedAt.isNull()
+                        userYearRound.assessmentRound.id.eq(assessmentRoundId),
+                        userYearRound.deletedAt.isNull(),
+                        visualDataAssignment.deletedAt.isNull(),
+                        visualData.deletedAt.isNull()
                 )
                 .orderBy(visualData.id.asc())
                 .fetch();

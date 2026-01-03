@@ -1,6 +1,7 @@
 package kr.co.hdi.domain.assignment.repository;
 
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.data.entity.VisualData;
 
 import java.time.LocalDateTime;
@@ -12,5 +13,5 @@ public interface VisualDataAssignmentRepositoryCustom {
     List<AssignmentRow> findVisualDataAssignment(Long assessmentRoundId, String q);
     List<AssignmentRow> findVisualDataAssignmentByUser(Long assessmentRoundId, Long userId);
 
-    List<VisualData> findVisualDataByUserAndAssessmentRound(Long userId, Long assessmentRoundId);
+    List<VisualDataAssignment> findAssignmentsByUserAndAssessmentRound(Long userId, Long assessmentRoundId);
 }

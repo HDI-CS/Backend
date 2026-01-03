@@ -6,6 +6,9 @@ import kr.co.hdi.dataset.domain.BrandDatasetAssignment;
 import kr.co.hdi.dataset.domain.ProductDatasetAssignment;
 import kr.co.hdi.dataset.repository.BrandDatasetAssignmentRepository;
 import kr.co.hdi.dataset.repository.ProductDatasetAssignmentRepository;
+import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
+import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
+import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SurveyService {
 
     private final UserRepository userRepository;
@@ -54,6 +58,7 @@ public class SurveyService {
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
     private final VisualDataAssignmentRepository visualDataAssignmentRepository;
+    private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
 
     /*
     [공통] 현재 평가 정보 조회
@@ -64,83 +69,42 @@ public class SurveyService {
                 .orElseThrow();     // TODO : 에러 처리
     }
 
-    // 평가할 브랜드 리스트 조회
-//    @Transactional
-//    public List<ProductSurveyDataResponse> getAllBrandSurveys(Long userId) {
-//
-//        // 현재 평가 정보
-//        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
-//        Long yearId = currentSurvey.getYearId();
-//        Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
-//
-//        // 유저에게 할당된 데이터 리스트 조회
-//        List<VisualData> visualData = visualDataAssignmentRepository.findVisualDataByUserAndAssessmentRound(userId, assessmentRoundId);
-//
-//    }
-
-    // 평가할 제품 리스트 조회
+    /*
+    평가할 시각 디자인 데이터 리스트 조회
+     */
     @Transactional
-    public List<ProductSurveyDataResponse> getAllProductSurveys(Long userId) {
+    public List<ProductSurveyDataResponse> getAllVisualSurveys(Long userId) {
 
-        // 유저의 전체 product assignment 조회
-        List<ProductDatasetAssignment> assignments = productDatasetAssignmentRepository.findAllByUserId(userId);
+        // 현재 평가 정보
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+        Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
 
-        if (assignments.isEmpty()) {
-            return List.of(); // 배정 자체가 없으면 빈 리스트 반환
-        }
+        // 유저에게 할당된 데이터 리스트 조회
+        List<VisualDataAssignment> assignments =
+                visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
 
-        // 유저의 기존 product 응답 조회
-        List<ProductResponse> existingResponses = productResponseRepository.findAllByUserId(userId);
-
-        // Product ID 기준으로 Map 구성
-        Map<Long, ProductResponse> responseMap = existingResponses.stream()
-                .collect(Collectors.toMap(
-                        pr -> pr.getProduct().getId(),
-                        pr -> pr
-                ));
-
-        // 응답이 없는 product에 대해 새로 생성
-        List<ProductResponse> missingResponses = assignments.stream()
-                .map(ProductDatasetAssignment::getProduct)
-                .filter(product -> !responseMap.containsKey(product.getId()))
-                .map(product -> ProductResponse.createProductResponse(assignments.get(0).getUser(), product))
+        return assignments.stream()
+                .map(ProductSurveyDataResponse::toResponseDto)
                 .toList();
+    }
 
-        // 새 응답 저장 및 합치기
-        if (!missingResponses.isEmpty()) {
-            List<ProductResponse> saved = productResponseRepository.saveAll(missingResponses);
-            saved.forEach(pr -> responseMap.put(pr.getProduct().getId(), pr));
-        }
+    /*
+    평가할 산업 디자인 데이터 리스트 조회
+     */
+    @Transactional
+    public List<ProductSurveyDataResponse> getAllIndustrySurveys(Long userId) {
 
-        // 정렬 및 DTO 변환
-        return responseMap.values().stream()
-                .sorted(Comparator.comparing(ProductResponse::getCreatedAt).reversed())
-                .map(pr -> new ProductSurveyDataResponse(
-                        pr.getProduct().getProductName(),
-                        productImageRepository.findByProductId(pr.getProduct().getId()).getFrontPath(),
-                        pr.getResponseStatus(),
-                        pr.getId()
-                ))
+        // 현재 평가 정보
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
+        Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
+
+        // 유저에게 할당된 데이터 리스트 조회
+        List<IndustryDataAssignment> assignments =
+                industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
+
+        return assignments.stream()
+                .map(ProductSurveyDataResponse::toResponseDto)
                 .toList();
-
-//        List<ProductResponse> productResponses = productResponseRepository.findAllByUserId(userId);
-//        if (productResponses.isEmpty()) {
-//            List<ProductDatasetAssignment> assignments = productDatasetAssignmentRepository.findAllByUserId(userId);
-//            List<ProductResponse> newResponses = assignments.stream()
-//                    .map(a -> ProductResponse.createProductResponse(a.getUser(), a.getProduct()))
-//                    .toList();
-//            productResponses = productResponseRepository.saveAll(newResponses);
-//        }
-//
-//        return productResponses.stream()
-//                .sorted(Comparator.comparing(productResponse -> productResponse.getProduct().getId()))
-//                .map(productResponse -> new ProductSurveyDataResponse(
-//                        productResponse.getProduct().getProductName(),
-//                        productImageRepository.findByProductId(productResponse.getProduct().getId()).getFrontPath(),
-//                        productResponse.getResponseStatus(),
-//                        productResponse.getId()
-//                ))
-//                .toList();
     }
 
     public ProductSurveyDetailResponse getProductSurveyDetail(Long productResponseId) {

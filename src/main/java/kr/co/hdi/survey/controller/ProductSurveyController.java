@@ -29,7 +29,7 @@ public class ProductSurveyController {
     ) {
         log.debug("Session userId: {}", userId);
 
-        List<ProductSurveyDataResponse> response = surveyService.getAllProductSurveys(userId);
+        List<ProductSurveyDataResponse> response = surveyService.getAllIndustrySurveys(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

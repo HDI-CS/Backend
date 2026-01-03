@@ -24,14 +24,14 @@ public class BrandSurveyController {
 
     private final SurveyService surveyService;
 
-//    @Operation(summary = "유저에게 할당된 브랜드 설문 목록 조회")
-//    @GetMapping("/brand")
-//    public ResponseEntity<List<ProductSurveyDataResponse>> getBrandSurveys(
-//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-//    ) {
-//        List<ProductSurveyDataResponse> response = surveyService.getAllBrandSurveys(userId);
-//        return ResponseEntity.status(HttpStatus.OK).body(response);
-//    }
+    @Operation(summary = "유저에게 할당된 브랜드 설문 목록 조회")
+    @GetMapping("/brand")
+    public ResponseEntity<List<ProductSurveyDataResponse>> getBrandSurveys(
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        List<ProductSurveyDataResponse> response = surveyService.getAllVisualSurveys(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
     @Operation(summary = "브랜드 설문 상세 조회 (설문하러가기 누를때)")
     @GetMapping("/brand/{brandResponseId}")
