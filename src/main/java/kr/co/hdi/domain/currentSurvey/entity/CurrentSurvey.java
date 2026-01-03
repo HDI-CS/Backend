@@ -32,4 +32,17 @@ public class CurrentSurvey {
         this.yearId = yearId;
         this.assessmentRoundId = assessmentRoundId;
     }
+
+    public static CurrentSurvey create(DomainType domainType, Long yearId, Long assessmentRoundId) {
+        CurrentSurvey cs = new CurrentSurvey();
+        cs.domainType = domainType;
+        cs.yearId = yearId;
+        cs.assessmentRoundId = assessmentRoundId;
+        return cs;
+    }
+
+    public void update(Long yearId, Long assessmentRoundId) {
+        this.yearId = yearId;
+        this.assessmentRoundId = assessmentRoundId;
+    }
 }
