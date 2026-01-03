@@ -29,10 +29,15 @@ public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private VisualData visualData;
 
+    private Integer surveyCount;   // 설문 문항 개수
+    private Integer responseCount;   // 응답 개수
+
     @Builder
     private VisualDataAssignment(UserYearRound userYearRound, VisualData visualData) {
         this.userYearRound = userYearRound;
         this.visualData = visualData;
+        this.surveyCount = 0;
+        this.responseCount = 0;
     }
 
     public static VisualDataAssignment create(

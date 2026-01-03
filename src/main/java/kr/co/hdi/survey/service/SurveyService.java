@@ -1,10 +1,18 @@
 package kr.co.hdi.survey.service;
 
+import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.crawl.repository.ProductImageRepository;
 import kr.co.hdi.dataset.domain.BrandDatasetAssignment;
 import kr.co.hdi.dataset.domain.ProductDatasetAssignment;
 import kr.co.hdi.dataset.repository.BrandDatasetAssignmentRepository;
 import kr.co.hdi.dataset.repository.ProductDatasetAssignmentRepository;
+import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.year.entity.UserYearRound;
+import kr.co.hdi.domain.year.enums.DomainType;
+import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import kr.co.hdi.survey.domain.*;
 import kr.co.hdi.survey.dto.response.*;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
@@ -43,71 +51,32 @@ public class SurveyService {
     private final ProductDatasetAssignmentRepository productDatasetAssignmentRepository;
     private final ProductSurveyRepository productSurveyRepository;
 
-    // 평가할 브랜드 리스트 조회
-    @Transactional
-    public List<ProductSurveyDataResponse> getAllBrandSurveys(Long userId) {
+    private final CurrentSurveyRepository currentSurveyRepository;
+    private final UserYearRoundRepository userYearRoundRepository;
+    private final VisualDataAssignmentRepository visualDataAssignmentRepository;
 
-        // 유저의 전체 브랜드 배정 정보 조회
-        List<BrandDatasetAssignment> assignments = brandDatasetAssignmentRepository.findAllByUserId(userId);
+    /*
+    [공통] 현재 평가 정보 조회
+     */
+    public CurrentSurvey getCurrentSurvey(DomainType type) {
 
-        if (assignments.isEmpty()) {
-            return List.of(); // 배정 자체가 없으면 빈 리스트 반환
-        }
-
-        // 유저의 기존 응답 조회 (user + brand 기준)
-        List<BrandResponse> existingResponses = brandResponseRepository.findAllByUserId(userId);
-
-        // Brand ID 기준으로 빠른 조회를 위한 Map 구성
-        Map<Long, BrandResponse> responseMap = existingResponses.stream()
-                .collect(Collectors.toMap(
-                        br -> br.getBrand().getId(),
-                        br -> br
-                ));
-
-        // 배정된 브랜드 중 아직 응답이 없는 경우 새로 생성
-        List<BrandResponse> missingResponses = assignments.stream()
-                .map(BrandDatasetAssignment::getBrand)
-                .filter(brand -> !responseMap.containsKey(brand.getId()))
-                .map(brand -> BrandResponse.createBrandResponse(assignments.get(0).getUser(), brand))
-                .toList();
-
-        // 새로 생성된 응답 저장
-        if (!missingResponses.isEmpty()) {
-            List<BrandResponse> saved = brandResponseRepository.saveAll(missingResponses);
-            // 새로 저장한 것도 Map에 합치기
-            saved.forEach(br -> responseMap.put(br.getBrand().getId(), br));
-        }
-
-        // 정렬 및 DTO 변환
-        return responseMap.values().stream()
-                .sorted(Comparator.comparing(BrandResponse::getCreatedAt).reversed())
-                .map(br -> new ProductSurveyDataResponse(
-                        br.getBrand().getBrandName(),
-                        br.getBrand().getImage(),
-                        br.getResponseStatus(),
-                        br.getId()
-                ))
-                .toList();
-
-//        List<BrandResponse> brandResponses = brandResponseRepository.findAllByUserId(userId);
-//        if (brandResponses.isEmpty()) {
-//            List<BrandDatasetAssignment> assignments = brandDatasetAssignmentRepository.findAllByUserId(userId);
-//            List<BrandResponse> newResponses = assignments.stream()
-//                    .map(a -> BrandResponse.createBrandResponse(a.getUser(), a.getBrand()))
-//                    .toList();
-//            brandResponses = brandResponseRepository.saveAll(newResponses);
-//        }
-//
-//        return brandResponses.stream()
-//                .sorted(Comparator.comparing(br -> br.getBrand().getId()))
-//                .map(br -> new ProductSurveyDataResponse(
-//                        br.getBrand().getBrandName(),
-//                        br.getBrand().getImage(),
-//                        br.getResponseStatus(),
-//                        br.getId()
-//                ))
-//                .toList();
+        return currentSurveyRepository.findByDomainType(type)
+                .orElseThrow();     // TODO : 에러 처리
     }
+
+    // 평가할 브랜드 리스트 조회
+//    @Transactional
+//    public List<ProductSurveyDataResponse> getAllBrandSurveys(Long userId) {
+//
+//        // 현재 평가 정보
+//        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+//        Long yearId = currentSurvey.getYearId();
+//        Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
+//
+//        // 유저에게 할당된 데이터 리스트 조회
+//        List<VisualData> visualData = visualDataAssignmentRepository.findVisualDataByUserAndAssessmentRound(userId, assessmentRoundId);
+//
+//    }
 
     // 평가할 제품 리스트 조회
     @Transactional
