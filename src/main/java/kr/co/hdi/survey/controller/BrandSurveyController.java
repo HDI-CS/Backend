@@ -25,8 +25,8 @@ public class BrandSurveyController {
     private final SurveyService surveyService;
 
     @Operation(summary = "유저에게 할당된 브랜드 설문 목록 조회")
-    @GetMapping("/brand")
-    public ResponseEntity<List<ProductSurveyDataResponse>> getBrandSurveys(
+    @GetMapping("/visual")
+    public ResponseEntity<List<ProductSurveyDataResponse>> getVisualSurveys(
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
         List<ProductSurveyDataResponse> response = surveyService.getAllVisualSurveys(userId);
@@ -34,12 +34,13 @@ public class BrandSurveyController {
     }
 
     @Operation(summary = "브랜드 설문 상세 조회 (설문하러가기 누를때)")
-    @GetMapping("/brand/{brandResponseId}")
-    public ResponseEntity<BrandSurveyDetailResponse> getBrandSurveyDetail(
-            @PathVariable Long brandResponseId
+    @GetMapping("/visual/{dataId}")
+    public ResponseEntity<BrandSurveyDetailResponse> getVisualSurveyDetail(
+            @PathVariable Long dataId,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
 
-        BrandSurveyDetailResponse response = surveyService.getBrandSurveyDetail(brandResponseId);
+        BrandSurveyDetailResponse response = surveyService.getVisualSurveyDetail(dataId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

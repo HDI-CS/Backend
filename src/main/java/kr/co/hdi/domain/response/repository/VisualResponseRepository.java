@@ -36,4 +36,13 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
     List<VisualResponse> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    @Query("""
+        SELECT vr
+        FROM VisualResponse vr
+        JOIN vr.userYearRound uyr
+        WHERE vr.visualData.id = :dataId
+          AND uyr.user.id = :userId
+        """)
+    List<VisualResponse> findAllByVisualDataIdAndUserId(@Param("dataId") Long dataId, @Param("userId") Long userId);
 }

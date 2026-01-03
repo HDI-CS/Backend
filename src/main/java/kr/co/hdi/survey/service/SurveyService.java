@@ -1,9 +1,6 @@
 package kr.co.hdi.survey.service;
 
-import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.crawl.repository.ProductImageRepository;
-import kr.co.hdi.dataset.domain.BrandDatasetAssignment;
-import kr.co.hdi.dataset.domain.ProductDatasetAssignment;
 import kr.co.hdi.dataset.repository.BrandDatasetAssignmentRepository;
 import kr.co.hdi.dataset.repository.ProductDatasetAssignmentRepository;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
@@ -12,8 +9,19 @@ import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
-import kr.co.hdi.domain.year.entity.UserYearRound;
+import kr.co.hdi.domain.data.repository.IndustryDataRepository;
+import kr.co.hdi.domain.data.repository.VisualDataRepository;
+import kr.co.hdi.domain.response.entity.IndustryResponse;
+import kr.co.hdi.domain.response.entity.VisualResponse;
+import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
+import kr.co.hdi.domain.response.repository.VisualResponseRepository;
+import kr.co.hdi.domain.survey.entity.IndustrySurvey;
+import kr.co.hdi.domain.survey.entity.VisualSurvey;
+import kr.co.hdi.domain.survey.enums.SurveyType;
+import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
+import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import kr.co.hdi.survey.domain.*;
@@ -34,7 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,9 +62,18 @@ public class SurveyService {
     private final ProductDatasetAssignmentRepository productDatasetAssignmentRepository;
     private final ProductSurveyRepository productSurveyRepository;
 
+
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+
+    private final VisualDataRepository visualDataRepository;
+    private final VisualSurveyRepository visualSurveyRepository;
+    private final VisualResponseRepository visualResponseRepository;
     private final VisualDataAssignmentRepository visualDataAssignmentRepository;
+
+    private final IndustryDataRepository industryDataRepository;
+    private final IndustrySurveyRepository industrySurveyRepository;
+    private final IndustryResponseRepository industryResponseRepository;
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
 
     /*
@@ -106,22 +122,6 @@ public class SurveyService {
                 .map(ProductSurveyDataResponse::toResponseDto)
                 .toList();
     }
-
-    public ProductSurveyDetailResponse getProductSurveyDetail(Long productResponseId) {
-        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
-
-        ProductSurvey productSurvey = productSurveyRepository.findById(1L)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
-
-        ProductDataSetResponse dataSetResponse = ProductDataSetResponse.from(productResponse.getProduct(),
-                productImageRepository.findByProductId(productResponse.getProduct().getId()));
-
-        ProductSurveyResponse productSurveyResponse = ProductSurveyResponse.from(productSurvey, productResponse);
-
-        return new ProductSurveyDetailResponse(dataSetResponse, productSurveyResponse);
-    }
-
 
     @Transactional
     public void saveProductSurveyResponse(Long productResponseId, SurveyResponseRequest request, Long userId) {
@@ -172,21 +172,78 @@ public class SurveyService {
         userRepository.save(user);
     }
 
+    /*
+    시각 디자인 평가 데이터셋 + 응답 조회
+     */
+    public BrandSurveyDetailResponse getVisualSurveyDetail(Long dataId, Long userId) {
 
+        // 데이터 조회
+        VisualData visualData = visualDataRepository.findById(dataId)
+                .orElseThrow();
 
-    // 브랜드 평가 데이터셋 + 응답 조회
-    public BrandSurveyDetailResponse getBrandSurveyDetail(Long brandResponseId) {
+        // 설문 문항 조회
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+        List<VisualSurvey> visualSurveys = visualSurveyRepository.findAllByYear(currentSurvey.getYearId());
 
-        BrandResponse brandResponse = brandResponseRepository.findById(brandResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.BRAND_RESPONSE_NOT_FOUND));
+        // 데이터에 대한 응답 조회
+        List<VisualResponse> responses = visualResponseRepository.findAllByVisualDataIdAndUserId(dataId, userId);
+        Map<Long, VisualResponse> responseMap = responses.stream()
+                .collect(Collectors.toMap(r -> r.getVisualSurvey().getId(), r -> r));  // key: visualSurveyId, value: visualResponse
 
-        BrandSurvey brandSurvey = brandSurveyRepository.findById(1L)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+        // 설문 + 응답 dto
+        List<NumberSurveyResponse> numberResponses = visualSurveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.NUMBER)
+                .map(s -> NumberSurveyResponse.of(s, responseMap.get(s.getId())))
+                .toList();
+        List<TextSurveyResponse> textResponses = visualSurveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
+                .toList();
 
-        BrandDatasetResponse brandDatasetResponse = BrandDatasetResponse.fromEntity(brandResponse.getBrand());
-        String dataId = brandResponse.getBrand().getBrandCode() + "_" + brandResponse.getBrand().getSectorCategory();
-        BrandSurveyResponse brandSurveyResponse = BrandSurveyResponse.fromEntity(dataId, brandSurvey,brandResponse);
-        return new BrandSurveyDetailResponse(brandDatasetResponse, brandSurveyResponse);
+        return new BrandSurveyDetailResponse(
+                BrandDatasetResponse.fromEntity(visualData),
+                new SurveyResponse(
+                        visualData.getBrandCode() + "_" + visualData.getSectorCategory(),
+                        numberResponses,
+                        textResponses
+                ));
+    }
+
+    /*
+    산업 디자인 평가 데이터셋 + 응답 조회
+     */
+    public ProductSurveyDetailResponse getIndustrySurveyDetail(Long dataId, Long userId) {
+
+        // 데이터 조회
+        IndustryData industryData = industryDataRepository.findById(dataId)
+                .orElseThrow();
+
+        // 설문 문항 조회
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
+        List<IndustrySurvey> industrySurveys = industrySurveyRepository.findAllByYear(currentSurvey.getYearId());
+
+        // 데이터에 대한 응답 조회
+        List<IndustryResponse> responses = industryResponseRepository.findAllByIndustryDataIdAndUserId(dataId, userId);
+        Map<Long, IndustryResponse> responseMap = responses.stream()
+                .collect(Collectors.toMap(r -> r.getIndustrySurvey().getId(), r -> r));  // key: industrySurveyId, value: industryResponse
+
+        // 설문 + 응답 dto
+        List<NumberSurveyResponse> numberResponses = industrySurveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.NUMBER)
+                .map(s -> NumberSurveyResponse.of(s, responseMap.get(s.getId())))
+                .toList();
+        List<TextSurveyResponse> textResponses = industrySurveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
+                .toList();
+
+        return  new ProductSurveyDetailResponse(
+                ProductDataSetResponse.fromEntity(industryData),
+                new SurveyResponse(
+                        industryData.getOriginalId() + "_" + industryData.getModelName(),
+                        numberResponses,
+                        textResponses
+                ));
     }
 
     // 브랜드 응답 저장

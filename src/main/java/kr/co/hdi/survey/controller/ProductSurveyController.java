@@ -23,7 +23,7 @@ public class ProductSurveyController {
     private final SurveyService surveyService;
 
     @Operation(summary = "유저에게 할당된 제품 설문 목록 조회")
-    @GetMapping("/product")
+    @GetMapping("/industry")
     public ResponseEntity<List<ProductSurveyDataResponse>> getSurveys(
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
@@ -34,11 +34,12 @@ public class ProductSurveyController {
     }
 
     @Operation(summary = "제품 설문 상세 조회 (설문하러가기 누를때)")
-    @GetMapping("/product/{productResponseId}")
+    @GetMapping("/industry/{dataId}")
     public ResponseEntity<ProductSurveyDetailResponse> getProductSurveyDetail(
-            @PathVariable Long productResponseId
+            @PathVariable Long dataId,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
-        ProductSurveyDetailResponse response = surveyService.getProductSurveyDetail(productResponseId);
+        ProductSurveyDetailResponse response = surveyService.getIndustrySurveyDetail(dataId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
