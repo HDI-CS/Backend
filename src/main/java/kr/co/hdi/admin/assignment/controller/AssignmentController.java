@@ -3,21 +3,21 @@ package kr.co.hdi.admin.assignment.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
-import kr.co.hdi.admin.assignment.dto.response.AssessmentRoundResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
 import kr.co.hdi.admin.assignment.service.AssignmentService;
 import kr.co.hdi.admin.assignment.service.AssignmentServiceResolver;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
-import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
@@ -100,4 +100,25 @@ public class AssignmentController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/assessment/{assessmentRoundId}/export")
+    @Operation(summary = "전문가와 데이터셋 매칭 엑셀 다운로드")
+    public ResponseEntity<Resource> exportDatasetAssignment(
+            @PathVariable DomainType type,
+            @PathVariable Long assessmentRoundId
+    ) {
+
+        AssignmentService service = resolver.resolve(type);
+
+        byte[] bytes = service.exportDataAssignments(assessmentRoundId);
+        ByteArrayResource resource = new ByteArrayResource(bytes);
+        String filename = "expert_dataset_assignment.xlsx";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+                .contentLength(bytes.length)
+                .body(resource);
+    }
 }

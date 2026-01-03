@@ -3,13 +3,11 @@ package kr.co.hdi.admin.assignment.service;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentDiff;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
 import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
-import kr.co.hdi.admin.assignment.dto.response.AssessmentRoundResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentDataResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
 import kr.co.hdi.admin.assignment.exception.AssignmentErrorCode;
 import kr.co.hdi.admin.assignment.exception.AssignmentException;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
-import kr.co.hdi.admin.data.dto.response.YearResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyResponse;
 import kr.co.hdi.admin.survey.dto.response.SurveyRoundResponse;
 import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
@@ -31,9 +29,12 @@ import kr.co.hdi.domain.year.repository.AssessmentRoundRepository;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import kr.co.hdi.domain.year.repository.YearRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -299,5 +300,97 @@ public class VisualAssignmentService implements AssignmentService {
         visualDataAssignmentRepository.saveAll(
                 VisualDataAssignment.createAll(userYearRound, visualDataList)
         );
+    }
+
+    /*
+    전문가와 시각 디자인 데이터셋 할당 엑셀 다운로드
+     */
+    public byte[] exportDataAssignments(Long assessmentRoundId) {
+
+        List<AssignmentRow> rows = visualDataAssignmentRepository.findVisualDataAssignment(assessmentRoundId, "");
+
+        Map<Long, List<AssignmentRow>> groupedByUser =
+                rows.stream()
+                        .collect(Collectors.groupingBy(AssignmentRow::userId));
+        List<Long> dataIds = rows.stream()
+                .map(AssignmentRow::dataId)
+                .distinct()
+                .toList();
+
+        Map<Long, VisualData> visualDataMap =
+                visualDataRepository.findAllById(dataIds)
+                        .stream()
+                        .collect(Collectors.toMap(VisualData::getId, d -> d));
+
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            for (Map.Entry<Long, List<AssignmentRow>> entry : groupedByUser.entrySet()) {
+
+                List<AssignmentRow> userRows = entry.getValue();
+                String sheetName = userRows.get(0).username();
+
+                Sheet sheet = wb.createSheet(sheetName);
+
+                String[] headers = {
+                        "Brand Code",
+                        "Brand Name",
+                        "Sector Category",
+                        "Main Product Category",
+                        "Main Product",
+                        "Target",
+                        "Reference URL",
+                        "Data Category"
+                };
+
+                Row headerRow = sheet.createRow(0);
+                for (int c = 0; c < headers.length; c++) {
+                    Cell cell = headerRow.createCell(c);
+                    cell.setCellValue(headers[c]);
+                    cell.setCellStyle(headerStyle);
+                }
+
+                int rowIdx = 1;
+                for (AssignmentRow r : userRows) {
+
+                    VisualData data = visualDataMap.get(r.dataId());
+                    if (data == null) {
+                        continue;
+                    }
+
+                    Row row = sheet.createRow(rowIdx++);
+                    int c = 0;
+
+                    row.createCell(c++).setCellValue(nvl(data.getBrandCode()));
+                    row.createCell(c++).setCellValue(nvl(data.getBrandName()));
+                    row.createCell(c++).setCellValue(nvl(data.getSectorCategory()));
+                    row.createCell(c++).setCellValue(nvl(data.getMainProductCategory()));
+                    row.createCell(c++).setCellValue(nvl(data.getMainProduct()));
+                    row.createCell(c++).setCellValue(nvl(data.getTarget()));
+                    row.createCell(c++).setCellValue(nvl(data.getReferenceUrl()));
+                    row.createCell(c++).setCellValue(nvl(data.getVisualDataCategory()));
+                }
+
+                for (int c = 0; c < headers.length; c++) {
+                    sheet.autoSizeColumn(c);
+                }
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException("엑셀 생성 실패", e);
+        }
+    }
+
+    private String nvl(Object v) {
+        return v == null ? "" : String.valueOf(v);
     }
 }
