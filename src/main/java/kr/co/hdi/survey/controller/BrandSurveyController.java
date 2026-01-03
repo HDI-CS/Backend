@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
 import kr.co.hdi.survey.dto.request.WeightedScoreRequest;
-import kr.co.hdi.survey.dto.response.BrandSurveyDetailResponse;
-import kr.co.hdi.survey.dto.response.ProductSurveyDataResponse;
+import kr.co.hdi.survey.dto.response.VisualSurveyDetailResponse;
+import kr.co.hdi.survey.dto.response.SurveyDataPreviewResponse;
 import kr.co.hdi.survey.dto.response.WeightedScoreResponse;
 import kr.co.hdi.survey.service.SurveyService;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +26,21 @@ public class BrandSurveyController {
 
     @Operation(summary = "유저에게 할당된 브랜드 설문 목록 조회")
     @GetMapping("/visual")
-    public ResponseEntity<List<ProductSurveyDataResponse>> getVisualSurveys(
+    public ResponseEntity<List<SurveyDataPreviewResponse>> getVisualSurveys(
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
-        List<ProductSurveyDataResponse> response = surveyService.getAllVisualSurveys(userId);
+        List<SurveyDataPreviewResponse> response = surveyService.getAllVisualSurveys(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Operation(summary = "브랜드 설문 상세 조회 (설문하러가기 누를때)")
     @GetMapping("/visual/{dataId}")
-    public ResponseEntity<BrandSurveyDetailResponse> getVisualSurveyDetail(
+    public ResponseEntity<VisualSurveyDetailResponse> getVisualSurveyDetail(
             @PathVariable Long dataId,
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
 
-        BrandSurveyDetailResponse response = surveyService.getVisualSurveyDetail(dataId, userId);
+        VisualSurveyDetailResponse response = surveyService.getVisualSurveyDetail(dataId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

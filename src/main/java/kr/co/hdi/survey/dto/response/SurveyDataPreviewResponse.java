@@ -4,7 +4,7 @@ import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.survey.domain.ResponseStatus;
 
-public record ProductSurveyDataResponse(
+public record SurveyDataPreviewResponse(
 
         Long dataId,
         String name,
@@ -12,7 +12,7 @@ public record ProductSurveyDataResponse(
         ResponseStatus responseStatus
 ) {
 
-    public static ProductSurveyDataResponse toResponseDto(VisualDataAssignment assignment) {
+    public static SurveyDataPreviewResponse toResponseDto(VisualDataAssignment assignment) {
 
         Integer surveyCount = assignment.getSurveyCount();
         Integer responseCount = assignment.getResponseCount();
@@ -26,7 +26,7 @@ public record ProductSurveyDataResponse(
             status = ResponseStatus.IN_PROGRESS;
         }
 
-        return new ProductSurveyDataResponse(
+        return new SurveyDataPreviewResponse(
                 assignment.getVisualData().getId(),
                 assignment.getVisualData().getBrandName(),
                 assignment.getVisualData().getLogoImage(),
@@ -34,7 +34,7 @@ public record ProductSurveyDataResponse(
         );
     }
 
-    public static ProductSurveyDataResponse toResponseDto(IndustryDataAssignment assignment) {
+    public static SurveyDataPreviewResponse toResponseDto(IndustryDataAssignment assignment) {
 
         Integer surveyCount = assignment.getSurveyCount();
         Integer responseCount = assignment.getResponseCount();
@@ -48,7 +48,7 @@ public record ProductSurveyDataResponse(
             status = ResponseStatus.IN_PROGRESS;
         }
 
-        return new ProductSurveyDataResponse(
+        return new SurveyDataPreviewResponse(
                 assignment.getIndustryData().getId(),
                 assignment.getIndustryData().getProductName(),
                 assignment.getIndustryData().getFrontImagePath(),  // 산디 정면 이미지

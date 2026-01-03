@@ -90,7 +90,7 @@ public class SurveyService {
     평가할 시각 디자인 데이터 리스트 조회
      */
     @Transactional
-    public List<ProductSurveyDataResponse> getAllVisualSurveys(Long userId) {
+    public List<SurveyDataPreviewResponse> getAllVisualSurveys(Long userId) {
 
         // 현재 평가 정보
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
@@ -101,7 +101,7 @@ public class SurveyService {
                 visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
 
         return assignments.stream()
-                .map(ProductSurveyDataResponse::toResponseDto)
+                .map(SurveyDataPreviewResponse::toResponseDto)
                 .toList();
     }
 
@@ -109,7 +109,7 @@ public class SurveyService {
     평가할 산업 디자인 데이터 리스트 조회
      */
     @Transactional
-    public List<ProductSurveyDataResponse> getAllIndustrySurveys(Long userId) {
+    public List<SurveyDataPreviewResponse> getAllIndustrySurveys(Long userId) {
 
         // 현재 평가 정보
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
@@ -120,14 +120,14 @@ public class SurveyService {
                 industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
 
         return assignments.stream()
-                .map(ProductSurveyDataResponse::toResponseDto)
+                .map(SurveyDataPreviewResponse::toResponseDto)
                 .toList();
     }
 
     /*
     시각 디자인 평가 데이터셋 + 응답 조회
      */
-    public BrandSurveyDetailResponse getVisualSurveyDetail(Long dataId, Long userId) {
+    public VisualSurveyDetailResponse getVisualSurveyDetail(Long dataId, Long userId) {
 
         // 데이터 조회
         VisualData visualData = visualDataRepository.findById(dataId)
@@ -152,8 +152,8 @@ public class SurveyService {
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
                 .toList();
 
-        return new BrandSurveyDetailResponse(
-                BrandDatasetResponse.fromEntity(visualData),
+        return new VisualSurveyDetailResponse(
+                VisualDatasetResponse.fromEntity(visualData),
                 new SurveyResponse(
                         visualData.getBrandCode() + "_" + visualData.getSectorCategory(),
                         numberResponses,
@@ -164,7 +164,7 @@ public class SurveyService {
     /*
     산업 디자인 평가 데이터셋 + 응답 조회
      */
-    public ProductSurveyDetailResponse getIndustrySurveyDetail(Long dataId, Long userId) {
+    public IndustrySurveyDetailResponse getIndustrySurveyDetail(Long dataId, Long userId) {
 
         // 데이터 조회
         IndustryData industryData = industryDataRepository.findById(dataId)
@@ -189,8 +189,8 @@ public class SurveyService {
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
                 .toList();
 
-        return  new ProductSurveyDetailResponse(
-                ProductDataSetResponse.fromEntity(industryData),
+        return  new IndustrySurveyDetailResponse(
+                IndustryDataSetResponse.fromEntity(industryData),
                 new SurveyResponse(
                         industryData.getOriginalId() + "_" + industryData.getModelName(),
                         numberResponses,

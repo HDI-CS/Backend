@@ -1,9 +1,8 @@
 package kr.co.hdi.survey.dto.response;
 
-import kr.co.hdi.dataset.domain.Brand;
 import kr.co.hdi.domain.data.entity.VisualData;
 
-public record BrandDatasetResponse(
+public record VisualDatasetResponse(
 
         String name,
         String id,
@@ -14,8 +13,8 @@ public record BrandDatasetResponse(
         String referenceUrl,
         String image
 ) {
-    public static BrandDatasetResponse fromEntity(VisualData data) {
-        return new BrandDatasetResponse(
+    public static VisualDatasetResponse fromEntity(VisualData data) {
+        return new VisualDatasetResponse(
                 data.getBrandName(),
                 data.getBrandCode(),
                 data.getSectorCategory(),
@@ -24,19 +23,6 @@ public record BrandDatasetResponse(
                 data.getTarget(),
                 data.getReferenceUrl(),
                 data.getLogoImage()
-        );
-    }
-
-    public static BrandDatasetResponse fromEntity(Brand brand) {
-        return new BrandDatasetResponse(
-                brand.getBrandName(),
-                brand.getBrandCode(),
-                brand.getSectorCategory(),
-                brand.getMainProductCategory(),
-                brand.getMainProduct(),
-                brand.getTarget(),
-                brand.getReferenceUrl(),
-                brand.getImage()
         );
     }
 }
