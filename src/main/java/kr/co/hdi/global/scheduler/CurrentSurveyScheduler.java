@@ -34,13 +34,18 @@ public class CurrentSurveyScheduler {
                     );
 
             assessmentRoundRepository.findCurrentRound(domainType, today)
-                    .ifPresent(round -> {
+                    .ifPresentOrElse(round -> {
                         Long yearId = round.getYear().getId();
                         Long roundId = round.getId();
 
                         if (!Objects.equals(cs.getYearId(), yearId)
-                                || !Objects.equals(cs.getAssessmentRoundId(), roundId)) {
-                            cs.update(yearId, roundId);
+                                || !Objects.equals(cs.getAssessmentRoundId(), roundId)
+                                || !cs.isSurveyStatus()) {
+                            cs.update(yearId, roundId, true);
+                        }
+                    }, () -> {
+                        if (cs.isSurveyStatus()) {
+                            cs.update(cs.getYearId(), cs.getAssessmentRoundId(), false);
                         }
                     });
         }

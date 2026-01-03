@@ -26,11 +26,14 @@ public class CurrentSurvey {
 
     private Long assessmentRoundId;
 
+    private boolean surveyStatus = false;
+
     @Builder
-    public CurrentSurvey(DomainType domainType, Long yearId, Long assessmentRoundId) {
+    public CurrentSurvey(DomainType domainType, Long yearId, Long assessmentRoundId, boolean surveyStatus) {
         this.domainType = domainType;
         this.yearId = yearId;
         this.assessmentRoundId = assessmentRoundId;
+        this.surveyStatus = surveyStatus;
     }
 
     public static CurrentSurvey create(DomainType domainType, Long yearId, Long assessmentRoundId) {
@@ -41,8 +44,9 @@ public class CurrentSurvey {
         return cs;
     }
 
-    public void update(Long yearId, Long assessmentRoundId) {
+    public void update(Long yearId, Long assessmentRoundId, boolean surveyStatus) {
         this.yearId = yearId;
         this.assessmentRoundId = assessmentRoundId;
+        this.surveyStatus = surveyStatus;
     }
 }
