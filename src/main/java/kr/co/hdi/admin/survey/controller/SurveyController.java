@@ -90,7 +90,7 @@ public class SurveyController {
     public ResponseEntity<?> updateYearFolderName(
             @PathVariable DomainType type,
             @PathVariable Long yearId,
-            @RequestBody SurveyFolderNameRequest request햐
+            @RequestBody SurveyFolderNameRequest request
     ){
         SurveyService surveyService = resolver.resolve(type);
         surveyService.updateYearFolderName(type, yearId, request.folderName());
