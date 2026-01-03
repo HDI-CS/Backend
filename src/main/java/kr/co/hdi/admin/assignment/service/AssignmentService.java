@@ -21,4 +21,6 @@ public interface AssignmentService {
     AssignmentResponse getDatasetAssignmentByUser(Long assessmentRoundId, Long userId);
     void updateDatasetAssignment(Long assessmentRoundId, Long memberId, DataIdsRequest request);
     void createDatasetAssignment(Long assessmentRoundId, AssignmentDataRequest request);
+
+    byte[] exportDataAssignments(Long assessmentRoundId);
 }

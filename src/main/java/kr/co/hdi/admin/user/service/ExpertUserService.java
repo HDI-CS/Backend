@@ -3,7 +3,6 @@ package kr.co.hdi.admin.user.service;
 import kr.co.hdi.admin.user.dto.request.ExpertInfoRequest;
 import kr.co.hdi.admin.user.dto.request.ExpertInfoUpdateRequest;
 import kr.co.hdi.admin.user.dto.response.ExpertInfoResponse;
-import kr.co.hdi.admin.user.dto.response.ExpertNameResponse;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.entity.UserType;
@@ -13,9 +12,13 @@ import kr.co.hdi.domain.user.repository.UserRepository;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -100,5 +103,70 @@ public class ExpertUserService {
 
         user.updateInfo(request);
         userRepository.save(user);
+    }
+
+    /*
+    전문가 인적사항 엑셀 다운로드
+     */
+    public byte[] exportExpertInfo(UserType type) {
+
+        List<UserEntity> rows = userRepository.findExpertByType(type, Role.USER);
+
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            Sheet sheet = wb.createSheet("expert_information");
+
+            CellStyle headerStyle = wb.createCellStyle();
+            Font headerFont = wb.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            String[] headers = {
+                    "ID", "Name", "Email", "Password", "PhoneNumber", "Gender",
+                    "Age", "Career", "Academic", "Expertise", "Company", "Note"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int c = 0; c < headers.length; c++) {
+                Cell cell = headerRow.createCell(c);
+                cell.setCellValue(headers[c]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int r = 1;
+            for (UserEntity i : rows) {
+                Row row = sheet.createRow(r++);
+
+                int c = 0;
+                row.createCell(c++).setCellValue(nvl(i.getId()));
+                row.createCell(c++).setCellValue(nvl(i.getName()));
+                row.createCell(c++).setCellValue(nvl(i.getEmail()));
+                row.createCell(c++).setCellValue(nvl(i.getPassword()));
+                row.createCell(c++).setCellValue(nvl(i.getPhoneNumber()));
+                row.createCell(c++).setCellValue(nvl(i.getGender()));
+                row.createCell(c++).setCellValue(nvl(i.getAge()));
+                row.createCell(c++).setCellValue(nvl(i.getCareer()));
+                row.createCell(c++).setCellValue(nvl(i.getAcademic()));
+                row.createCell(c++).setCellValue(nvl(i.getExpertise()));
+                row.createCell(c++).setCellValue(nvl(i.getCompany()));
+                row.createCell(c++).setCellValue(nvl(i.getNote()));
+            }
+
+            for (int c = 0; c < headers.length; c++) {
+                sheet.autoSizeColumn(c);
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to export excel", e);
+        }
+    }
+
+    private String nvl(Object v) {
+        return v == null ? "" : String.valueOf(v);
     }
 }
