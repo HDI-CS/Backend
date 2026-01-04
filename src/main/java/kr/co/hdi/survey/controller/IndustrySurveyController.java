@@ -14,16 +14,16 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/survey")
 @Slf4j
+@RestController
 @RequiredArgsConstructor
-public class ProductSurveyController {
+@RequestMapping("/api/v1/user/industry/survey")
+public class IndustrySurveyController {
 
     private final SurveyService surveyService;
 
+    @GetMapping
     @Operation(summary = "유저에게 할당된 제품 설문 목록 조회")
-    @GetMapping("/industry")
     public ResponseEntity<List<SurveyDataPreviewResponse>> getSurveys(
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
@@ -33,8 +33,8 @@ public class ProductSurveyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/{dataId}")
     @Operation(summary = "제품 설문 상세 조회 (설문하러가기 누를때)")
-    @GetMapping("/industry/{dataId}")
     public ResponseEntity<IndustrySurveyDetailResponse> getProductSurveyDetail(
             @PathVariable Long dataId,
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
@@ -43,8 +43,8 @@ public class ProductSurveyController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @PostMapping("/{dataId}")
     @Operation(summary = "제품 설문 응답 한개 저장")
-    @PostMapping("/industry/{dataId}")
     public ResponseEntity<Void> saveProductSurveyResponse(
             @PathVariable Long dataId,
             @RequestBody SurveyResponseRequest request,
@@ -54,14 +54,14 @@ public class ProductSurveyController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "제출")
-    @PostMapping("/product/{productResponseId}/submit")
-    public ResponseEntity<Void> submitProductSurvey(
-            @PathVariable Long productResponseId,
-            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-    ) {
-        surveyService.setProductResponseStatusDone(productResponseId, userId);
-        return ResponseEntity.ok().build();
-    }
+//    @Operation(summary = "제출")
+//    @PostMapping("/product/{productResponseId}/submit")
+//    public ResponseEntity<Void> submitProductSurvey(
+//            @PathVariable Long productResponseId,
+//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+//    ) {
+//        surveyService.setProductResponseStatusDone(productResponseId, userId);
+//        return ResponseEntity.ok().build();
+//    }
 
 }

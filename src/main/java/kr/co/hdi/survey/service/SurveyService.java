@@ -54,15 +54,7 @@ import java.util.stream.Collectors;
 public class SurveyService {
 
     private final UserRepository userRepository;
-    private final BrandSurveyRepository brandSurveyRepository;
-    private final BrandResponseRepository brandResponseRepository;
     private final WeightedScoreRepository weightedScoreRepository;
-    private final ProductResponseRepository productResponseRepository;
-    private final ProductImageRepository productImageRepository;
-    private final BrandDatasetAssignmentRepository brandDatasetAssignmentRepository;
-    private final ProductDatasetAssignmentRepository productDatasetAssignmentRepository;
-    private final ProductSurveyRepository productSurveyRepository;
-
 
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
@@ -230,6 +222,7 @@ public class SurveyService {
                 });
 
         // 응답값 갱신
+        // TODO: 정성 평가 다시 지우는 경우 예외 처리 해야함
         VisualSurvey survey = visualResponse.getVisualSurvey();
         if (survey.getSurveyType() == SurveyType.NUMBER) {
             visualResponse.updateNumberResponse(request.response());
@@ -279,53 +272,53 @@ public class SurveyService {
         industryResponseRepository.save(industryResponse);
     }
 
-    // 브랜드 응답 최종 제출
-    @Transactional
-    public void setBrandResponseStatusDone(Long brandResponseId, Long userId) {
-
-        BrandResponse brandResponse = brandResponseRepository.findById(brandResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.BRAND_RESPONSE_NOT_FOUND));
-
-        if (!brandResponse.checkAllResponsesFilled())
-            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
-
-        brandResponse.updateResponseStatusToDone();
-        brandResponseRepository.save(brandResponse);
-
-        // 모든 설문에 응답했는지
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        long datasetCount = brandDatasetAssignmentRepository.countByUser(user);
-        long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
-        if (datasetCount == responsedDatasetCount)
-            user.updateSurveyDoneStatus();
-        userRepository.save(user);
-    }
-
-    // 제품 응답 최종 제출
-    @Transactional
-    public void setProductResponseStatusDone(Long productResponseId, Long userId) {
-
-        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
-
-        if (!productResponse.checkAllResponsesFilled())
-            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
-
-        productResponse.updateResponseStatusToDone();
-        productResponseRepository.save(productResponse);
-
-        // 모든 설문에 응답했는지
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        long datasetCount = productDatasetAssignmentRepository.countByUser(user);
-        long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
-        if (datasetCount == responsedDatasetCount)
-            user.updateSurveyDoneStatus();
-        userRepository.save(user);
-    }
+//    // 브랜드 응답 최종 제출
+//    @Transactional
+//    public void setBrandResponseStatusDone(Long brandResponseId, Long userId) {
+//
+//        BrandResponse brandResponse = brandResponseRepository.findById(brandResponseId)
+//                .orElseThrow(() -> new SurveyException(SurveyErrorCode.BRAND_RESPONSE_NOT_FOUND));
+//
+//        if (!brandResponse.checkAllResponsesFilled())
+//            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+//
+//        brandResponse.updateResponseStatusToDone();
+//        brandResponseRepository.save(brandResponse);
+//
+//        // 모든 설문에 응답했는지
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+//
+//        long datasetCount = brandDatasetAssignmentRepository.countByUser(user);
+//        long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
+//        if (datasetCount == responsedDatasetCount)
+//            user.updateSurveyDoneStatus();
+//        userRepository.save(user);
+//    }
+//
+//    // 제품 응답 최종 제출
+//    @Transactional
+//    public void setProductResponseStatusDone(Long productResponseId, Long userId) {
+//
+//        ProductResponse productResponse = productResponseRepository.findById(productResponseId)
+//                .orElseThrow(() -> new SurveyException(SurveyErrorCode.PRODUCT_RESPONSE_NOT_FOUND));
+//
+//        if (!productResponse.checkAllResponsesFilled())
+//            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+//
+//        productResponse.updateResponseStatusToDone();
+//        productResponseRepository.save(productResponse);
+//
+//        // 모든 설문에 응답했는지
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+//
+//        long datasetCount = productDatasetAssignmentRepository.countByUser(user);
+//        long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
+//        if (datasetCount == responsedDatasetCount)
+//            user.updateSurveyDoneStatus();
+//        userRepository.save(user);
+//    }
 
     // 가중치 평가
     @Transactional
@@ -396,30 +389,5 @@ public class SurveyService {
                         score.getScore8()
                 ))
                 .toList();
-    }
-
-    @Transactional
-    public void checkSurveyDone(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        if (user.getUserType() == UserType.BRAND) {
-            long datasetCount = brandDatasetAssignmentRepository.countByUser(user);
-            long responsedDatasetCount = brandResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
-            if (datasetCount == responsedDatasetCount)
-                user.updateSurveyDoneStatus();
-            else
-                user.updateSurveyStatusToFalse();
-            userRepository.save(user);
-        }
-        if (user.getUserType() == UserType.PRODUCT) {
-            long datasetCount = productDatasetAssignmentRepository.countByUser(user);
-            long responsedDatasetCount = productResponseRepository.countByUserAndResponseStatus(user, ResponseStatus.DONE);
-            if (datasetCount == responsedDatasetCount)
-                user.updateSurveyDoneStatus();
-            else
-                user.updateSurveyStatusToFalse();
-            userRepository.save(user);
-        }
     }
 }
