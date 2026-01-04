@@ -2,6 +2,7 @@ package kr.co.hdi.domain.response.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
@@ -13,6 +14,11 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"user_year_round_id", "industry_data_category"}
+        )
+)
 public class IndustryWeightedScore extends BaseTimeEntityWithDeletion {
 
     @Id @GeneratedValue(strategy = IDENTITY)
@@ -20,9 +26,11 @@ public class IndustryWeightedScore extends BaseTimeEntityWithDeletion {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_year_round_id")
     private UserYearRound userYearRound;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "industry_data_category")
     private IndustryDataCategory industryDataCategory;
 
     private Integer score1;   // 심미성
@@ -40,4 +48,43 @@ public class IndustryWeightedScore extends BaseTimeEntityWithDeletion {
     private Integer score7;   // 경제성
 
     private Integer score8;   // 목적성
+
+    public void updateScore(
+            Integer score1,
+            Integer score2,
+            Integer score3,
+            Integer score4,
+            Integer score5,
+            Integer score6,
+            Integer score7,
+            Integer score8) {
+        this.score1 = score1;
+        this.score2 = score2;
+        this.score3 = score3;
+        this.score4 = score4;
+        this.score5 = score5;
+        this.score6 = score6;
+        this.score7 = score7;
+        this.score8 = score8;
+    }
+
+    public static IndustryWeightedScore create(
+            UserYearRound userYearRound,
+            IndustryDataCategory category
+    ) {
+        IndustryWeightedScore v = new IndustryWeightedScore();
+        v.userYearRound = userYearRound;
+        v.industryDataCategory = category;
+
+        v.score1 = 0;
+        v.score2 = 0;
+        v.score3 = 0;
+        v.score4 = 0;
+        v.score5 = 0;
+        v.score6 = 0;
+        v.score7 = 0;
+        v.score8 = 0;
+
+        return v;
+    }
 }
