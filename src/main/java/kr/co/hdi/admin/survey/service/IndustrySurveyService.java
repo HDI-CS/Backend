@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.survey.service;
 
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
@@ -8,6 +9,7 @@ import kr.co.hdi.admin.survey.exception.SurveyException;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
+import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,11 +138,7 @@ public class IndustrySurveyService implements SurveyService {
     @Transactional
     public void updateSurveyContent(
             DomainType type,
-            Long questionId,
-            String surveyContent) {
-
-        IndustrySurvey industrySurvey = industrySurveyRepository.findById(questionId)
-                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+            List<SurveyContentResquest> requests) {
 
         CurrentSurvey startStatus = currentSurveyRepository.findByDomainType(type)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
@@ -148,8 +147,17 @@ public class IndustrySurveyService implements SurveyService {
             throw new SurveyException(SurveyErrorCode.CANNOT_UPDATE_DURING_PROGRESS);
         }
 
-        industrySurvey.updateSurvey(surveyContent);
-        industrySurveyRepository.save(industrySurvey);
+        List<IndustrySurvey> toUpdate = new ArrayList<>();
+
+        for (SurveyContentResquest req : requests) {
+            IndustrySurvey industrySurvey = industrySurveyRepository.findById(req.surveyId())
+                    .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+
+            industrySurvey.updateSurvey(req.surveyContent());
+            toUpdate.add(industrySurvey);
+        }
+
+        industrySurveyRepository.saveAll(toUpdate);
     }
 
     /*
