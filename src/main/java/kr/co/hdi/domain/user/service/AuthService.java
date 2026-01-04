@@ -29,14 +29,9 @@ public class AuthService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-//        if (!passwordEncoder.matches(password, user.getPassword())) {
-//            throw new AuthException(AuthErrorCode.INVALID_PASSWORD, "잘못된 비밀번호입니다.");
-//        }
         if (!user.getPassword().equals(password)) {
             throw new AuthException(AuthErrorCode.INVALID_PASSWORD, "잘못된 비밀번호입니다.");
         }
-
-
         return AuthResponse.from(user);
     }
 
@@ -75,9 +70,6 @@ public class AuthService {
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
-
-        // 평가 완료 확인
-        surveyService.checkSurveyDone(userId);
 
         return AuthResponse.from(user);
     }
