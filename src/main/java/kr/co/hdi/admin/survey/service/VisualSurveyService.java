@@ -8,6 +8,7 @@ import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
@@ -181,7 +182,7 @@ public class VisualSurveyService implements SurveyService {
     public void createSurveyQuestion(
             DomainType type,
             Long yearId,
-            List<SurveyQuestionRequest> request
+            List<SurveyQuestionRequest> requests
     ){
 
         Year year = yearRepository.findById(yearId)
@@ -189,12 +190,22 @@ public class VisualSurveyService implements SurveyService {
 
         visualSurveyRepository.deleteAllByYearId(yearId);
 
-        List<VisualSurvey> surveys = request.stream()
-                .map(req -> VisualSurvey.create(req,year))
+        List<VisualSurvey> surveys = requests.stream()
+                .filter(r -> r.type() != SurveyType.SAMPLE)
+                .map(r -> VisualSurvey.create(r, year))
                 .toList();
 
-        year.updateSurveyCount(request.size());
+        surveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .findFirst().ifPresent(textSurvey -> requests.stream()
+                        .filter(r -> r.type() == SurveyType.SAMPLE)
+                        .findFirst()
+                        .ifPresent(sample ->
+                                textSurvey.updateSampleText(sample.surveyContent())
+                        ));
+
         visualSurveyRepository.saveAll(surveys);
+        year.updateSurveyCount(surveys.size());
     }
 
     /*

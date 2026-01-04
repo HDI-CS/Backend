@@ -30,6 +30,8 @@ public class IndustrySurvey extends BaseTimeEntityWithDeletion {
 
     private String surveyContent;
 
+    private String sampleText;
+
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;
 
@@ -65,5 +67,9 @@ public class IndustrySurvey extends BaseTimeEntityWithDeletion {
                 .surveyType(req.type())
                 .year(year)
                 .build();
+    }
+
+    public void updateSampleText(String s) {
+        this.sampleText = s;
     }
 }

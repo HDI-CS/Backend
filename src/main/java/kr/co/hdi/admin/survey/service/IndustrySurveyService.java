@@ -185,7 +185,7 @@ public class IndustrySurveyService implements SurveyService {
     public void createSurveyQuestion(
             DomainType type,
             Long yearId,
-            List<SurveyQuestionRequest> request
+            List<SurveyQuestionRequest> requests
     ){
 
         Year year = yearRepository.findById(yearId)
@@ -193,12 +193,27 @@ public class IndustrySurveyService implements SurveyService {
 
         industrySurveyRepository.deleteAllByYearId(yearId);
 
-        List<IndustrySurvey> surveys = request.stream()
-                .map(req -> IndustrySurvey.create(req,year))
+        List<IndustrySurvey> surveys = requests.stream()
+                .filter(r -> r.type() != SurveyType.SAMPLE)
+                .map(r -> IndustrySurvey.create(r, year))
                 .toList();
 
-        year.updateSurveyCount(request.size());
+        IndustrySurvey textSurvey = surveys.stream()
+                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .findFirst()
+                .orElse(null);
+
+        if (textSurvey != null) {
+            requests.stream()
+                    .filter(r -> r.type() == SurveyType.SAMPLE)
+                    .findFirst()
+                    .ifPresent(sample ->
+                            textSurvey.updateSampleText(sample.surveyContent())
+                    );
+        }
+
         industrySurveyRepository.saveAll(surveys);
+        year.updateSurveyCount(requests.size());
     }
 
     /*
