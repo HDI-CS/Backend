@@ -24,6 +24,7 @@ import kr.co.hdi.domain.user.repository.UserRepository;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.AssessmentRoundRepository;
+import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -52,6 +53,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
+    private final UserYearRoundRepository userYearRoundRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -83,8 +85,8 @@ public class IndustryEvaluationService implements EvaluationService {
 
         List<UserEntity> users =
                 (q == null || q.isBlank())
-                        ? userRepository.findByUserTypeAndDeletedAtIsNull(userType)
-                        : userRepository.findByUserTypeAndSearch(userType, q);
+                        ? userYearRoundRepository.findUsers(userType, assessmentRound)
+                        : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
 
         List<UserDataPair> dataAssignments = industryDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
         List<IndustryWeightedScore> weightedScores = industryWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
