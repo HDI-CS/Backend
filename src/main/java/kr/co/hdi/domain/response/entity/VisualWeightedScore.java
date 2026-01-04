@@ -41,4 +41,23 @@ public class VisualWeightedScore extends BaseTimeEntityWithDeletion {
     private Integer score7;   // 경제성
 
     private Integer score8;   // 목적성
+
+    public void updateScore(
+            Integer score1,
+            Integer score2,
+            Integer score3,
+            Integer score4,
+            Integer score5,
+            Integer score6,
+            Integer score7,
+            Integer score8) {
+        this.score1 = score1;
+        this.score2 = score2;
+        this.score3 = score3;
+        this.score4 = score4;
+        this.score5 = score5;
+        this.score6 = score6;
+        this.score7 = score7;
+        this.score8 = score8;
+    }
 }

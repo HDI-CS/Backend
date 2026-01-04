@@ -8,12 +8,18 @@ import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
+import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
 import kr.co.hdi.domain.response.entity.VisualResponse;
+import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
+import kr.co.hdi.domain.response.repository.IndustryWeightedScoreRepository;
 import kr.co.hdi.domain.response.repository.VisualResponseRepository;
+import kr.co.hdi.domain.response.repository.VisualWeightedScoreRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
@@ -22,21 +28,17 @@ import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
 import kr.co.hdi.domain.year.entity.UserYearRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
-import kr.co.hdi.survey.domain.*;
+import kr.co.hdi.survey.dto.request.industry.IndustryWeightedScoreRequest;
+import kr.co.hdi.survey.dto.request.visual.VisualWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.*;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
-import kr.co.hdi.survey.dto.request.WeightedScoreRequest;
-import kr.co.hdi.survey.repository.*;
-import kr.co.hdi.domain.user.entity.UserEntity;
-import kr.co.hdi.domain.user.exception.AuthErrorCode;
-import kr.co.hdi.domain.user.exception.AuthException;
-import kr.co.hdi.domain.user.repository.UserRepository;
+import kr.co.hdi.survey.dto.response.industry.IndustryWeightedScoreResponse;
+import kr.co.hdi.survey.dto.response.visual.VisualWeightedScoreResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,9 +48,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SurveyService {
-
-    private final UserRepository userRepository;
-    private final WeightedScoreRepository weightedScoreRepository;
 
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
@@ -62,6 +61,20 @@ public class SurveyService {
     private final IndustrySurveyRepository industrySurveyRepository;
     private final IndustryResponseRepository industryResponseRepository;
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
+
+    private final VisualWeightedScoreRepository visualWeightedScoreRepository;
+    private final IndustryWeightedScoreRepository industryWeightedScoreRepository;
+
+    private static final VisualDataCategory[] VISUAL_ACTIVE_CATEGORIES = {
+            VisualDataCategory.COSMETIC,
+            VisualDataCategory.FB
+    };
+
+    private static final IndustryDataCategory[] INDUSTRY_ACTIVE_CATEGORIES = {
+            IndustryDataCategory.VACUUM_CLEANER,
+            IndustryDataCategory.AIR_PURIFIER,
+            IndustryDataCategory.HAIR_DRYER
+    };
 
     /*
     [공통] 현재 평가 정보 조회
@@ -314,74 +327,80 @@ public class SurveyService {
 //        userRepository.save(user);
 //    }
 
-    // 가중치 평가
-    @Transactional
-    public void saveWeightedScores(Long userId, List<WeightedScoreRequest> requests) {
+    /*
+    시각 디자인 가중치 평가 조회
+     */
+    // TODO: 없으면 생성하는 로직 해야함
+    public List<VisualWeightedScoreResponse> getVisualWeightedResponse(Long userId) {
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow();
 
-        List<WeightedScore> scores = new ArrayList<>();
-        for (WeightedScoreRequest request : requests) {
-
-            WeightedScore score;
-
-            if (request.id() != null) {
-                // 기존 엔티티 조회
-                score = weightedScoreRepository.findById(request.id())
-                        .orElseThrow(() -> new IllegalArgumentException("WeightedScore not found with id: " + request.id()));
-
-                // 값 갱신
-                score.updateScores(
-                        request.score1(),
-                        request.score2(),
-                        request.score3(),
-                        request.score4(),
-                        request.score5(),
-                        request.score6(),
-                        request.score7(),
-                        request.score8()
-                );
-
-            } else {
-                // 새 엔티티 생성
-                score = WeightedScore.createWeightedScore(
-                        user,
-                        request.category(),
-                        request.score1(),
-                        request.score2(),
-                        request.score3(),
-                        request.score4(),
-                        request.score5(),
-                        request.score6(),
-                        request.score7(),
-                        request.score8()
-                );
-            }
-            scores.add(score);
-        }
-        weightedScoreRepository.saveAll(scores);
+        List<VisualWeightedScore> visualWeightedScores = visualWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+        return visualWeightedScores.stream()
+                .map(VisualWeightedScoreResponse::fromEntity)
+                .toList();
     }
 
-    public List<WeightedScoreResponse> getWeightedResponse(Long userId) {
+    /*
+    산업 디자인 가중치 평가 조회
+     */
+    public List<IndustryWeightedScoreResponse> getIndustryWeightedResponse(Long userId) {
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow();
 
-        List<WeightedScore> scores = weightedScoreRepository.findByUser(user);
-        return scores.stream()
-                .map(score -> new WeightedScoreResponse(
-                        score.getId(),
-                        score.getCategory(),
-                        score.getScore1(),
-                        score.getScore2(),
-                        score.getScore3(),
-                        score.getScore4(),
-                        score.getScore5(),
-                        score.getScore6(),
-                        score.getScore7(),
-                        score.getScore8()
-                ))
+        List<IndustryWeightedScore> industryWeightedScores = industryWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+        return industryWeightedScores.stream()
+                .map(IndustryWeightedScoreResponse::fromEntity)
                 .toList();
+    }
+
+    /*
+    시각 디자인 가중치 평가 저장
+     */
+    @Transactional
+    public void saveVisualWeightedResponse(VisualWeightedScoreRequest request) {
+
+        Long id = request.id();
+        VisualWeightedScore visualWeightedScore = visualWeightedScoreRepository.findById(id)
+                .orElseThrow();
+
+        visualWeightedScore.updateScore(
+                request.score1(),
+                request.score2(),
+                request.score3(),
+                request.score4(),
+                request.score5(),
+                request.score6(),
+                request.score7(),
+                request.score8()
+        );
+        visualWeightedScoreRepository.save(visualWeightedScore);
+    }
+
+    /*
+    산업 디자인 가중치 평가 저장
+     */
+    @Transactional
+    public void saveIndustryWeightedResponse(IndustryWeightedScoreRequest request) {
+
+        Long id = request.id();
+        IndustryWeightedScore industryWeightedScore = industryWeightedScoreRepository.findById(id)
+                .orElseThrow();
+
+        industryWeightedScore.updateScore(
+                request.score1(),
+                request.score2(),
+                request.score3(),
+                request.score4(),
+                request.score5(),
+                request.score6(),
+                request.score7(),
+                request.score8()
+        );
+        industryWeightedScoreRepository.save(industryWeightedScore);
     }
 }

@@ -19,23 +19,23 @@ public class CommonSurveyController {
 
     private final SurveyService surveyService;
 
-    @Operation(summary = "가중치 평가")
-    @PatchMapping("/scores/weighted")
-    public ResponseEntity<Void> saveWeightedScores(
-            @RequestBody List<WeightedScoreRequest> requests,
-            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-    ) {
-
-        surveyService.saveWeightedScores(userId, requests);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/scores/weighted")
-    public ResponseEntity<List<WeightedScoreResponse>> getWeightesScores(
-            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-    ) {
-
-        List<WeightedScoreResponse> response = surveyService.getWeightedResponse(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+//    @Operation(summary = "가중치 평가")
+//    @PatchMapping("/scores/weighted")
+//    public ResponseEntity<Void> saveWeightedScores(
+//            @RequestBody List<WeightedScoreRequest> requests,
+//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+//    ) {
+//
+//        surveyService.saveWeightedScores(userId, requests);
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @GetMapping("/scores/weighted")
+//    public ResponseEntity<List<WeightedScoreResponse>> getWeightesScores(
+//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+//    ) {
+//
+//        List<WeightedScoreResponse> response = surveyService.getWeightedResponse(userId);
+//        return ResponseEntity.status(HttpStatus.OK).body(response);
+//    }
 }
