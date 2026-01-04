@@ -198,19 +198,15 @@ public class IndustrySurveyService implements SurveyService {
                 .map(r -> IndustrySurvey.create(r, year))
                 .toList();
 
-        IndustrySurvey textSurvey = surveys.stream()
-                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
-                .findFirst()
-                .orElse(null);
-
-        if (textSurvey != null) {
-            requests.stream()
-                    .filter(r -> r.type() == SurveyType.SAMPLE)
-                    .findFirst()
-                    .ifPresent(sample ->
-                            textSurvey.updateSampleText(sample.surveyContent())
-                    );
-        }
+        requests.stream()
+                .filter(r -> r.type() == SurveyType.SAMPLE)
+                .forEach(sample ->
+                        surveys.stream()
+                                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                                .forEach(text ->
+                                        text.updateSampleText(sample.surveyContent())
+                                )
+                );
 
         industrySurveyRepository.saveAll(surveys);
         year.updateSurveyCount(requests.size());

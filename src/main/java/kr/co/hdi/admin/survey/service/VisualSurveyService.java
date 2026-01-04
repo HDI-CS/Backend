@@ -195,17 +195,17 @@ public class VisualSurveyService implements SurveyService {
                 .map(r -> VisualSurvey.create(r, year))
                 .toList();
 
-        surveys.stream()
-                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
-                .findFirst().ifPresent(textSurvey -> requests.stream()
-                        .filter(r -> r.type() == SurveyType.SAMPLE)
-                        .findFirst()
-                        .ifPresent(sample ->
-                                textSurvey.updateSampleText(sample.surveyContent())
-                        ));
+        requests.stream()
+                .filter(r -> r.type() == SurveyType.SAMPLE)
+                .forEach(sample ->
+                        surveys.stream()
+                                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                                .forEach(text ->
+                                        text.updateSampleText(sample.surveyContent())
+                                )
+                );
 
         visualSurveyRepository.saveAll(surveys);
-        System.out.println(surveys.size());
         year.updateSurveyCount(surveys.size());
         yearRepository.save(year);
     }
