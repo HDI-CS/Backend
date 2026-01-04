@@ -1,8 +1,5 @@
 package kr.co.hdi.survey.service;
 
-import kr.co.hdi.crawl.repository.ProductImageRepository;
-import kr.co.hdi.dataset.repository.BrandDatasetAssignmentRepository;
-import kr.co.hdi.dataset.repository.ProductDatasetAssignmentRepository;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
@@ -29,11 +26,8 @@ import kr.co.hdi.survey.domain.*;
 import kr.co.hdi.survey.dto.response.*;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
 import kr.co.hdi.survey.dto.request.WeightedScoreRequest;
-import kr.co.hdi.survey.exception.SurveyErrorCode;
-import kr.co.hdi.survey.exception.SurveyException;
 import kr.co.hdi.survey.repository.*;
 import kr.co.hdi.domain.user.entity.UserEntity;
-import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.exception.AuthException;
 import kr.co.hdi.domain.user.repository.UserRepository;
