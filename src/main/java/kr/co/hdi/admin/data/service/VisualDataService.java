@@ -71,7 +71,7 @@ public class VisualDataService {
                         entry.getValue().stream()
                                 .map(v -> VisualDataResponse.from(
                                     v,
-                                    imageService.getImageUrl(v.getLogoImage())
+                                    resolveImageUrl(v)
                                 ))
                                 .toList()
                 ))
@@ -86,8 +86,15 @@ public class VisualDataService {
         VisualData visualData = visualDataRepository.findById(datasetId)
                 .orElseThrow(() -> new DataException(DataErrorCode.DATA_NOT_FOUND));
 
-        String imageUrl = imageService.getImageUrl(visualData.getLogoImage());
+        String imageUrl = resolveImageUrl(visualData);
         return VisualDataResponse.from(visualData, imageUrl);
+    }
+
+    private String resolveImageUrl(VisualData visualData) {
+        if (visualData.getOriginalLogoImage() == null) {
+            return null;
+        }
+        return imageService.getImageUrl(visualData.getLogoImage());
     }
 
     /*
