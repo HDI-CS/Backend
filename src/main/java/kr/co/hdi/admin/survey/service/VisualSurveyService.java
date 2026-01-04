@@ -205,7 +205,9 @@ public class VisualSurveyService implements SurveyService {
                         ));
 
         visualSurveyRepository.saveAll(surveys);
+        System.out.println(surveys.size());
         year.updateSurveyCount(surveys.size());
+        yearRepository.save(year);
     }
 
     /*

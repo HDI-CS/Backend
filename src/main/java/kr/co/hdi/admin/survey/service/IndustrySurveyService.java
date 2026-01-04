@@ -214,6 +214,7 @@ public class IndustrySurveyService implements SurveyService {
 
         industrySurveyRepository.saveAll(surveys);
         year.updateSurveyCount(requests.size());
+        yearRepository.save(year);
     }
 
     /*
