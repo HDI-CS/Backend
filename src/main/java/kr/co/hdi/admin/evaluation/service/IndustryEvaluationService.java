@@ -174,10 +174,14 @@ public class IndustryEvaluationService implements EvaluationService {
     private boolean isWeightedDone(IndustryWeightedScore ws) {
         if (ws == null) return false;
 
-        return Stream.of(
-                ws.getScore1(), ws.getScore2(), ws.getScore3(), ws.getScore4(),
-                ws.getScore5(), ws.getScore6(), ws.getScore7(), ws.getScore8()
-        ).noneMatch(Objects::isNull);
+        int total =
+                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+
+        return total == 100;
+    }
+
+    private int nz(Integer v) {
+        return v == null ? 0 : v;
     }
 
     /*

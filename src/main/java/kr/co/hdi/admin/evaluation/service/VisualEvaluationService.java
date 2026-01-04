@@ -11,8 +11,7 @@ import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
-import kr.co.hdi.domain.response.entity.VisualResponse;
-import kr.co.hdi.domain.response.entity.VisualWeightedScore;
+import kr.co.hdi.domain.response.entity.*;
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.repository.VisualResponseRepository;
@@ -176,10 +175,14 @@ public class VisualEvaluationService implements EvaluationService {
     private boolean isWeightedDone(VisualWeightedScore ws) {
         if (ws == null) return false;
 
-        return Stream.of(
-                ws.getScore1(), ws.getScore2(), ws.getScore3(), ws.getScore4(),
-                ws.getScore5(), ws.getScore6(), ws.getScore7(), ws.getScore8()
-        ).noneMatch(Objects::isNull);
+        int total =
+                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+
+        return total == 100;
+    }
+
+    private int nz(Integer v) {
+        return v == null ? 0 : v;
     }
 
     /*
