@@ -29,6 +29,8 @@ public class VisualSurvey extends BaseTimeEntityWithDeletion {
 
     private String surveyContent;
 
+    private String sampleText;
+
     @Enumerated(EnumType.STRING)
     private SurveyType surveyType;
 
@@ -64,5 +66,9 @@ public class VisualSurvey extends BaseTimeEntityWithDeletion {
                 .surveyType(req.type())
                 .year(year)
                 .build();
+    }
+
+    public void updateSampleText(String s) {
+        this.sampleText = s;
     }
 }

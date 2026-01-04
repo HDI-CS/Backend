@@ -7,14 +7,16 @@ public record SurveyQuestionResponse(
         Long id,
         Integer surveyNumber,
         String surveyCode,
-        String surveyContent
+        String surveyContent,
+        String sampleText
 ) {
     public static SurveyQuestionResponse from(IndustrySurvey s) {
         return new SurveyQuestionResponse(
                 s.getId(),
                 s.getSurveyNumber(),
                 s.getSurveyCode(),
-                s.getSurveyContent()
+                s.getSurveyContent(),
+                s.getSampleText()
         );
     }
 
@@ -23,7 +25,8 @@ public record SurveyQuestionResponse(
                 s.getId(),
                 s.getSurveyNumber(),
                 s.getSurveyCode(),
-                s.getSurveyContent()
+                s.getSurveyContent(),
+                s.getSampleText()
         );
     }
 }
