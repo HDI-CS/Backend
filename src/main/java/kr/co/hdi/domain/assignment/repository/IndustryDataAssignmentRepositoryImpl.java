@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static kr.co.hdi.domain.assignment.entity.QIndustryDataAssignment.industryDataAssignment;
-import static kr.co.hdi.domain.assignment.entity.QVisualDataAssignment.visualDataAssignment;
 import static kr.co.hdi.domain.data.entity.QIndustryData.industryData;
 import static kr.co.hdi.domain.user.entity.QUserEntity.userEntity;
 import static kr.co.hdi.domain.year.entity.QAssessmentRound.assessmentRound1;
@@ -125,6 +125,24 @@ public class IndustryDataAssignmentRepositoryImpl implements IndustryDataAssignm
                         userEntity.id.asc(),
                         industryData.id.asc()
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<IndustryDataAssignment> findAssignmentsByUserAndAssessmentRound(Long userId, Long assessmentRoundId) {
+
+        return queryFactory
+                .selectFrom(industryDataAssignment)
+                .join(industryDataAssignment.userYearRound, userYearRound)
+                .join(industryDataAssignment.industryData, industryData)
+                .where(
+                        userYearRound.user.id.eq(userId),
+                        userYearRound.assessmentRound.id.eq(assessmentRoundId),
+                        userYearRound.deletedAt.isNull(),
+                        industryDataAssignment.deletedAt.isNull(),
+                        industryData.deletedAt.isNull()
+                )
+                .orderBy(industryData.id.asc())
                 .fetch();
     }
 }

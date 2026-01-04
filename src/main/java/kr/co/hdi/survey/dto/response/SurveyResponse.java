@@ -1,8 +1,10 @@
 package kr.co.hdi.survey.dto.response;
 
+import java.util.List;
+
 public record SurveyResponse(
-        Integer index,
-        String survey,
-        Integer response
+        String dataCode,
+        List<NumberSurveyResponse> response,
+        List<TextSurveyResponse> textResponse
 ) {
 }

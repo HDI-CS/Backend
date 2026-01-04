@@ -1,10 +1,13 @@
 package kr.co.hdi.admin.survey.service;
 
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
 import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
@@ -17,9 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +32,7 @@ public class VisualSurveyService implements SurveyService {
     private final YearRepository yearRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final VisualSurveyRepository visualSurveyRepository;
+    private final CurrentSurveyRepository currentSurveyRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -119,7 +122,7 @@ public class VisualSurveyService implements SurveyService {
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
 
-        AssessmentRound assessmentRound = AssessmentRound.create(year);
+        AssessmentRound assessmentRound = AssessmentRound.create(year, type);
         assessmentRoundRepository.save(assessmentRound );
         return new SurveyRoundIdResponse(assessmentRound.getId());
     }
@@ -131,14 +134,26 @@ public class VisualSurveyService implements SurveyService {
     @Transactional
     public void updateSurveyContent(
             DomainType type,
-            Long questionId,
-            String surveyContent) {
+            List<SurveyContentResquest> requests) {
 
-        VisualSurvey visualSurvey = visualSurveyRepository.findById(questionId)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+        CurrentSurvey startStatus = currentSurveyRepository.findByDomainType(type)
+                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
 
-        visualSurvey.updateSurvey(surveyContent);
-        visualSurveyRepository.save(visualSurvey);
+        if (startStatus.isSurveyStatus()) {
+            throw new SurveyException(SurveyErrorCode.CANNOT_UPDATE_DURING_PROGRESS);
+        }
+
+        List<VisualSurvey> toUpdate = new ArrayList<>();
+
+        for (SurveyContentResquest req : requests) {
+            VisualSurvey visualSurvey = visualSurveyRepository.findById(req.surveyId())
+                    .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+
+            visualSurvey.updateSurvey(req.surveyContent());
+            toUpdate.add(visualSurvey);
+        }
+
+        visualSurveyRepository.saveAll(toUpdate);
     }
 
     /*

@@ -33,9 +33,10 @@ public class AssessmentRound extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private Year year;
 
-    public static AssessmentRound create(Year year) {
+    public static AssessmentRound create(Year year, DomainType type) {
         AssessmentRound assessmentRound = new AssessmentRound();
         assessmentRound.year = year;
+        assessmentRound.domainType = type;
         return assessmentRound;
     }
 

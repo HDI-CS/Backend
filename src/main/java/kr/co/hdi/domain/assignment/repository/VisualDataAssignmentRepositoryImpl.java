@@ -4,6 +4,8 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
+import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
@@ -124,6 +126,24 @@ public class VisualDataAssignmentRepositoryImpl implements  VisualDataAssignment
                         userEntity.id.asc(),
                         visualData.id.asc()
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<VisualDataAssignment> findAssignmentsByUserAndAssessmentRound(Long userId, Long assessmentRoundId) {
+
+        return queryFactory
+                .selectFrom(visualDataAssignment)
+                .join(visualDataAssignment.userYearRound, userYearRound)
+                .join(visualDataAssignment.visualData, visualData)
+                .where(
+                        userYearRound.user.id.eq(userId),
+                        userYearRound.assessmentRound.id.eq(assessmentRoundId),
+                        userYearRound.deletedAt.isNull(),
+                        visualDataAssignment.deletedAt.isNull(),
+                        visualData.deletedAt.isNull()
+                )
+                .orderBy(visualData.id.asc())
                 .fetch();
     }
 }
