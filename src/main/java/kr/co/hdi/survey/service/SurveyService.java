@@ -4,12 +4,14 @@ import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentIndustryCategory;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentIndustryCategoryRepository;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentVisualCategoryRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
-import kr.co.hdi.domain.data.enums.IndustryDataCategory;
-import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
@@ -51,6 +53,8 @@ public class SurveyService {
 
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+    private final CurrentVisualCategoryRepository currentVisualCategoryRepository;
+    private final CurrentIndustryCategoryRepository currentIndustryCategoryRepository;
 
     private final VisualDataRepository visualDataRepository;
     private final VisualSurveyRepository visualSurveyRepository;
@@ -64,17 +68,6 @@ public class SurveyService {
 
     private final VisualWeightedScoreRepository visualWeightedScoreRepository;
     private final IndustryWeightedScoreRepository industryWeightedScoreRepository;
-
-    private static final VisualDataCategory[] VISUAL_ACTIVE_CATEGORIES = {
-            VisualDataCategory.COSMETIC,
-            VisualDataCategory.FB
-    };
-
-    private static final IndustryDataCategory[] INDUSTRY_ACTIVE_CATEGORIES = {
-            IndustryDataCategory.VACUUM_CLEANER,
-            IndustryDataCategory.AIR_PURIFIER,
-            IndustryDataCategory.HAIR_DRYER
-    };
 
     /*
     [공통] 현재 평가 정보 조회
@@ -329,8 +322,9 @@ public class SurveyService {
 
     /*
     시각 디자인 가중치 평가 조회
+    - 만약 현재 차수에 응답한 가중치 평가가 없으면 생성해서 반환
      */
-    // TODO: 없으면 생성하는 로직 해야함
+    @Transactional
     public List<VisualWeightedScoreResponse> getVisualWeightedResponse(Long userId) {
 
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
@@ -338,6 +332,21 @@ public class SurveyService {
                 .orElseThrow();
 
         List<VisualWeightedScore> visualWeightedScores = visualWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+
+        // 만약 조회된 가중치 평가가 없다면 해당 차수에 처음 가중치 평가를 하는 것
+        // CurrentVisualCategory에 대해서 가중치 평가 빈 응답을 만들어서 반환
+        if (visualWeightedScores.isEmpty()) {
+
+            List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
+
+            visualWeightedScores = visualWeightedScoreRepository.saveAll(
+                    categories.stream()
+                            .map(category ->
+                                    VisualWeightedScore.create(userYearRound, category.getCategory()))
+                            .toList()
+            );
+        }
+
         return visualWeightedScores.stream()
                 .map(VisualWeightedScoreResponse::fromEntity)
                 .toList();
@@ -345,7 +354,9 @@ public class SurveyService {
 
     /*
     산업 디자인 가중치 평가 조회
+    - 만약 현재 차수에 응답한 가중치 평가가 없으면 생성해서 반환
      */
+    @Transactional
     public List<IndustryWeightedScoreResponse> getIndustryWeightedResponse(Long userId) {
 
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
@@ -353,6 +364,21 @@ public class SurveyService {
                 .orElseThrow();
 
         List<IndustryWeightedScore> industryWeightedScores = industryWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+
+        // 만약 조회된 가중치 평가가 없다면 해당 차수에 처음 가중치 평가를 하는 것
+        // CurrentIndustryCategory에 대해서 가중치 평가 빈 응답을 만들어서 반환
+        if (industryWeightedScores.isEmpty()) {
+
+            List<CurrentIndustryCategory> categories = currentIndustryCategoryRepository.findAll();
+
+            industryWeightedScores = industryWeightedScoreRepository.saveAll(
+                    categories.stream()
+                            .map(category ->
+                                    IndustryWeightedScore.create(userYearRound, category.getCategory()))
+                            .toList()
+            );
+        }
+
         return industryWeightedScores.stream()
                 .map(IndustryWeightedScoreResponse::fromEntity)
                 .toList();

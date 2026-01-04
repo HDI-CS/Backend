@@ -14,6 +14,11 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"user_year_round_id", "visual_data_category"}
+        )
+)
 public class VisualWeightedScore extends BaseTimeEntityWithDeletion {
 
     @Id @GeneratedValue(strategy = IDENTITY)
@@ -21,9 +26,11 @@ public class VisualWeightedScore extends BaseTimeEntityWithDeletion {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_year_round_id")
     private UserYearRound userYearRound;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "visual_data_category")
     private VisualDataCategory visualDataCategory;
 
     private Integer score1;   // 심미성
@@ -59,5 +66,25 @@ public class VisualWeightedScore extends BaseTimeEntityWithDeletion {
         this.score6 = score6;
         this.score7 = score7;
         this.score8 = score8;
+    }
+
+    public static VisualWeightedScore create(
+            UserYearRound userYearRound,
+            VisualDataCategory category
+    ) {
+        VisualWeightedScore v = new VisualWeightedScore();
+        v.userYearRound = userYearRound;
+        v.visualDataCategory = category;
+
+        v.score1 = 0;
+        v.score2 = 0;
+        v.score3 = 0;
+        v.score4 = 0;
+        v.score5 = 0;
+        v.score6 = 0;
+        v.score7 = 0;
+        v.score8 = 0;
+
+        return v;
     }
 }
