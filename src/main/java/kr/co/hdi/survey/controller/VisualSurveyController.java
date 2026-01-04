@@ -2,9 +2,12 @@ package kr.co.hdi.survey.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
+import kr.co.hdi.survey.dto.request.visual.VisualWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.VisualSurveyDetailResponse;
 import kr.co.hdi.survey.dto.response.SurveyDataPreviewResponse;
+import kr.co.hdi.survey.dto.response.visual.VisualWeightedScoreResponse;
 import kr.co.hdi.survey.service.SurveyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user/visual/survey")
+@Tag(name = "시각 디자인 평가 페이지", description = "시각 디자인 평가 페이지 API")
 public class VisualSurveyController {
 
     private final SurveyService surveyService;
@@ -62,4 +66,25 @@ public class VisualSurveyController {
 //        surveyService.setBrandResponseStatusDone(brandResponseId, userId);
 //        return ResponseEntity.ok().build();
 //    }
+
+    @GetMapping("/weighted-score")
+    @Operation(summary = "시각 디자인 가중치 응답 조회")
+    public ResponseEntity<List<VisualWeightedScoreResponse>> getWeightedScore(
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+
+        List<VisualWeightedScoreResponse> responses = surveyService.getVisualWeightedResponse(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
+
+    @PostMapping("/weighted-score")
+    @Operation(summary = "시각 디자인 가중치 응답 저장")
+    public ResponseEntity<Void> saveWeightedScore(
+            @RequestBody VisualWeightedScoreRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+
+        surveyService.saveVisualWeightedResponse(request);
+        return ResponseEntity.ok().build();
+    }
 }
