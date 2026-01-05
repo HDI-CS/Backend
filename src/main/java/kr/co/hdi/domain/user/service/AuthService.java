@@ -96,7 +96,8 @@ public class AuthService {
 
         if (type == DomainType.INDUSTRY) {
             List<IndustryDataAssignment> assignments =
-                    industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(currentSurvey.getId(), userId);
+                    industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(
+                            userId, currentSurvey.getAssessmentRoundId());
 
             surveyDone = assignments.stream()
                     .allMatch(a -> a.getSurveyCount() != null
@@ -106,7 +107,7 @@ public class AuthService {
         } else if (type == DomainType.VISUAL) {
             List<VisualDataAssignment> assignments =
                     visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(
-                            currentSurvey.getId(), userId);
+                            userId, currentSurvey.getAssessmentRoundId());
 
             surveyDone = assignments.stream()
                     .allMatch(a -> a.getSurveyCount() != null
