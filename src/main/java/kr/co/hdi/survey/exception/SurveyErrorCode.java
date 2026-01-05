@@ -14,7 +14,12 @@ public enum SurveyErrorCode implements ErrorCode {
     INVALID_RESPONSE_INDEX(HttpStatus.BAD_REQUEST, "잘못된 문항 번호입니다."),
     INCOMPLETE_RESPONSE(HttpStatus.BAD_REQUEST, "모든 응답이 채워지지 않았습니다."),
     PRODUCT_RESPONSE_NOT_FOUND(HttpStatus.NOT_FOUND, "상품 응답 정보를 찾을 수 없습니다."),
-    UNAUTHORIZED_ACCESS(HttpStatus.BAD_REQUEST, "권한이 없습니다.");
+    UNAUTHORIZED_ACCESS(HttpStatus.BAD_REQUEST, "권한이 없습니다."),
+    NOT_FOUND_CURRENT_SURVEY(HttpStatus.NOT_FOUND, "현재 저장된 설문 정보가 없습니다."),
+    NOT_FOUND_DATA(HttpStatus.NOT_FOUND, "데이터가 존재하지 않습니다."),
+    NOT_FOUND_USER_YEAR_ROUND(HttpStatus.NOT_FOUND, "해당 userYearRound가 없습니다."),
+    NOT_FOUND_DATA_ASSIGNMENT(HttpStatus.NOT_FOUND, "할당된 데이터가 없습니다."),
+    NOT_FOUND_WEIGHTED_SCORE(HttpStatus.NOT_FOUND, "가중치 평가 데이터가 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
