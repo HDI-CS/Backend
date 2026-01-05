@@ -1,10 +1,20 @@
 package kr.co.hdi.domain.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.co.hdi.admin.assignment.service.IndustryAssignmentService;
+import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
+import kr.co.hdi.admin.survey.exception.SurveyException;
+import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
+import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
+import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
+import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.dto.response.AuthResponse;
 import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthException;
+import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.survey.service.SurveyService;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.repository.UserRepository;
@@ -12,6 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -21,6 +34,10 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final SurveyService surveyService;
+    private final IndustryAssignmentService industryAssignmentService;
+    private final CurrentSurveyRepository currentSurveyRepository;
+    private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
+    private final VisualDataAssignmentRepository visualDataAssignmentRepository;
 
     /*
     로그인
@@ -70,7 +87,34 @@ public class AuthService {
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+        DomainType type = user.getUserType().toDomainType();
 
-        return AuthResponse.from(user);
+        CurrentSurvey currentSurvey = currentSurveyRepository.findByDomainType(type)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
+
+        Boolean surveyDone = Boolean.FALSE;
+
+        if (type == DomainType.INDUSTRY) {
+            List<IndustryDataAssignment> assignments =
+                    industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(currentSurvey.getId(), userId);
+
+            surveyDone = assignments.stream()
+                    .allMatch(a -> a.getSurveyCount() != null
+                            && a.getResponseCount() != null
+                            && a.getSurveyCount().equals(a.getResponseCount()));
+
+        } else if (type == DomainType.VISUAL) {
+            List<VisualDataAssignment> assignments =
+                    visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(
+                            currentSurvey.getId(), userId);
+
+            surveyDone = assignments.stream()
+                    .allMatch(a -> a.getSurveyCount() != null
+                            && a.getResponseCount() != null
+                            && a.getSurveyCount().equals(a.getResponseCount()));
+
+        }
+
+        return AuthResponse.from(user, surveyDone);
     }
 }
