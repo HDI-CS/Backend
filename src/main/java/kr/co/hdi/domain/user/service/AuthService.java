@@ -10,6 +10,7 @@ import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.user.entity.Role;
 import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.dto.response.AuthResponse;
 import kr.co.hdi.domain.user.entity.UserType;
@@ -94,7 +95,7 @@ public class AuthService {
 
         Boolean surveyDone = Boolean.FALSE;
 
-        if (type == DomainType.INDUSTRY) {
+        if (type == DomainType.INDUSTRY && user.getRole() == Role.USER) {
             List<IndustryDataAssignment> assignments =
                     industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(
                             userId, currentSurvey.getAssessmentRoundId());
@@ -104,7 +105,7 @@ public class AuthService {
                             && a.getResponseCount() != null
                             && a.getSurveyCount().equals(a.getResponseCount()));
 
-        } else if (type == DomainType.VISUAL) {
+        } else if (type == DomainType.VISUAL && user.getRole() == Role.USER) {
             List<VisualDataAssignment> assignments =
                     visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(
                             userId, currentSurvey.getAssessmentRoundId());
