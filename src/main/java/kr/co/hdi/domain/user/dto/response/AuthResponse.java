@@ -13,7 +13,6 @@ public record AuthResponse(
         UserType userType,
         Boolean surveyDone
 ) {
-
     public static AuthResponse from(UserEntity user
     ) {
         return new AuthResponse(
@@ -23,6 +22,18 @@ public record AuthResponse(
                 user.getRole(),
                 user.getUserType(),
                 user.getSurveyDone()
+        );
+    }
+
+    public static AuthResponse from(UserEntity user, Boolean surveyDone
+    ) {
+        return new AuthResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getRole(),
+                user.getUserType(),
+                surveyDone
         );
     }
 
