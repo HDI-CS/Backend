@@ -24,6 +24,7 @@ import kr.co.hdi.domain.user.repository.UserRepository;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.AssessmentRoundRepository;
+import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -52,6 +53,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
+    private final UserYearRoundRepository userYearRoundRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -83,8 +85,8 @@ public class IndustryEvaluationService implements EvaluationService {
 
         List<UserEntity> users =
                 (q == null || q.isBlank())
-                        ? userRepository.findByUserTypeAndDeletedAtIsNull(userType)
-                        : userRepository.findByUserTypeAndSearch(userType, q);
+                        ? userYearRoundRepository.findUsers(userType, assessmentRound)
+                        : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
 
         List<UserDataPair> dataAssignments = industryDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
         List<IndustryWeightedScore> weightedScores = industryWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
@@ -172,10 +174,14 @@ public class IndustryEvaluationService implements EvaluationService {
     private boolean isWeightedDone(IndustryWeightedScore ws) {
         if (ws == null) return false;
 
-        return Stream.of(
-                ws.getScore1(), ws.getScore2(), ws.getScore3(), ws.getScore4(),
-                ws.getScore5(), ws.getScore6(), ws.getScore7(), ws.getScore8()
-        ).noneMatch(Objects::isNull);
+        int total =
+                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+
+        return total == 100;
+    }
+
+    private int nz(Integer v) {
+        return v == null ? 0 : v;
     }
 
     /*

@@ -7,6 +7,7 @@ import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.IndustryImageType;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
@@ -71,9 +72,9 @@ public class IndustryDataService {
                         entry.getValue().stream()
                                 .map(i -> IndustryDataResponse.from(
                                         i,
-                                        imageService.getImageUrl(i.getDetailImagePath()),
-                                        imageService.getImageUrl(i.getFrontImagePath()),
-                                        imageService.getImageUrl(i.getSideImagePath())
+                                        resolveIndustryImageUrl(i, IndustryImageType.DETAIL),
+                                        resolveIndustryImageUrl(i, IndustryImageType.FRONT),
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE)
                                 ))
                                 .toList()
                 ))
@@ -90,10 +91,29 @@ public class IndustryDataService {
 
         return IndustryDataResponse.from(
                 industryData,
-                imageService.getImageUrl(industryData.getDetailImagePath()),
-                imageService.getImageUrl(industryData.getFrontImagePath()),
-                imageService.getImageUrl(industryData.getSideImagePath())
+                resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL),
+                resolveIndustryImageUrl(industryData, IndustryImageType.FRONT),
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE)
         );
+    }
+
+    private String resolveIndustryImageUrl(
+            IndustryData data,
+            IndustryImageType type
+    ) {
+        return switch (type) {
+            case DETAIL -> data.getOriginalDetailImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getDetailImagePath());
+
+            case FRONT -> data.getOriginalFrontImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getFrontImagePath());
+
+            case SIDE -> data.getOriginalSideImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getSideImagePath());
+        };
     }
 
     /*

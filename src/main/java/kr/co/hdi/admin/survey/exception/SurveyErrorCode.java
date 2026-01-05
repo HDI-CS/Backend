@@ -15,7 +15,8 @@ public enum SurveyErrorCode implements ErrorCode {
     ASSESSMENT_ROUND_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 차수입니다."),
     YEAR_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 년도입니다."),
     SURVEY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 설문 문항입니다."),
-    USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND(HttpStatus.BAD_REQUEST, "해당 차수에 참여하지 않은 사용자입니다.");
+    USER_NOT_PARTICIPATED_IN_ASSESSMENT_ROUND(HttpStatus.BAD_REQUEST, "해당 차수에 참여하지 않은 사용자입니다."),
+    CANNOT_UPDATE_DURING_PROGRESS(HttpStatus.BAD_REQUEST, "진행 중인 평가 회차는 수정할 수 없습니다." );
 
     private final HttpStatus httpStatus;
     private final String message;

@@ -42,29 +42,32 @@ public class IndustryDataAssignment extends BaseTimeEntityWithDeletion {
     }
 
     @Builder
-    private IndustryDataAssignment(UserYearRound userYearRound, IndustryData industryData) {
+    private IndustryDataAssignment(UserYearRound userYearRound, IndustryData industryData, Integer surveyCount) {
         this.userYearRound = userYearRound;
         this.industryData = industryData;
-        this.surveyCount = 0;
+        this.surveyCount = surveyCount;
         this.responseCount = 0;
     }
 
     public static IndustryDataAssignment create(
             UserYearRound userYearRound,
-            IndustryData industryData
+            IndustryData industryData,
+            Integer surveyCount
     ) {
         return IndustryDataAssignment.builder()
                 .userYearRound(userYearRound)
                 .industryData(industryData)
+                .surveyCount(surveyCount)
                 .build();
     }
 
     public static List<IndustryDataAssignment> createAll(
             UserYearRound userYearRound,
-            List<IndustryData> industryDataList
+            List<IndustryData> industryDataList,
+            Integer surveyCount
     ) {
         return industryDataList.stream()
-                .map(industryData -> create(userYearRound, industryData))
+                .map(industryData -> create(userYearRound, industryData, surveyCount))
                 .toList();
     }
 }

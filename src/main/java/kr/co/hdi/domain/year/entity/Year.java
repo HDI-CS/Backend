@@ -41,6 +41,7 @@ public class Year extends BaseTimeEntityWithDeletion {
     public Year(String year, DomainType type) {
         this.year = year;
         this.type = type;
+        this.surveyCount = 0;
     }
 
     public void updateSurveyCount(int size) {

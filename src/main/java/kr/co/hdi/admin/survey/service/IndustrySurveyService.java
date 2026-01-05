@@ -1,11 +1,15 @@
 package kr.co.hdi.admin.survey.service;
 
+import kr.co.hdi.admin.survey.dto.request.SurveyContentResquest;
 import kr.co.hdi.admin.survey.dto.request.SurveyDateRequest;
 import kr.co.hdi.admin.survey.dto.request.SurveyQuestionRequest;
 import kr.co.hdi.admin.survey.dto.response.*;
 import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
+import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
 import kr.co.hdi.domain.year.entity.AssessmentRound;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +36,7 @@ public class IndustrySurveyService implements SurveyService {
     private final YearRepository yearRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
+    private final CurrentSurveyRepository currentSurveyRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -120,8 +126,8 @@ public class IndustrySurveyService implements SurveyService {
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
 
-        AssessmentRound assessmentRound = AssessmentRound.create(year);
-        assessmentRoundRepository.save(assessmentRound );
+        AssessmentRound assessmentRound = AssessmentRound.create(year, type);
+        assessmentRoundRepository.save(assessmentRound);
         return new SurveyRoundIdResponse(assessmentRound.getId());
     }
 
@@ -132,14 +138,26 @@ public class IndustrySurveyService implements SurveyService {
     @Transactional
     public void updateSurveyContent(
             DomainType type,
-            Long questionId,
-            String surveyContent) {
+            List<SurveyContentResquest> requests) {
 
-        IndustrySurvey industrySurvey = industrySurveyRepository.findById(questionId)
-                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+        CurrentSurvey startStatus = currentSurveyRepository.findByDomainType(type)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
 
-        industrySurvey.updateSurvey(surveyContent);
-        industrySurveyRepository.save(industrySurvey);
+        if (startStatus.isSurveyStatus()) {
+            throw new SurveyException(SurveyErrorCode.CANNOT_UPDATE_DURING_PROGRESS);
+        }
+
+        List<IndustrySurvey> toUpdate = new ArrayList<>();
+
+        for (SurveyContentResquest req : requests) {
+            IndustrySurvey industrySurvey = industrySurveyRepository.findById(req.surveyId())
+                    .orElseThrow(() -> new SurveyException(SurveyErrorCode.SURVEY_NOT_FOUND));
+
+            industrySurvey.updateSurvey(req.surveyContent());
+            toUpdate.add(industrySurvey);
+        }
+
+        industrySurveyRepository.saveAll(toUpdate);
     }
 
     /*
@@ -167,7 +185,7 @@ public class IndustrySurveyService implements SurveyService {
     public void createSurveyQuestion(
             DomainType type,
             Long yearId,
-            List<SurveyQuestionRequest> request
+            List<SurveyQuestionRequest> requests
     ){
 
         Year year = yearRepository.findById(yearId)
@@ -175,12 +193,24 @@ public class IndustrySurveyService implements SurveyService {
 
         industrySurveyRepository.deleteAllByYearId(yearId);
 
-        List<IndustrySurvey> surveys = request.stream()
-                .map(req -> IndustrySurvey.create(req,year))
+        List<IndustrySurvey> surveys = requests.stream()
+                .filter(r -> r.type() != SurveyType.SAMPLE)
+                .map(r -> IndustrySurvey.create(r, year))
                 .toList();
 
-        year.updateSurveyCount(request.size());
+        requests.stream()
+                .filter(r -> r.type() == SurveyType.SAMPLE)
+                .forEach(sample ->
+                        surveys.stream()
+                                .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                                .forEach(text ->
+                                        text.updateSampleText(sample.surveyContent())
+                                )
+                );
+
         industrySurveyRepository.saveAll(surveys);
+        year.updateSurveyCount(requests.size());
+        yearRepository.save(year);
     }
 
     /*

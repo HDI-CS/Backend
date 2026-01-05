@@ -41,29 +41,32 @@ public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
     }
 
     @Builder
-    private VisualDataAssignment(UserYearRound userYearRound, VisualData visualData) {
+    private VisualDataAssignment(UserYearRound userYearRound, VisualData visualData, Integer surveyCount) {
         this.userYearRound = userYearRound;
         this.visualData = visualData;
-        this.surveyCount = 0;
+        this.surveyCount = surveyCount;
         this.responseCount = 0;
     }
 
     public static VisualDataAssignment create(
             UserYearRound userYearRound,
-            VisualData visualData
+            VisualData visualData,
+            Integer surveyCount
     ) {
         return VisualDataAssignment.builder()
                 .userYearRound(userYearRound)
                 .visualData(visualData)
+                .surveyCount(surveyCount)
                 .build();
     }
 
     public static List<VisualDataAssignment> createAll(
             UserYearRound userYearRound,
-            List<VisualData> visualDataList
+            List<VisualData> visualDataList,
+            Integer surveyCount
     ) {
         return visualDataList.stream()
-                .map(visualData -> create(userYearRound, visualData))
+                .map(visualData -> create(userYearRound, visualData, surveyCount))
                 .toList();
     }
 }
