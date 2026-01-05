@@ -139,17 +139,19 @@ public class SurveyService {
                 .filter(s -> s.getSurveyType() == SurveyType.NUMBER)
                 .map(s -> NumberSurveyResponse.of(s, responseMap.get(s.getId())))
                 .toList();
-        List<TextSurveyResponse> textResponses = visualSurveys.stream()
+
+        TextSurveyResponse textResponse = visualSurveys.stream()
                 .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .findFirst()
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
-                .toList();
+                .orElse(null);
 
         return new VisualSurveyDetailResponse(
                 VisualDatasetResponse.fromEntity(visualData),
                 new SurveyResponse(
                         visualData.getBrandCode() + "_" + visualData.getSectorCategory(),
                         numberResponses,
-                        textResponses
+                        textResponse
                 ));
     }
 
@@ -176,10 +178,11 @@ public class SurveyService {
                 .filter(s -> s.getSurveyType() == SurveyType.NUMBER)
                 .map(s -> NumberSurveyResponse.of(s, responseMap.get(s.getId())))
                 .toList();
-        List<TextSurveyResponse> textResponses = industrySurveys.stream()
+        TextSurveyResponse textResponses = industrySurveys.stream()
                 .filter(s -> s.getSurveyType() == SurveyType.TEXT)
+                .findFirst()
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
-                .toList();
+                .orElse(null);
 
         return  new IndustrySurveyDetailResponse(
                 IndustryDataSetResponse.fromEntity(industryData),
