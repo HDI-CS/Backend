@@ -15,7 +15,9 @@ import kr.co.hdi.domain.user.entity.UserEntity;
 import kr.co.hdi.domain.user.dto.response.AuthResponse;
 import kr.co.hdi.domain.user.entity.UserType;
 import kr.co.hdi.domain.user.exception.AuthException;
+import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
+import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.survey.service.SurveyService;
 import kr.co.hdi.domain.user.exception.AuthErrorCode;
 import kr.co.hdi.domain.user.repository.UserRepository;
@@ -39,6 +41,7 @@ public class AuthService {
     private final CurrentSurveyRepository currentSurveyRepository;
     private final IndustryDataAssignmentRepository industryDataAssignmentRepository;
     private final VisualDataAssignmentRepository visualDataAssignmentRepository;
+    private final YearRepository yearRepository;
 
     /*
     로그인
@@ -91,7 +94,10 @@ public class AuthService {
         DomainType type = user.getUserType().toDomainType();
 
         CurrentSurvey currentSurvey = currentSurveyRepository.findByDomainType(type)
-                .orElseThrow(() -> new SurveyException(SurveyErrorCode.INVALID_DOMAIN_TYPE));
+                .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_DOMAIN_TYPE));
+
+        Year year = yearRepository.findById(currentSurvey.getYearId())
+                .orElseThrow(() -> new AuthException(AuthErrorCode.YEAR_NOT_FOUND));
 
         Boolean surveyDone = Boolean.FALSE;
 
@@ -103,7 +109,7 @@ public class AuthService {
             surveyDone = assignments.stream()
                     .allMatch(a -> a.getSurveyCount() != null
                             && a.getResponseCount() != null
-                            && a.getSurveyCount().equals(a.getResponseCount()));
+                            && year.getSurveyCount().equals(a.getResponseCount()));
 
         } else if (type == DomainType.VISUAL && user.getRole() == Role.USER) {
             List<VisualDataAssignment> assignments =
@@ -113,7 +119,7 @@ public class AuthService {
             surveyDone = assignments.stream()
                     .allMatch(a -> a.getSurveyCount() != null
                             && a.getResponseCount() != null
-                            && a.getSurveyCount().equals(a.getResponseCount()));
+                            && year.getSurveyCount().equals(a.getResponseCount()));
 
         }
 

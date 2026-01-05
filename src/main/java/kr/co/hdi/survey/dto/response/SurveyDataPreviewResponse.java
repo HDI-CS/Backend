@@ -12,9 +12,8 @@ public record SurveyDataPreviewResponse(
         ResponseStatus responseStatus
 ) {
 
-    public static SurveyDataPreviewResponse toResponseDto(VisualDataAssignment assignment) {
+    public static SurveyDataPreviewResponse toResponseDto(VisualDataAssignment assignment, Integer surveyCount) {
 
-        Integer surveyCount = assignment.getSurveyCount();
         Integer responseCount = assignment.getResponseCount();
 
         ResponseStatus status;
@@ -34,9 +33,8 @@ public record SurveyDataPreviewResponse(
         );
     }
 
-    public static SurveyDataPreviewResponse toResponseDto(IndustryDataAssignment assignment) {
+    public static SurveyDataPreviewResponse toResponseDto(IndustryDataAssignment assignment, Integer surveyCount) {
 
-        Integer surveyCount = assignment.getSurveyCount();
         Integer responseCount = assignment.getResponseCount();
 
         ResponseStatus status;
