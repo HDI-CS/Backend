@@ -28,8 +28,10 @@ import kr.co.hdi.domain.survey.enums.SurveyType;
 import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
 import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
 import kr.co.hdi.domain.year.entity.UserYearRound;
+import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
+import kr.co.hdi.domain.year.repository.YearRepository;
 import kr.co.hdi.survey.dto.request.industry.IndustryWeightedScoreRequest;
 import kr.co.hdi.survey.dto.request.visual.VisualWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.*;
@@ -48,12 +50,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static kr.co.hdi.survey.exception.SurveyErrorCode.NOT_FOUND_YEAR;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class SurveyService {
 
+    private final YearRepository yearRepository;
     private final CurrentSurveyRepository currentSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
     private final CurrentVisualCategoryRepository currentVisualCategoryRepository;
@@ -90,13 +95,20 @@ public class SurveyService {
         // 현재 평가 정보
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
         Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
+        Long yearId = currentSurvey.getYearId();
+        Year year = yearRepository.findById(yearId)
+                .orElseThrow(() -> new SurveyException(NOT_FOUND_YEAR));
 
         // 유저에게 할당된 데이터 리스트 조회
         List<VisualDataAssignment> assignments =
                 visualDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
 
         return assignments.stream()
-                .map(SurveyDataPreviewResponse::toResponseDto)
+                .map(assignment ->
+                        SurveyDataPreviewResponse.toResponseDto(
+                                assignment,
+                                year.getSurveyCount()
+                        ))
                 .toList();
     }
 
@@ -109,13 +121,20 @@ public class SurveyService {
         // 현재 평가 정보
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
         Long assessmentRoundId = currentSurvey.getAssessmentRoundId();
+        Long yearId = currentSurvey.getYearId();
+        Year year = yearRepository.findById(yearId)
+                .orElseThrow(() -> new SurveyException(NOT_FOUND_YEAR));
 
         // 유저에게 할당된 데이터 리스트 조회
         List<IndustryDataAssignment> assignments =
                 industryDataAssignmentRepository.findAssignmentsByUserAndAssessmentRound(userId, assessmentRoundId);
 
         return assignments.stream()
-                .map(SurveyDataPreviewResponse::toResponseDto)
+                .map(assignment ->
+                        SurveyDataPreviewResponse.toResponseDto(
+                                assignment,
+                                year.getSurveyCount()
+                        ))
                 .toList();
     }
 

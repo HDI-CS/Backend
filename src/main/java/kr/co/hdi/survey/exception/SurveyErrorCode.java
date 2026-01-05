@@ -19,7 +19,8 @@ public enum SurveyErrorCode implements ErrorCode {
     NOT_FOUND_DATA(HttpStatus.NOT_FOUND, "데이터가 존재하지 않습니다."),
     NOT_FOUND_USER_YEAR_ROUND(HttpStatus.NOT_FOUND, "해당 userYearRound가 없습니다."),
     NOT_FOUND_DATA_ASSIGNMENT(HttpStatus.NOT_FOUND, "할당된 데이터가 없습니다."),
-    NOT_FOUND_WEIGHTED_SCORE(HttpStatus.NOT_FOUND, "가중치 평가 데이터가 없습니다.");
+    NOT_FOUND_WEIGHTED_SCORE(HttpStatus.NOT_FOUND, "가중치 평가 데이터가 없습니다."),
+    NOT_FOUND_YEAR(HttpStatus.NOT_FOUND, "해당 year가 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
