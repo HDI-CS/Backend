@@ -67,6 +67,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @Column(columnDefinition = "text")
     private String originalSideImagePath;
 
+    private Integer originalIdInteger;
+
     public void delete() {
         processDeletion();
     }
@@ -215,6 +217,18 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
         if (request.originalSideImagePath() != null) {
             this.originalSideImagePath = request.originalSideImagePath();
+        }
+    }
+
+    @PrePersist
+    @PreUpdate
+    private void syncOriginalIdInteger() {
+        if (this.originalId != null) {
+            try {
+                this.originalIdInteger = Integer.parseInt(this.originalId);
+            } catch (NumberFormatException e) {
+                this.originalIdInteger = null;
+            }
         }
     }
 }

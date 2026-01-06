@@ -31,6 +31,7 @@ public interface IndustryDataRepository extends JpaRepository<IndustryData, Long
     FROM IndustryData i
     WHERE i.deletedAt IS NULL
         AND i.year.id = :yearId
+    ORDER BY i.originalIdInteger ASC
     """)
     List<IndustryDataIdsResponse> findIdByYearId(@Param("yearId") Long yearId);
 
