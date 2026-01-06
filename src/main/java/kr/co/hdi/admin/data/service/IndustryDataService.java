@@ -44,7 +44,7 @@ public class IndustryDataService {
      */
     public List<YearResponse> getIndustryDataYears() {
 
-        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.INDUSTRY);
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNullOrderByCreatedAtAsc(DomainType.INDUSTRY);
 
         return years.stream()
                 .map(year -> {
