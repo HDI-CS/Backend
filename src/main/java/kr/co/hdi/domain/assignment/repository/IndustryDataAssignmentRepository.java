@@ -35,7 +35,7 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
     """)
     void deleteByUserYearRoundAndIndustryDataIds(
             @Param("userYearRound") UserYearRound userYearRound,
-            @Param("visualDataIds") Set<Long> industryDataIds
+            @Param("industryDataIds") Set<Long> industryDataIds
     );
 
     @Query("""
