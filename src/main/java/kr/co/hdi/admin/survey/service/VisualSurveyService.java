@@ -45,7 +45,7 @@ public class VisualSurveyService implements SurveyService {
      */
     @Override
     public List<SurveyResponse> getSurveys(DomainType type){
-        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(type);
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNullOrderByCreatedAtAsc(type);
 
         Map<Long, List<SurveyRoundResponse>> roundsByYearId =
                 assessmentRoundRepository.findAllWithYearByDomainType(type)

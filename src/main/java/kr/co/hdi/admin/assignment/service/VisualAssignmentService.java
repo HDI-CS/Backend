@@ -71,7 +71,7 @@ public class VisualAssignmentService implements AssignmentService {
      */
     public List<SurveyResponse> getAssignmentYearRoundList(DomainType type) {
 
-        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(type);
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNullOrderByCreatedAtAsc(type);
         List<AssessmentRound> rounds = assessmentRoundRepository.findAllWithYearByDomainType(type);
 
         Map<Long, LocalDateTime> roundUpdatedMap = getRoundUpdatedMap(rounds);
@@ -148,9 +148,10 @@ public class VisualAssignmentService implements AssignmentService {
 
         return rows.stream()
                 .collect(Collectors.groupingBy(AssignmentRow::userId))
-                .values()
+                .entrySet()
                 .stream()
-                .map(this::toAssignmentResponse)
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> toAssignmentResponse(entry.getValue()))
                 .toList();
     }
 
@@ -175,6 +176,7 @@ public class VisualAssignmentService implements AssignmentService {
                 first.userId(),
                 first.username(),
                 rows.stream()
+                        .sorted(Comparator.comparing(AssignmentRow::dataCode))
                         .map(this::toAssignmentData)
                         .toList()
         );

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -59,6 +60,7 @@ public class ExpertUserService {
                         .collect(Collectors.groupingBy(UserYearRound::getUser));
 
         return users.stream()
+                .sorted(Comparator.comparing(UserEntity::getId))
                 .map(user -> {
                     List<UserYearRound> rounds = grouped.getOrDefault(user, List.of());
                     return ExpertInfoResponse.from(user, toRoundStrings(rounds));

@@ -43,7 +43,7 @@ public class VisualDataService {
      */
     public List<YearResponse> getVisualDataYears() {
 
-        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNull(DomainType.VISUAL);
+        List<Year> years = yearRepository.findAllByTypeAndDeletedAtIsNullOrderByCreatedAtAsc(DomainType.VISUAL);
 
         return years.stream()
                 .map(year -> {

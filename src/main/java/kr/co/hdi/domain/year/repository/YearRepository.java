@@ -13,4 +13,6 @@ public interface YearRepository extends JpaRepository<Year, Long> {
     Optional<Year> findByIdAndDeletedAtIsNull(Long yearId);
 
     List<Year> findAllByTypeAndDeletedAtIsNull(DomainType type);
+
+    List<Year> findAllByTypeAndDeletedAtIsNullOrderByCreatedAtAsc(DomainType type);
 }
