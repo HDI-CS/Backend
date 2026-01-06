@@ -238,7 +238,7 @@ public class IndustryEvaluationService implements EvaluationService {
         UserType userType = type.toUserType();
         Integer surveyCount = Optional.ofNullable(assessmentRound.getYear().getSurveyCount()).orElse(0);
 
-        List<UserEntity> users = userRepository.findByUserTypeAndDeletedAtIsNull(userType);
+        List<UserEntity> users = userYearRoundRepository.findUsers(userType, assessmentRound);
         List<UserDataIdCodePair> pairs = industryDataAssignmentRepository.findDataIdCodePairsByAssessmentRoundId(assessmentRoundId);
         List<IndustrySurvey> surveys = industrySurveyRepository.findAllByYear(assessmentRound.getYear().getId());
 
