@@ -64,6 +64,7 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND u.id = :userId
         AND u.deletedAt IS NULL
+        ORDER BY vda.visualData.brandCodeInteger
     """)
     List<DataIdCodePair> findDataIdCodePairsByAssessmentRoundIdAndUserId(
             @Param("assessmentRoundId") Long assessmentRoundId,
