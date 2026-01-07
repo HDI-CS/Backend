@@ -5,6 +5,6 @@ import java.util.List;
 public record SurveyResponse(
         String dataCode,
         List<NumberSurveyResponse> response,
-        List<TextSurveyResponse> textResponse
+        TextSurveyResponse textResponse
 ) {
 }

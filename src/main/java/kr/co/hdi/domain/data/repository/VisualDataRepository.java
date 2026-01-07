@@ -28,6 +28,7 @@ public interface VisualDataRepository extends JpaRepository<VisualData, Long>, V
     FROM VisualData v
     WHERE v.deletedAt IS NULL
         AND v.year.id = :yearId
+    ORDER BY v.brandCodeInteger ASC
     """)
     List<VisualDataIdsResponse> findIdByYearId(@Param("yearId") Long yearId);
 

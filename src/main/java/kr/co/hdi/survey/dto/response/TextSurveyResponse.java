@@ -17,7 +17,7 @@ public record TextSurveyResponse(
         return new TextSurveyResponse(
                 survey.getId(),
                 survey.getSurveyContent(),
-                "",
+                survey.getSampleText(),
                 response != null ? response.getTextResponse() : null
         );
     }
@@ -27,7 +27,7 @@ public record TextSurveyResponse(
         return new TextSurveyResponse(
                 survey.getId(),
                 survey.getSurveyContent(),
-                "",
+                survey.getSampleText(),
                 response != null ? response.getTextResponse() : null
         );
     }
