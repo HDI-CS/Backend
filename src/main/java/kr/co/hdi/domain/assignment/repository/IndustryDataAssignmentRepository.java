@@ -64,6 +64,7 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND u.id = :userId
         AND ida.deletedAt IS NULL
+        ORDER BY ida.industryData.originalIdInteger
     """)
     List<DataIdCodePair> findDataIdCodePairsByAssessmentRoundIdAndUserId(
             @Param("assessmentRoundId") Long assessmentRoundId,
