@@ -90,7 +90,7 @@ public class VisualDataService {
         return VisualDataResponse.from(visualData, imageUrl);
     }
 
-    private String resolveImageUrl(VisualData visualData) {
+    public String resolveImageUrl(VisualData visualData) {
         if (visualData.getOriginalLogoImage() == null) {
             return null;
         }

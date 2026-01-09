@@ -97,7 +97,7 @@ public class IndustryDataService {
         );
     }
 
-    private String resolveIndustryImageUrl(
+    public String resolveIndustryImageUrl(
             IndustryData data,
             IndustryImageType type
     ) {
