@@ -20,4 +20,7 @@ public interface VisualWeightedScoreRepository extends JpaRepository<VisualWeigh
     List<VisualWeightedScore> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+
+    List<VisualWeightedScore> findAllByUserYearRoundId(Long userYearRoundId);
 }
