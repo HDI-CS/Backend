@@ -13,7 +13,7 @@ public record VisualDatasetResponse(
         String referenceUrl,
         String image
 ) {
-    public static VisualDatasetResponse fromEntity(VisualData data) {
+    public static VisualDatasetResponse fromEntity(VisualData data, String visualDataImage) {
         return new VisualDatasetResponse(
                 data.getBrandName(),
                 data.getBrandCode(),
@@ -22,7 +22,7 @@ public record VisualDatasetResponse(
                 data.getMainProduct(),
                 data.getTarget(),
                 data.getReferenceUrl(),
-                data.getLogoImage()
+                visualDataImage
         );
     }
 }

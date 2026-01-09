@@ -1,5 +1,7 @@
 package kr.co.hdi.survey.service;
 
+import kr.co.hdi.admin.data.service.IndustryDataService;
+import kr.co.hdi.admin.data.service.VisualDataService;
 import kr.co.hdi.domain.assignment.entity.IndustryDataAssignment;
 import kr.co.hdi.domain.assignment.entity.VisualDataAssignment;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
@@ -12,6 +14,7 @@ import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentVisualCategoryRepository;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.IndustryImageType;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
@@ -32,6 +35,7 @@ import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
 import kr.co.hdi.domain.year.repository.UserYearRoundRepository;
 import kr.co.hdi.domain.year.repository.YearRepository;
+import kr.co.hdi.global.s3.service.ImageService;
 import kr.co.hdi.survey.dto.request.industry.IndustryWeightedScoreRequest;
 import kr.co.hdi.survey.dto.request.visual.VisualWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.*;
@@ -76,6 +80,9 @@ public class SurveyService {
 
     private final VisualWeightedScoreRepository visualWeightedScoreRepository;
     private final IndustryWeightedScoreRepository industryWeightedScoreRepository;
+    private final ImageService imageService;
+    private final VisualDataService visualDataService;
+    private final IndustryDataService industryDataService;
 
     /*
     [공통] 현재 평가 정보 조회
@@ -147,6 +154,9 @@ public class SurveyService {
         VisualData visualData = visualDataRepository.findById(dataId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_DATA));
 
+        // 데이터 이미지 조회
+        String visualDataImage = visualDataService.resolveImageUrl(visualData);
+
         // 설문 문항 조회
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
         List<VisualSurvey> visualSurveys = visualSurveyRepository.findAllByYear(currentSurvey.getYearId());
@@ -169,7 +179,7 @@ public class SurveyService {
                 .orElse(null);
 
         return new VisualSurveyDetailResponse(
-                VisualDatasetResponse.fromEntity(visualData),
+                VisualDatasetResponse.fromEntity(visualData,visualDataImage),
                 new SurveyResponse(
                         visualData.getBrandCode() + "_" + visualData.getSectorCategory(),
                         numberResponses,
@@ -185,6 +195,11 @@ public class SurveyService {
         // 데이터 조회
         IndustryData industryData = industryDataRepository.findById(dataId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_DATA));
+
+        // 데이터 이미지 조회
+        String detailImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL);
+        String frontImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.FRONT);
+        String sideImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE);
 
         // 설문 문항 조회
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
@@ -207,7 +222,11 @@ public class SurveyService {
                 .orElse(null);
 
         return  new IndustrySurveyDetailResponse(
-                IndustryDataSetResponse.fromEntity(industryData),
+                IndustryDataSetResponse.fromEntity(
+                        industryData,
+                        detailImagePath,
+                        frontImagePath,
+                        sideImagePath),
                 new SurveyResponse(
                         industryData.getOriginalId() + "_" + industryData.getModelName(),
                         numberResponses,
