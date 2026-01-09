@@ -114,7 +114,8 @@ public class SurveyService {
                 .map(assignment ->
                         SurveyDataPreviewResponse.toResponseDto(
                                 assignment,
-                                year.getSurveyCount()
+                                year.getSurveyCount(),
+                                visualDataService.resolveImageUrl(assignment.getVisualData())
                         ))
                 .toList();
     }
@@ -140,7 +141,8 @@ public class SurveyService {
                 .map(assignment ->
                         SurveyDataPreviewResponse.toResponseDto(
                                 assignment,
-                                year.getSurveyCount()
+                                year.getSurveyCount(),
+                                industryDataService.resolveIndustryImageUrl(assignment.getIndustryData(), IndustryImageType.FRONT)
                         ))
                 .toList();
     }
