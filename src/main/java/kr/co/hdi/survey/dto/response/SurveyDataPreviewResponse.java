@@ -12,7 +12,7 @@ public record SurveyDataPreviewResponse(
         ResponseStatus responseStatus
 ) {
 
-    public static SurveyDataPreviewResponse toResponseDto(VisualDataAssignment assignment, Integer surveyCount) {
+    public static SurveyDataPreviewResponse toResponseDto(VisualDataAssignment assignment, Integer surveyCount, String image) {
 
         Integer responseCount = assignment.getResponseCount();
 
@@ -28,12 +28,12 @@ public record SurveyDataPreviewResponse(
         return new SurveyDataPreviewResponse(
                 assignment.getVisualData().getId(),
                 assignment.getVisualData().getBrandName(),
-                assignment.getVisualData().getLogoImage(),
+                image,
                 status
         );
     }
 
-    public static SurveyDataPreviewResponse toResponseDto(IndustryDataAssignment assignment, Integer surveyCount) {
+    public static SurveyDataPreviewResponse toResponseDto(IndustryDataAssignment assignment, Integer surveyCount, String image) {
 
         Integer responseCount = assignment.getResponseCount();
 
@@ -49,7 +49,7 @@ public record SurveyDataPreviewResponse(
         return new SurveyDataPreviewResponse(
                 assignment.getIndustryData().getId(),
                 assignment.getIndustryData().getProductName(),
-                assignment.getIndustryData().getFrontImagePath(),  // 산디 정면 이미지
+                image,  // 산디 정면 이미지
                 status
         );
     }
