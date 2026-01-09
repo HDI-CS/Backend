@@ -20,4 +20,6 @@ public interface IndustryWeightedScoreRepository extends JpaRepository<IndustryW
     List<IndustryWeightedScore> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    List<IndustryWeightedScore> findAllByUserYearRoundId(Long userYearRoundId);
 }
