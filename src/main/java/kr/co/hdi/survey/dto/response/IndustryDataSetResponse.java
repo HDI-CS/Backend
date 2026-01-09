@@ -21,7 +21,11 @@ public record IndustryDataSetResponse(
         String sideImagePath
 ) {
 
-    public static IndustryDataSetResponse fromEntity(IndustryData data) {
+    public static IndustryDataSetResponse fromEntity(
+            IndustryData data,
+            String detailImagePath,
+            String frontImagePath,
+            String sideImagePath) {
         return new IndustryDataSetResponse(
                 data.getId().toString(),
                 data.getProductName(),
@@ -35,9 +39,9 @@ public record IndustryDataSetResponse(
                 data.getRegisteredAt(),
                 data.getProductPath(),
                 data.getProductTypeName(),
-                data.getDetailImagePath(),
-                data.getFrontImagePath(),
-                data.getSideImagePath()
+                detailImagePath,
+                frontImagePath,
+                sideImagePath
         );
     }
 }
