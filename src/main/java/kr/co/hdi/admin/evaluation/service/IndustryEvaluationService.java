@@ -11,9 +11,15 @@ import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentIndustryCategory;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentIndustryCategoryRepository;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
 import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
+import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
 import kr.co.hdi.domain.response.repository.IndustryWeightedScoreRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
@@ -54,6 +60,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+    private final CurrentIndustryCategoryRepository currentIndustryCategoryRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -108,11 +115,10 @@ public class IndustryEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, IndustryWeightedScore> weightedByUserId =
+        Map<Long, List<IndustryWeightedScore>> weightedByUserId =
                 weightedScores.stream()
-                        .collect(Collectors.toMap(
-                                w -> w.getUserYearRound().getUser().getId(),
-                                w -> w
+                        .collect(Collectors.groupingBy(
+                                w -> w.getUserYearRound().getUser().getId()
                         ));
 
         return users.stream()
@@ -135,7 +141,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<IndustryResponse>> userResponses,
-            IndustryWeightedScore weightedScore,
+            List<IndustryWeightedScore> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount
     ) {
@@ -171,12 +177,34 @@ public class IndustryEvaluationService implements EvaluationService {
     /*
     가중치 평가 상태 확인 헬퍼
      */
-    private boolean isWeightedDone(IndustryWeightedScore ws) {
-        if (ws == null) return false;
+    private boolean isWeightedDone(List<IndustryWeightedScore> ws) {
+        if (ws == null || ws.isEmpty()) return false;
 
-        int total =
-                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+        List<CurrentIndustryCategory> categories = currentIndustryCategoryRepository.findAll();
 
+        boolean allCategoriesCovered = categories.stream()
+                .allMatch(category -> hasCategoryInScores(ws, category.getCategory()));
+
+        if (!allCategoriesCovered) {
+            return false;
+        }
+
+        return ws.stream().allMatch(this::isTotalScoreValid);
+    }
+
+    private boolean hasCategoryInScores(List<IndustryWeightedScore> scores, IndustryDataCategory category) {
+        return scores.stream()
+                .anyMatch(score ->
+                        score.getIndustryDataCategory() != null &&
+                                score.getIndustryDataCategory().equals(category)
+                );
+    }
+
+    private boolean isTotalScoreValid(IndustryWeightedScore vws) {
+        int total = nz(vws.getScore1()) + nz(vws.getScore2()) +
+                nz(vws.getScore3()) + nz(vws.getScore4()) +
+                nz(vws.getScore5()) + nz(vws.getScore6()) +
+                nz(vws.getScore7()) + nz(vws.getScore8());
         return total == 100;
     }
 
@@ -271,10 +299,9 @@ public class IndustryEvaluationService implements EvaluationService {
         List<IndustryWeightedScore> weightedScores =
                 industryWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
 
-        Map<Long, IndustryWeightedScore> weightedByUserId = weightedScores.stream()
-                .collect(Collectors.toMap(
-                        w -> w.getUserYearRound().getUser().getId(),
-                        w -> w
+        Map<Long, List<IndustryWeightedScore>> weightedByUserId = weightedScores.stream()
+                .collect(Collectors.groupingBy(
+                        w -> w.getUserYearRound().getUser().getId()
                 ));
 
         byte[] qualitativeXlsx = buildQualitativeAnswersXlsx(
@@ -380,7 +407,7 @@ public class IndustryEvaluationService implements EvaluationService {
 
     private byte[] buildWeightedScoresXlsx(
             List<UserEntity> users,
-            Map<Long, IndustryWeightedScore> weightedByUserId
+            Map<Long, List<IndustryWeightedScore>> weightedByUserId
     ) {
         try (Workbook wb = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -402,26 +429,43 @@ public class IndustryEvaluationService implements EvaluationService {
 
             int r = 1;
             for (UserEntity user : users) {
-                IndustryWeightedScore ws = weightedByUserId.get(user.getId());
+                List<IndustryWeightedScore> wsList = weightedByUserId.getOrDefault(user.getId(), Collections.emptyList());
 
-                Row row = sheet.createRow(r++);
-                int c = 0;
+                // 가중치 점수가 없는 경우 빈 행 하나 생성
+                if (wsList.isEmpty()) {
+                    Row row = sheet.createRow(r++);
+                    int c = 0;
+                    row.createCell(c++).setCellValue(nvl(user.getId()));
+                    row.createCell(c++).setCellValue(nvl(user.getName()));
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                } else {
+                    // 각 가중치 점수마다 행 생성
+                    for (IndustryWeightedScore ws : wsList) {
+                        Row row = sheet.createRow(r++);
+                        int c = 0;
 
-                row.createCell(c++).setCellValue(nvl(user.getId()));
-                row.createCell(c++).setCellValue(nvl(user.getName()));
+                        row.createCell(c++).setCellValue(nvl(user.getId()));
+                        row.createCell(c++).setCellValue(nvl(user.getName()));
 
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore1()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore2()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore3()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore4()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore5()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore6()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore7()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore8()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore1()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore2()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore3()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore4()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore5()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore6()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore7()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore8()));
+                    }
+                }
             }
-
-            autosize(sheet, headers.length);
-
+            autosize(sheet, 10);
             wb.write(out);
             return out.toByteArray();
         } catch (IOException e) {

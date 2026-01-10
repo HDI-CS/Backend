@@ -11,6 +11,9 @@ import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentVisualCategoryRepository;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.*;
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
@@ -55,6 +58,7 @@ public class VisualEvaluationService implements EvaluationService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final VisualSurveyRepository visualSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+    private final CurrentVisualCategoryRepository currentVisualCategoryRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -109,11 +113,10 @@ public class VisualEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, VisualWeightedScore> weightedByUserId =
+        Map<Long, List<VisualWeightedScore>> weightedByUserId =
                 weightedScores.stream()
-                        .collect(Collectors.toMap(
-                                w -> w.getUserYearRound().getUser().getId(),
-                                w -> w
+                        .collect(Collectors.groupingBy(
+                                w -> w.getUserYearRound().getUser().getId()
                         ));
 
         return users.stream()
@@ -136,7 +139,7 @@ public class VisualEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<VisualResponse>> userResponses,
-            VisualWeightedScore weightedScore,
+            List<VisualWeightedScore> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount
     ) {
@@ -172,12 +175,34 @@ public class VisualEvaluationService implements EvaluationService {
     /*
     가중치 평가 상태 확인 헬퍼
      */
-    private boolean isWeightedDone(VisualWeightedScore ws) {
-        if (ws == null) return false;
+    private boolean isWeightedDone(List<VisualWeightedScore> ws) {
+        if (ws == null || ws.isEmpty()) return false;
 
-        int total =
-                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+        List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
 
+        boolean allCategoriesCovered = categories.stream()
+                .allMatch(category -> hasCategoryInScores(ws, category.getCategory()));
+
+        if (!allCategoriesCovered) {
+            return false;
+        }
+
+        return ws.stream().allMatch(this::isTotalScoreValid);
+    }
+
+    private boolean hasCategoryInScores(List<VisualWeightedScore> scores, VisualDataCategory category) {
+        return scores.stream()
+                .anyMatch(score ->
+                        score.getVisualDataCategory() != null &&
+                                score.getVisualDataCategory().equals(category)
+                );
+    }
+
+    private boolean isTotalScoreValid(VisualWeightedScore vws) {
+        int total = nz(vws.getScore1()) + nz(vws.getScore2()) +
+                nz(vws.getScore3()) + nz(vws.getScore4()) +
+                nz(vws.getScore5()) + nz(vws.getScore6()) +
+                nz(vws.getScore7()) + nz(vws.getScore8());
         return total == 100;
     }
 
@@ -272,11 +297,10 @@ public class VisualEvaluationService implements EvaluationService {
         List<VisualWeightedScore> weightedScores =
                 visualWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
 
-        Map<Long, VisualWeightedScore> weightedByUserId = weightedScores.stream()
-                .collect(Collectors.toMap(
-                        w -> w.getUserYearRound().getUser().getId(),
-                        w -> w
-                ));
+        Map<Long, List<VisualWeightedScore>> weightedByUserId = weightedScores.stream()
+                .collect(Collectors.groupingBy(
+                        w -> w.getUserYearRound().getUser().getId())
+                );
 
         byte[] qualitativeXlsx = buildQualitativeAnswersXlsx(
                 users,
@@ -381,7 +405,7 @@ public class VisualEvaluationService implements EvaluationService {
 
     private byte[] buildWeightedScoresXlsx(
             List<UserEntity> users,
-            Map<Long, VisualWeightedScore> weightedByUserId
+            Map<Long, List<VisualWeightedScore>> weightedByUserId
     ) {
         try (Workbook wb = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -403,26 +427,43 @@ public class VisualEvaluationService implements EvaluationService {
 
             int r = 1;
             for (UserEntity user : users) {
-                VisualWeightedScore ws = weightedByUserId.get(user.getId());
+                List<VisualWeightedScore> wsList = weightedByUserId.getOrDefault(user.getId(), Collections.emptyList());
 
-                Row row = sheet.createRow(r++);
-                int c = 0;
+                // 가중치 점수가 없는 경우 빈 행 하나 생성
+                if (wsList.isEmpty()) {
+                    Row row = sheet.createRow(r++);
+                    int c = 0;
+                    row.createCell(c++).setCellValue(nvl(user.getId()));
+                    row.createCell(c++).setCellValue(nvl(user.getName()));
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                    row.createCell(c++).setCellValue("");
+                } else {
+                    // 각 가중치 점수마다 행 생성
+                    for (VisualWeightedScore ws : wsList) {
+                        Row row = sheet.createRow(r++);
+                        int c = 0;
 
-                row.createCell(c++).setCellValue(nvl(user.getId()));
-                row.createCell(c++).setCellValue(nvl(user.getName()));
+                        row.createCell(c++).setCellValue(nvl(user.getId()));
+                        row.createCell(c++).setCellValue(nvl(user.getName()));
 
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore1()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore2()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore3()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore4()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore5()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore6()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore7()));
-                row.createCell(c++).setCellValue(ws == null ? "" : nvl(ws.getScore8()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore1()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore2()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore3()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore4()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore5()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore6()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore7()));
+                        row.createCell(c++).setCellValue(nvl(ws.getScore8()));
+                    }
+                }
             }
-
-            autosize(sheet, headers.length);
-
+            autosize(sheet, 10);
             wb.write(out);
             return out.toByteArray();
         } catch (IOException e) {
