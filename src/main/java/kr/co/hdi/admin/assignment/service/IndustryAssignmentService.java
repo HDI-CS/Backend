@@ -264,9 +264,21 @@ public class IndustryAssignmentService implements AssignmentService {
         AssessmentRound assessmentRound = getAssessmentRound(assessmentRoundId);
         List<IndustryData> industryDataList = getIndustryData(request.datasetsIds());
 
-        UserYearRound userYearRound = createUserYearRound(user, assessmentRound);
+        UserYearRound userYearRound =
+                getOrCreateUserYearRound(user, assessmentRound);
 
         createIndustryDataAssignments(userYearRound, industryDataList, assessmentRound.getYear());
+    }
+
+    private UserYearRound getOrCreateUserYearRound(
+            UserEntity user,
+            AssessmentRound assessmentRound
+    ) {
+        return userYearRoundRepository
+                .findByUserAndAssessmentRound(user, assessmentRound)
+                .orElseGet(() -> userYearRoundRepository.save(
+                        new UserYearRound(user, assessmentRound)
+                ));
     }
 
     private UserEntity getUser(Long userId) {

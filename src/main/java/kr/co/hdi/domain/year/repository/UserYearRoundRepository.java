@@ -65,4 +65,9 @@ public interface UserYearRoundRepository extends JpaRepository<UserYearRound, Lo
             @Param("assessmentRound") AssessmentRound assessmentRound,
             @Param("q") String q
     );
+
+    Optional<UserYearRound> findByUserAndAssessmentRound(
+            UserEntity user,
+            AssessmentRound assessmentRound
+    );
 }
