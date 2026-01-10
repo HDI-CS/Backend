@@ -11,6 +11,9 @@ import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentVisualCategoryRepository;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.*;
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
@@ -55,6 +58,7 @@ public class VisualEvaluationService implements EvaluationService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final VisualSurveyRepository visualSurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+    private final CurrentVisualCategoryRepository currentVisualCategoryRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -109,11 +113,10 @@ public class VisualEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, VisualWeightedScore> weightedByUserId =
+        Map<Long, List<VisualWeightedScore>> weightedByUserId =
                 weightedScores.stream()
-                        .collect(Collectors.toMap(
-                                w -> w.getUserYearRound().getUser().getId(),
-                                w -> w
+                        .collect(Collectors.groupingBy(
+                                w -> w.getUserYearRound().getUser().getId()
                         ));
 
         return users.stream()
@@ -136,7 +139,7 @@ public class VisualEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<VisualResponse>> userResponses,
-            VisualWeightedScore weightedScore,
+            List<VisualWeightedScore> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount
     ) {
@@ -172,12 +175,34 @@ public class VisualEvaluationService implements EvaluationService {
     /*
     가중치 평가 상태 확인 헬퍼
      */
-    private boolean isWeightedDone(VisualWeightedScore ws) {
-        if (ws == null) return false;
+    private boolean isWeightedDone(List<VisualWeightedScore> ws) {
+        if (ws == null || ws.isEmpty()) return false;
 
-        int total =
-                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+        List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
 
+        boolean allCategoriesCovered = categories.stream()
+                .allMatch(category -> hasCategoryInScores(ws, category.getCategory()));
+
+        if (!allCategoriesCovered) {
+            return false;
+        }
+
+        return ws.stream().allMatch(this::isTotalScoreValid);
+    }
+
+    private boolean hasCategoryInScores(List<VisualWeightedScore> scores, VisualDataCategory category) {
+        return scores.stream()
+                .anyMatch(score ->
+                        score.getVisualDataCategory() != null &&
+                                score.getVisualDataCategory().equals(category)
+                );
+    }
+
+    private boolean isTotalScoreValid(VisualWeightedScore vws) {
+        int total = nz(vws.getScore1()) + nz(vws.getScore2()) +
+                nz(vws.getScore3()) + nz(vws.getScore4()) +
+                nz(vws.getScore5()) + nz(vws.getScore6()) +
+                nz(vws.getScore7()) + nz(vws.getScore8());
         return total == 100;
     }
 

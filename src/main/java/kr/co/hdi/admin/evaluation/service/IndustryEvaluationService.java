@@ -11,9 +11,15 @@ import kr.co.hdi.domain.assignment.query.DataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataIdCodePair;
 import kr.co.hdi.domain.assignment.query.UserDataPair;
 import kr.co.hdi.domain.assignment.repository.IndustryDataAssignmentRepository;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentIndustryCategory;
+import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
+import kr.co.hdi.domain.currentSurvey.repository.CurrentIndustryCategoryRepository;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.IndustryResponse;
 import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
+import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
 import kr.co.hdi.domain.response.repository.IndustryWeightedScoreRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
@@ -54,6 +60,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
     private final UserYearRoundRepository userYearRoundRepository;
+    private final CurrentIndustryCategoryRepository currentIndustryCategoryRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -108,11 +115,10 @@ public class IndustryEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, IndustryWeightedScore> weightedByUserId =
+        Map<Long, List<IndustryWeightedScore>> weightedByUserId =
                 weightedScores.stream()
-                        .collect(Collectors.toMap(
-                                w -> w.getUserYearRound().getUser().getId(),
-                                w -> w
+                        .collect(Collectors.groupingBy(
+                                w -> w.getUserYearRound().getUser().getId()
                         ));
 
         return users.stream()
@@ -135,7 +141,7 @@ public class IndustryEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<IndustryResponse>> userResponses,
-            IndustryWeightedScore weightedScore,
+            List<IndustryWeightedScore> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount
     ) {
@@ -171,12 +177,34 @@ public class IndustryEvaluationService implements EvaluationService {
     /*
     가중치 평가 상태 확인 헬퍼
      */
-    private boolean isWeightedDone(IndustryWeightedScore ws) {
-        if (ws == null) return false;
+    private boolean isWeightedDone(List<IndustryWeightedScore> ws) {
+        if (ws == null || ws.isEmpty()) return false;
 
-        int total =
-                nz(ws.getScore1()) + nz(ws.getScore2()) + nz(ws.getScore3()) + nz(ws.getScore4()) + nz(ws.getScore5()) + nz(ws.getScore6()) + nz(ws.getScore7()) + nz(ws.getScore8());
+        List<CurrentIndustryCategory> categories = currentIndustryCategoryRepository.findAll();
 
+        boolean allCategoriesCovered = categories.stream()
+                .allMatch(category -> hasCategoryInScores(ws, category.getCategory()));
+
+        if (!allCategoriesCovered) {
+            return false;
+        }
+
+        return ws.stream().allMatch(this::isTotalScoreValid);
+    }
+
+    private boolean hasCategoryInScores(List<IndustryWeightedScore> scores, IndustryDataCategory category) {
+        return scores.stream()
+                .anyMatch(score ->
+                        score.getIndustryDataCategory() != null &&
+                                score.getIndustryDataCategory().equals(category)
+                );
+    }
+
+    private boolean isTotalScoreValid(IndustryWeightedScore vws) {
+        int total = nz(vws.getScore1()) + nz(vws.getScore2()) +
+                nz(vws.getScore3()) + nz(vws.getScore4()) +
+                nz(vws.getScore5()) + nz(vws.getScore6()) +
+                nz(vws.getScore7()) + nz(vws.getScore8());
         return total == 100;
     }
 
