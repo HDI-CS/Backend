@@ -19,7 +19,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_userYearRound_visualData",
-                columnNames = {"user_year_round_id", "visual_data_id"}
+                columnNames = {"user_year_round_user_year_round_id", "visual_data_visual_data_id"}
         )
 )
 public class VisualDataAssignment extends BaseTimeEntityWithDeletion {
