@@ -17,6 +17,12 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Getter
 @NoArgsConstructor(access = PROTECTED)
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_userYearRound_industryData",
+                columnNames = {"user_year_round_id", "industry_data_id"}
+        )
+)
 public class IndustryDataAssignment extends BaseTimeEntityWithDeletion {
 
     @Id
