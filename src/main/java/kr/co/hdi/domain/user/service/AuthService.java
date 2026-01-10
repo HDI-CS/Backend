@@ -85,6 +85,16 @@ public class AuthService {
     }
 
     /*
+    어드민 정보 조회
+     */
+    public AuthResponse getAdminInfo(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND));
+
+        return AuthResponse.from(user, false);
+    }
+
+    /*
     특정 회원의 정보 조회
      */
     public AuthResponse getAuthInfo(Long userId) {
