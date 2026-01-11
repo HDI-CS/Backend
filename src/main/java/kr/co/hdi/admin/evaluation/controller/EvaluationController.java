@@ -61,10 +61,10 @@ public class EvaluationController {
         EvaluationService evaluationService = resolver.resolve(type);
         byte[] bytes = evaluationService.exportEvaluationExcelsZip(type, assessmentRoundId);
         ByteArrayResource resource = new ByteArrayResource(bytes);
-        String filename = type + "_evaluation_responses_" + assessmentRoundId + ".zip";
+        String filename = type + "_evaluation_responses_" + assessmentRoundId + ".xlsx";
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.attachment()
                                 .filename(filename, StandardCharsets.UTF_8)
