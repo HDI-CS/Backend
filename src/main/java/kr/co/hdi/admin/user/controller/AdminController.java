@@ -28,7 +28,7 @@ public class AdminController {
             return ResponseEntity.status(401).build();
         }
 
-        AuthResponse response = authService.getAuthInfo(userId);
+        AuthResponse response = authService.getAdminInfo(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

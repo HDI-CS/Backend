@@ -265,9 +265,21 @@ public class VisualAssignmentService implements AssignmentService {
         AssessmentRound assessmentRound = getAssessmentRound(assessmentRoundId);
         List<VisualData> visualDataList = getVisualData(request.datasetsIds());
 
-        UserYearRound userYearRound = createUserYearRound(user, assessmentRound);
+        UserYearRound userYearRound =
+                getOrCreateUserYearRound(user, assessmentRound);
 
         createVisualDataAssignments(userYearRound, visualDataList, assessmentRound.getYear());
+    }
+
+    private UserYearRound getOrCreateUserYearRound(
+            UserEntity user,
+            AssessmentRound assessmentRound
+    ) {
+        return userYearRoundRepository
+                .findByUserAndAssessmentRound(user, assessmentRound)
+                .orElseGet(() -> userYearRoundRepository.save(
+                        new UserYearRound(user, assessmentRound)
+                ));
     }
 
     private UserEntity getUser(Long userId) {

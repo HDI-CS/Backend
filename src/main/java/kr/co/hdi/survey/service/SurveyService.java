@@ -114,7 +114,8 @@ public class SurveyService {
                 .map(assignment ->
                         SurveyDataPreviewResponse.toResponseDto(
                                 assignment,
-                                year.getSurveyCount()
+                                year.getSurveyCount(),
+                                visualDataService.resolveImageUrl(assignment.getVisualData())
                         ))
                 .toList();
     }
@@ -140,7 +141,8 @@ public class SurveyService {
                 .map(assignment ->
                         SurveyDataPreviewResponse.toResponseDto(
                                 assignment,
-                                year.getSurveyCount()
+                                year.getSurveyCount(),
+                                industryDataService.resolveIndustryImageUrl(assignment.getIndustryData(), IndustryImageType.FRONT)
                         ))
                 .toList();
     }
@@ -326,7 +328,7 @@ public class SurveyService {
         UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
 
-        List<VisualWeightedScore> visualWeightedScores = visualWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+        List<VisualWeightedScore> visualWeightedScores = visualWeightedScoreRepository.findAllByUserYearRoundId(userYearRound.getId());
 
         // 만약 조회된 가중치 평가가 없다면 해당 차수에 처음 가중치 평가를 하는 것
         // CurrentVisualCategory에 대해서 가중치 평가 빈 응답을 만들어서 반환
@@ -358,7 +360,7 @@ public class SurveyService {
         UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
 
-        List<IndustryWeightedScore> industryWeightedScores = industryWeightedScoreRepository.findAllByUserYearRound(userYearRound.getId());
+        List<IndustryWeightedScore> industryWeightedScores = industryWeightedScoreRepository.findAllByUserYearRoundId(userYearRound.getId());
 
         // 만약 조회된 가중치 평가가 없다면 해당 차수에 처음 가중치 평가를 하는 것
         // CurrentIndustryCategory에 대해서 가중치 평가 빈 응답을 만들어서 반환

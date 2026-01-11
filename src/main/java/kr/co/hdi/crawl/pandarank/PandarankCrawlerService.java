@@ -100,12 +100,12 @@ public class PandarankCrawlerService extends AbstractBaseCrawler {
         // 아이디
         WebElement idInput = wait.until(driver -> driver.findElement(By.id("id")));
         idInput.clear();
-        idInput.sendKeys("seoji0538");
+        idInput.sendKeys("");
 
         // 비밀번호
         WebElement pwInput = wait.until(driver -> driver.findElement(By.id("pw")));
         pwInput.clear();
-        pwInput.sendKeys("test password");
+        pwInput.sendKeys("");
 
         WebElement loginBtn = wait.until(driver -> driver.findElement(By.id("log.login")));
         loginBtn.click();
