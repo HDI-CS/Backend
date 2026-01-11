@@ -5,13 +5,16 @@ import kr.co.hdi.admin.evaluation.dto.response.EvaluationAnswerByMemberResponse;
 import kr.co.hdi.admin.evaluation.dto.response.EvaluationStatusByMemberResponse;
 import kr.co.hdi.admin.evaluation.service.EvaluationService;
 import kr.co.hdi.admin.evaluation.service.EvaluationServiceResolver;
+import kr.co.hdi.admin.evaluation.service.VisualEvaluationUploadService;
 import kr.co.hdi.domain.year.enums.DomainType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 @Tag(name = "평가 응답 ", description = "평가 응답 관리 API")
 public class EvaluationController {
     private final EvaluationServiceResolver resolver;
+    private final VisualEvaluationUploadService visualEvaluationUploadService;
 
     @GetMapping("/assessment/{assessmentRoundId}/search")
     @Operation(summary = "평가 응답 전체 조회")
@@ -68,5 +72,16 @@ public class EvaluationController {
                                 .toString())
                 .contentLength(bytes.length)
                 .body(resource);
+    }
+
+    @PostMapping("/assessment/{assessmentRoundId}/datasets/upload")
+    @Operation(summary = "평가 응답 데이터셋 DB 업로드")
+    public ResponseEntity<?> exportEvaluationData(
+            @PathVariable("type") DomainType type,
+            @RequestParam("path") String path,
+            @PathVariable("assessmentRoundId") Long assessmentRoundId
+    ) throws IOException {
+        visualEvaluationUploadService.importVisualEvaluations(path, assessmentRoundId);
+        return ResponseEntity.ok().build();
     }
 }
