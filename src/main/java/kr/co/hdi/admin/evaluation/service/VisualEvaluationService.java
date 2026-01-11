@@ -14,12 +14,11 @@ import kr.co.hdi.domain.assignment.repository.VisualDataAssignmentRepository;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentVisualCategory;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentVisualCategoryRepository;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
-import kr.co.hdi.domain.response.entity.*;
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
+import kr.co.hdi.domain.response.query.UserResponsePair;
 import kr.co.hdi.domain.response.repository.VisualResponseRepository;
 import kr.co.hdi.domain.response.repository.VisualWeightedScoreRepository;
-import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
 import kr.co.hdi.domain.user.entity.UserEntity;
@@ -39,7 +38,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -92,10 +90,10 @@ public class VisualEvaluationService implements EvaluationService {
                 (q == null || q.isBlank())
                         ? userYearRoundRepository.findUsers(userType, assessmentRound)
                         : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
-
+        List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
         List<UserDataPair> dataAssignments = visualDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
         List<VisualWeightedScore> weightedScores = visualWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
-        List<VisualResponse> qualitativeResponses = visualResponseRepository.findAllByUserYearRound(assessmentRoundId);
+        List<UserResponsePair> qualitativeResponses = visualResponseRepository.findPairsByUserYearRound(assessmentRoundId);
 
         // 전문가-할당데이터 그룹핑 (모든 데이터)
         Map<Long, List<Long>> dataIdsByUserId =
@@ -105,11 +103,11 @@ public class VisualEvaluationService implements EvaluationService {
                 ));
 
         // 전문가-할당데이터-정량평가응답 그룹핑 (응답한 데이터)
-        Map<Long, Map<Long, List<VisualResponse>>> responsesByUser =
+        Map<Long, Map<Long, List<UserResponsePair>>> responsesByUser =
                 qualitativeResponses.stream()
                         .collect(groupingBy(
-                                r -> r.getUserYearRound().getUser().getId(),
-                                groupingBy(r -> r.getVisualData().getId())
+                                UserResponsePair::userId,
+                                Collectors.groupingBy(UserResponsePair::dataId)
                         ));
 
         // 전문가-가중치평가응답
@@ -125,7 +123,8 @@ public class VisualEvaluationService implements EvaluationService {
                         responsesByUser.getOrDefault(user.getId(), Map.of()),
                         weightedByUserId.get(user.getId()),
                         dataIdsByUserId.getOrDefault(user.getId(), List.of()),
-                        surveyCount
+                        surveyCount,
+                        categories
                 ))
                 .toList();
     }
@@ -138,22 +137,24 @@ public class VisualEvaluationService implements EvaluationService {
      */
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
-            Map<Long, List<VisualResponse>> userResponses,
+            Map<Long, List<UserResponsePair>> userResponses,
             List<VisualWeightedScore> weightedScore,
             List<Long> userDataIds,
-            Integer surveyCount
+            Integer surveyCount,
+            List<CurrentVisualCategory> categories
+
     ) {
         // 데이터 id 오름차순으로 완료/미완료 상태를 담는 list
         List<EvaluationStatusResponse> statuses = userDataIds.stream()
                 .sorted()
                 .map(dataId -> {
-                    List<VisualResponse> list = userResponses.get(dataId);
+                    List<UserResponsePair> list = userResponses.get(dataId);
                     boolean isDone = isQualitativeDone(list, surveyCount);
                     return EvaluationStatusResponse.of(EvaluationType.QUALITATIVE, isDone);
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        statuses.add(EvaluationStatusResponse.of(EvaluationType.WEIGHTED, isWeightedDone(weightedScore)));
+        statuses.add(EvaluationStatusResponse.of(EvaluationType.WEIGHTED, isWeightedDone(weightedScore, categories)));
 
         return EvaluationStatusByMemberResponse.of(user, statuses);
     }
@@ -161,24 +162,24 @@ public class VisualEvaluationService implements EvaluationService {
     /*
     정성 평가 상태 확인 헬퍼
      */
-    private boolean isQualitativeDone(List<VisualResponse> list, Integer surveyCount) {
+    private boolean isQualitativeDone(List<UserResponsePair> list, Integer surveyCount) {
         if (list == null || list.size() != surveyCount) {
             return false;
         }
 
         return list.stream().allMatch(r ->
-                r.getNumberResponse() != null ||
-                        (r.getTextResponse() != null && !r.getTextResponse().isBlank())
+                r.numberResponse() != null ||
+                        (r.textResponse() != null && !r.textResponse().isBlank())
         );
     }
 
     /*
     가중치 평가 상태 확인 헬퍼
      */
-    private boolean isWeightedDone(List<VisualWeightedScore> ws) {
+    private boolean isWeightedDone(
+            List<VisualWeightedScore> ws,
+            List<CurrentVisualCategory> categories) {
         if (ws == null || ws.isEmpty()) return false;
-
-        List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
 
         boolean allCategoriesCovered = categories.stream()
                 .allMatch(category -> hasCategoryInScores(ws, category.getCategory()));

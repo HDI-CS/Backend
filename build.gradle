@@ -69,6 +69,7 @@ dependencies {
 	// File
 	implementation 'org.apache.poi:poi-ooxml:5.2.3'
 	implementation 'com.opencsv:opencsv:5.8'
+    implementation 'org.apache.commons:commons-csv:1.10.0'
 
 	 // Jsoup
 	implementation 'org.jsoup:jsoup:1.18.1'
