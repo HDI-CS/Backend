@@ -17,6 +17,8 @@ import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.query.UserResponsePair;
+import kr.co.hdi.domain.response.query.UserSurveyResponsePair;
+import kr.co.hdi.domain.response.query.UserWeightedScorePair;
 import kr.co.hdi.domain.response.repository.VisualResponseRepository;
 import kr.co.hdi.domain.response.repository.VisualWeightedScoreRepository;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
@@ -37,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -92,7 +95,7 @@ public class VisualEvaluationService implements EvaluationService {
                         : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
         List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
         List<UserDataPair> dataAssignments = visualDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
-        List<VisualWeightedScore> weightedScores = visualWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
+        List<UserWeightedScorePair> weightedScores = visualWeightedScoreRepository.findParisByUserYearRound(assessmentRoundId);
         List<UserResponsePair> qualitativeResponses = visualResponseRepository.findPairsByUserYearRound(assessmentRoundId);
 
         // 전문가-할당데이터 그룹핑 (모든 데이터)
@@ -111,10 +114,10 @@ public class VisualEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, List<VisualWeightedScore>> weightedByUserId =
+        Map<Long, List<UserWeightedScorePair>> weightedByUserId =
                 weightedScores.stream()
                         .collect(Collectors.groupingBy(
-                                w -> w.getUserYearRound().getUser().getId()
+                                UserWeightedScorePair::userId
                         ));
 
         return users.stream()
@@ -138,7 +141,7 @@ public class VisualEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<UserResponsePair>> userResponses,
-            List<VisualWeightedScore> weightedScore,
+            List<UserWeightedScorePair> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount,
             List<CurrentVisualCategory> categories
@@ -177,7 +180,7 @@ public class VisualEvaluationService implements EvaluationService {
     가중치 평가 상태 확인 헬퍼
      */
     private boolean isWeightedDone(
-            List<VisualWeightedScore> ws,
+            List<UserWeightedScorePair> ws,
             List<CurrentVisualCategory> categories) {
         if (ws == null || ws.isEmpty()) return false;
 
@@ -191,19 +194,19 @@ public class VisualEvaluationService implements EvaluationService {
         return ws.stream().allMatch(this::isTotalScoreValid);
     }
 
-    private boolean hasCategoryInScores(List<VisualWeightedScore> scores, VisualDataCategory category) {
+    private boolean hasCategoryInScores(List<UserWeightedScorePair> scores, VisualDataCategory category) {
         return scores.stream()
                 .anyMatch(score ->
-                        score.getVisualDataCategory() != null &&
-                                score.getVisualDataCategory().equals(category)
+                        score.visualDataCategory() != null &&
+                                score.visualDataCategory().equals(category)
                 );
     }
 
-    private boolean isTotalScoreValid(VisualWeightedScore vws) {
-        int total = nz(vws.getScore1()) + nz(vws.getScore2()) +
-                nz(vws.getScore3()) + nz(vws.getScore4()) +
-                nz(vws.getScore5()) + nz(vws.getScore6()) +
-                nz(vws.getScore7()) + nz(vws.getScore8());
+    private boolean isTotalScoreValid(UserWeightedScorePair vws) {
+        int total = nz(vws.score1()) + nz(vws.score2()) +
+                nz(vws.score3()) + nz(vws.score4()) +
+                nz(vws.score5()) + nz(vws.score6()) +
+                nz(vws.score7()) + nz(vws.score8());
         return total == 100;
     }
 
@@ -278,19 +281,17 @@ public class VisualEvaluationService implements EvaluationService {
                         VisualSurvey::getSurveyContent
                 ));
 
-        List<VisualResponse> responses = visualResponseRepository.findAllByUserYearRound(assessmentRoundId);
+        List<UserSurveyResponsePair> responses = visualResponseRepository.findAllByUserYearRound(assessmentRoundId);
 
-        Map<Long, Map<Long, Map<Integer, VisualResponse>>> responseIndex =
+        Map<Long, Map<Long, Map<Integer, UserSurveyResponsePair>>> responseIndex =
                 responses.stream()
-                        .filter(r -> r.getVisualData() != null)
-                        .filter(r -> r.getVisualSurvey() != null)
                         .collect(Collectors.groupingBy(
-                                r -> r.getUserYearRound().getUser().getId(),
+                                UserSurveyResponsePair::userId,
                                 Collectors.groupingBy(
-                                        r -> r.getVisualData().getId(),
+                                        UserSurveyResponsePair::dataId,
                                         Collectors.toMap(
-                                                r -> r.getVisualSurvey().getSurveyNumber(),
-                                                r -> r
+                                                UserSurveyResponsePair::surveyNumber,
+                                                Function.identity()
                                         )
                                 )
                         ));
@@ -303,173 +304,158 @@ public class VisualEvaluationService implements EvaluationService {
                         w -> w.getUserYearRound().getUser().getId())
                 );
 
-        byte[] qualitativeXlsx = buildQualitativeAnswersXlsx(
-                users,
-                pairsByUserId,
-                responseIndex,
-                surveyCount,
-                surveyContentByNo
-        );
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
-        byte[] weightedXlsx = buildWeightedScoresXlsx(
-                users,
-                weightedByUserId
-        );
+            buildQualitativeAnswersXlsx(
+                    wb,
+                    users,
+                    pairsByUserId,
+                    responseIndex,
+                    surveyCount,
+                    surveyContentByNo
+            );
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ZipOutputStream zos = new ZipOutputStream(baos)) {
+            buildWeightedScoresXlsx(
+                    wb,
+                    users,
+                    weightedByUserId
+            );
 
-            zos.putNextEntry(new ZipEntry("visual_qualitative_answers.xlsx"));
-            zos.write(qualitativeXlsx);
-            zos.closeEntry();
+            wb.write(out);
+            return out.toByteArray();
 
-            zos.putNextEntry(new ZipEntry("visual_weighted_scores.xlsx"));
-            zos.write(weightedXlsx);
-            zos.closeEntry();
-
-            zos.finish();
-            return baos.toByteArray();
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to export evaluation excels zip", e);
+            throw new IllegalStateException("Failed to export evaluation excel", e);
         }
     }
 
-    private byte[] buildQualitativeAnswersXlsx(
+    private void buildQualitativeAnswersXlsx(
+            Workbook wb,
             List<UserEntity> users,
             Map<Long, List<UserDataIdCodePair>> pairsByUserId,
-            Map<Long, Map<Long, Map<Integer, VisualResponse>>> responseIndex,
+            Map<Long, Map<Long, Map<Integer, UserSurveyResponsePair>>> responseIndex,
             int surveyCount,
             Map<Integer, String> surveyContentByNo
     ) {
-        try (Workbook wb = new XSSFWorkbook();
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        Sheet sheet = wb.createSheet("qualitative_answers");
+        CellStyle headerStyle = createHeaderStyle(wb);
 
-            Sheet sheet = wb.createSheet("qualitative_answers");
-            CellStyle headerStyle = createHeaderStyle(wb);
+        Row header = sheet.createRow(0);
+        int col = 0;
 
-            Row header = sheet.createRow(0);
-            int col = 0;
+        header.createCell(col).setCellValue("memberId");
+        header.getCell(col++).setCellStyle(headerStyle);
 
-            header.createCell(col).setCellValue("memberId");
+        header.createCell(col).setCellValue("memberName");
+        header.getCell(col++).setCellStyle(headerStyle);
+
+        header.createCell(col).setCellValue("dataId");
+        header.getCell(col++).setCellStyle(headerStyle);
+
+        header.createCell(col).setCellValue("dataCode");
+        header.getCell(col++).setCellStyle(headerStyle);
+
+        for (int qNo = 1; qNo <= surveyCount; qNo++) {
+            String content = Optional.ofNullable(surveyContentByNo.get(qNo)).orElse("");
+            String headerText = "Q" + qNo + (content.isBlank() ? "" : ": " + content);
+
+            header.createCell(col).setCellValue(headerText);
             header.getCell(col++).setCellStyle(headerStyle);
+        }
 
-            header.createCell(col).setCellValue("memberName");
-            header.getCell(col++).setCellStyle(headerStyle);
+        int r = 1;
 
-            header.createCell(col).setCellValue("dataId");
-            header.getCell(col++).setCellStyle(headerStyle);
+        for (UserEntity user : users) {
+            List<UserDataIdCodePair> pairs = pairsByUserId.getOrDefault(user.getId(), List.of());
 
-            header.createCell(col).setCellValue("dataCode");
-            header.getCell(col++).setCellStyle(headerStyle);
+            for (UserDataIdCodePair pair : pairs) {
+                Row row = sheet.createRow(r++);
+                int c = 0;
 
-            for (int qNo = 1; qNo <= surveyCount; qNo++) {
-                String content = Optional.ofNullable(surveyContentByNo.get(qNo)).orElse("");
-                String headerText = "Q" + qNo + (content.isBlank() ? "" : ": " + content);
+                row.createCell(c++).setCellValue(nvl(user.getId()));
+                row.createCell(c++).setCellValue(nvl(user.getName()));
+                row.createCell(c++).setCellValue(nvl(pair.dataId()));
+                row.createCell(c++).setCellValue(nvl(pair.dataCode()));
 
-                header.createCell(col).setCellValue(headerText);
-                header.getCell(col++).setCellStyle(headerStyle);
-            }
+                Map<Integer, UserSurveyResponsePair> bySurveyNo =
+                        responseIndex.getOrDefault(user.getId(), Map.of())
+                                .getOrDefault(pair.dataId(), Map.of());
 
-            int r = 1;
-
-            for (UserEntity user : users) {
-                List<UserDataIdCodePair> pairs = pairsByUserId.getOrDefault(user.getId(), List.of());
-
-                for (UserDataIdCodePair pair : pairs) {
-                    Row row = sheet.createRow(r++);
-                    int c = 0;
-
-                    row.createCell(c++).setCellValue(nvl(user.getId()));
-                    row.createCell(c++).setCellValue(nvl(user.getName()));
-                    row.createCell(c++).setCellValue(nvl(pair.dataId()));
-                    row.createCell(c++).setCellValue(nvl(pair.dataCode()));
-
-                    Map<Integer, VisualResponse> bySurveyNo =
-                            responseIndex.getOrDefault(user.getId(), Map.of())
-                                    .getOrDefault(pair.dataId(), Map.of());
-
-                    for (int qNo = 1; qNo <= surveyCount; qNo++) {
-                        VisualResponse resp = bySurveyNo.get(qNo);
-                        row.createCell(c++).setCellValue(formatAnswer(resp));
-                    }
+                for (int qNo = 1; qNo <= surveyCount; qNo++) {
+                    UserSurveyResponsePair resp = bySurveyNo.get(qNo);
+                    row.createCell(c++).setCellValue(formatAnswer(resp));
                 }
             }
-
-            autosize(sheet, 4 + surveyCount);
-
-            wb.write(out);
-            return out.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to build qualitative answers excel", e);
         }
+
+        setQualitativeColumnWidths(sheet, surveyCount);
     }
 
-    private byte[] buildWeightedScoresXlsx(
+    private void buildWeightedScoresXlsx(
+            Workbook wb,
             List<UserEntity> users,
             Map<Long, List<VisualWeightedScore>> weightedByUserId
     ) {
-        try (Workbook wb = new XSSFWorkbook();
-             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        Sheet sheet = wb.createSheet("weighted_scores");
+        CellStyle headerStyle = createHeaderStyle(wb);
 
-            Sheet sheet = wb.createSheet("weighted_scores");
-            CellStyle headerStyle = createHeaderStyle(wb);
+        String[] headers = {
+                "memberId", "memberName",
+                "심미성", "조형성", "독창성", "사용성", "기능성", "윤리성", "경제성", "목적성",
+                "category"
+        };
 
-            String[] headers = {
-                    "memberId", "memberName",
-                    "score1","score2","score3","score4","score5","score6","score7","score8"
-            };
+        Row header = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = header.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
 
-            Row header = sheet.createRow(0);
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = header.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-            }
+        int r = 1;
+        for (UserEntity user : users) {
+            List<VisualWeightedScore> wsList = weightedByUserId.getOrDefault(user.getId(), Collections.emptyList());
 
-            int r = 1;
-            for (UserEntity user : users) {
-                List<VisualWeightedScore> wsList = weightedByUserId.getOrDefault(user.getId(), Collections.emptyList());
-
-                // 가중치 점수가 없는 경우 빈 행 하나 생성
-                if (wsList.isEmpty()) {
+            if (wsList.isEmpty()) {
+                Row row = sheet.createRow(r++);
+                int c = 0;
+                row.createCell(c++).setCellValue(nvl(user.getId()));
+                row.createCell(c++).setCellValue(nvl(user.getName()));
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+                row.createCell(c++).setCellValue("");
+            } else {
+                for (VisualWeightedScore ws : wsList) {
                     Row row = sheet.createRow(r++);
                     int c = 0;
+
                     row.createCell(c++).setCellValue(nvl(user.getId()));
                     row.createCell(c++).setCellValue(nvl(user.getName()));
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                    row.createCell(c++).setCellValue("");
-                } else {
-                    // 각 가중치 점수마다 행 생성
-                    for (VisualWeightedScore ws : wsList) {
-                        Row row = sheet.createRow(r++);
-                        int c = 0;
 
-                        row.createCell(c++).setCellValue(nvl(user.getId()));
-                        row.createCell(c++).setCellValue(nvl(user.getName()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore1()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore2()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore3()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore4()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore5()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore6()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore7()));
+                    row.createCell(c++).setCellValue(nvl(ws.getScore8()));
 
-                        row.createCell(c++).setCellValue(nvl(ws.getScore1()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore2()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore3()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore4()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore5()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore6()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore7()));
-                        row.createCell(c++).setCellValue(nvl(ws.getScore8()));
-                    }
+                    row.createCell(c++).setCellValue(
+                            ws.getVisualDataCategory() == null ? "" : ws.getVisualDataCategory().name()
+                    );
                 }
             }
-            autosize(sheet, 10);
-            wb.write(out);
-            return out.toByteArray();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to build weighted scores excel", e);
         }
+
+        setWeightedColumnWidths(sheet);
     }
 
     private CellStyle createHeaderStyle(Workbook wb) {
@@ -482,9 +468,26 @@ public class VisualEvaluationService implements EvaluationService {
         return headerStyle;
     }
 
-    private void autosize(Sheet sheet, int colCount) {
-        for (int c = 0; c < colCount; c++) {
-            sheet.autoSizeColumn(c);
+    private void setWeightedColumnWidths(Sheet sheet) {
+        sheet.setColumnWidth(0, 12 * 256); // memberId
+        sheet.setColumnWidth(1, 18 * 256); // memberName
+
+        for (int i = 2; i <= 9; i++) {
+            sheet.setColumnWidth(i, 10 * 256);
+        }
+        sheet.setColumnWidth(10, 14 * 256); // category
+    }
+
+    private void setQualitativeColumnWidths(Sheet sheet, int surveyCount) {
+        sheet.setColumnWidth(0, 12 * 256); // memberId
+        sheet.setColumnWidth(1, 18 * 256); // memberName
+        sheet.setColumnWidth(2, 10 * 256); // dataId
+        sheet.setColumnWidth(3, 14 * 256); // dataCode
+
+        // Q1~Qn (answers) columns
+        for (int i = 0; i < surveyCount; i++) {
+            int col = 4 + i;
+            sheet.setColumnWidth(col, 40 * 256);
         }
     }
 
@@ -492,10 +495,10 @@ public class VisualEvaluationService implements EvaluationService {
         return v == null ? "" : String.valueOf(v);
     }
 
-    private String formatAnswer(VisualResponse r) {
+    private String formatAnswer(UserSurveyResponsePair r) {
         if (r == null) return "";
-        String num = (r.getNumberResponse() == null) ? "" : String.valueOf(r.getNumberResponse());
-        String txt = (r.getTextResponse() == null || r.getTextResponse().isBlank()) ? "" : r.getTextResponse();
+        String num = (r.numberResponse() == null) ? "" : String.valueOf(r.numberResponse());
+        String txt = (r.textResponse() == null || r.textResponse().isBlank()) ? "" : r.textResponse();
 
         if (!num.isBlank() && !txt.isBlank()) return num + "/" + txt;
         if (!num.isBlank()) return num;

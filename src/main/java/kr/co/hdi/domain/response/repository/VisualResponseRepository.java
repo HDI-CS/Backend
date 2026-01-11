@@ -2,6 +2,7 @@ package kr.co.hdi.domain.response.repository;
 
 import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.query.UserResponsePair;
+import kr.co.hdi.domain.response.query.UserSurveyResponsePair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,16 +43,19 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
     );
 
     @Query("""
-    select vr
+    select new kr.co.hdi.domain.response.query.UserSurveyResponsePair(
+            vr.userYearRound.user.id,
+            vr.visualData.id,
+            vr.visualSurvey.surveyNumber,
+            vr.numberResponse,
+            vr.textResponse
+       )
     from VisualResponse vr
-    JOIN FETCH vr.userYearRound uyr
-    JOIN FETCH uyr.user u
-    JOIN FETCH vr.visualData
-    WHERE uyr.assessmentRound.id = :assessmentRoundId
+    WHERE vr.userYearRound.assessmentRound.id = :assessmentRoundId
     AND vr.deletedAt IS NULL
     order by vr.id asc
     """)
-    List<VisualResponse> findAllByUserYearRound(
+    List<UserSurveyResponsePair> findAllByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
 
