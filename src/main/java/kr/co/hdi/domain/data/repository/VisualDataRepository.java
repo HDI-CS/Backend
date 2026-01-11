@@ -43,4 +43,6 @@ public interface VisualDataRepository extends JpaRepository<VisualData, Long>, V
           AND v.deletedAt IS NULL
     """)
     Optional<LocalDateTime> findLastModifiedAtByYearId(Long yearId);
+
+    Optional<VisualData> findByBrandCode(String dataCode);
 }
