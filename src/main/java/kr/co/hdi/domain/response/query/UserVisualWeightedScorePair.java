@@ -2,7 +2,7 @@ package kr.co.hdi.domain.response.query;
 
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 
-public record UserWeightedScorePair(
+public record UserVisualWeightedScorePair(
         Long userId,
         String userName,
         Integer score1,
