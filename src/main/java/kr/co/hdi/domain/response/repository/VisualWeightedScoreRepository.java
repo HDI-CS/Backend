@@ -1,7 +1,7 @@
 package kr.co.hdi.domain.response.repository;
 
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
-import kr.co.hdi.domain.response.query.UserWeightedScorePair;
+import kr.co.hdi.domain.response.query.UserVisualWeightedScorePair;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +23,7 @@ public interface VisualWeightedScoreRepository extends JpaRepository<VisualWeigh
     );
 
     @Query("""
-    select new kr.co.hdi.domain.response.query.UserWeightedScorePair(
+    select new kr.co.hdi.domain.response.query.UserVisualWeightedScorePair(
             vws.userYearRound.user.id,
             vws.userYearRound.user.name,
             vws.score1,
@@ -41,7 +41,7 @@ public interface VisualWeightedScoreRepository extends JpaRepository<VisualWeigh
     AND vws.deletedAt IS NULL
     order by vws.id asc
     """)
-    List<UserWeightedScorePair> findParisByUserYearRound(
+    List<UserVisualWeightedScorePair> findPairsByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
 

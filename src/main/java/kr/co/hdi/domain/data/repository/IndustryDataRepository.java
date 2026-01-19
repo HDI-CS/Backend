@@ -46,4 +46,6 @@ public interface IndustryDataRepository extends JpaRepository<IndustryData, Long
           AND i.deletedAt IS NULL
     """)
     Optional<LocalDateTime> findLastModifiedAtByYearId(Long yearId);
+
+    Optional<IndustryData> findByOriginalId(String dataCode);
 }
