@@ -98,7 +98,7 @@ public class IndustryEvaluationService implements EvaluationService {
 
         List<CurrentIndustryCategory> categories = currentIndustryCategoryRepository.findAll();
         List<UserDataPair> dataAssignments = industryDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
-        List<UserIndustryWeightedScorePair> weightedScores = industryWeightedScoreRepository.findParisByUserYearRound(assessmentRoundId);
+        List<UserIndustryWeightedScorePair> weightedScores = industryWeightedScoreRepository.findPairsByUserYearRound(assessmentRoundId);
         List<UserResponsePair> qualitativeResponses = industryResponseRepository.findPairsByUserYearRound(assessmentRoundId);
 
         // 전문가-할당데이터 그룹핑 (모든 데이터)

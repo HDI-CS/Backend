@@ -41,7 +41,7 @@ public interface VisualWeightedScoreRepository extends JpaRepository<VisualWeigh
     AND vws.deletedAt IS NULL
     order by vws.id asc
     """)
-    List<UserVisualWeightedScorePair> findParisByUserYearRound(
+    List<UserVisualWeightedScorePair> findPairsByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
 

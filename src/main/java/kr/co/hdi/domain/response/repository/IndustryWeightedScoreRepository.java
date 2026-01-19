@@ -44,7 +44,7 @@ public interface IndustryWeightedScoreRepository extends JpaRepository<IndustryW
     AND iws.deletedAt IS NULL
     order by iws.id asc
     """)
-    List<UserIndustryWeightedScorePair> findParisByUserYearRound(
+    List<UserIndustryWeightedScorePair> findPairsByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
 }

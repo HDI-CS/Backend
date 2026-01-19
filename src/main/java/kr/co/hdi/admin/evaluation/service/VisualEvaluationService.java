@@ -95,7 +95,7 @@ public class VisualEvaluationService implements EvaluationService {
                         : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
         List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
         List<UserDataPair> dataAssignments = visualDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
-        List<UserVisualWeightedScorePair> weightedScores = visualWeightedScoreRepository.findParisByUserYearRound(assessmentRoundId);
+        List<UserVisualWeightedScorePair> weightedScores = visualWeightedScoreRepository.findPairsByUserYearRound(assessmentRoundId);
         List<UserResponsePair> qualitativeResponses = visualResponseRepository.findPairsByUserYearRound(assessmentRoundId);
 
         // 전문가-할당데이터 그룹핑 (모든 데이터)
