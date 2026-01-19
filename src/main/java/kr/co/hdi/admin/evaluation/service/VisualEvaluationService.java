@@ -18,7 +18,7 @@ import kr.co.hdi.domain.response.entity.VisualResponse;
 import kr.co.hdi.domain.response.entity.VisualWeightedScore;
 import kr.co.hdi.domain.response.query.UserResponsePair;
 import kr.co.hdi.domain.response.query.UserSurveyResponsePair;
-import kr.co.hdi.domain.response.query.UserWeightedScorePair;
+import kr.co.hdi.domain.response.query.UserVisualWeightedScorePair;
 import kr.co.hdi.domain.response.repository.VisualResponseRepository;
 import kr.co.hdi.domain.response.repository.VisualWeightedScoreRepository;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
@@ -95,7 +95,7 @@ public class VisualEvaluationService implements EvaluationService {
                         : userYearRoundRepository.findUsersBySearch(userType, assessmentRound, q);
         List<CurrentVisualCategory> categories = currentVisualCategoryRepository.findAll();
         List<UserDataPair> dataAssignments = visualDataAssignmentRepository.findUserDataPairsByAssessmentRoundId(assessmentRoundId);
-        List<UserWeightedScorePair> weightedScores = visualWeightedScoreRepository.findParisByUserYearRound(assessmentRoundId);
+        List<UserVisualWeightedScorePair> weightedScores = visualWeightedScoreRepository.findParisByUserYearRound(assessmentRoundId);
         List<UserResponsePair> qualitativeResponses = visualResponseRepository.findPairsByUserYearRound(assessmentRoundId);
 
         // 전문가-할당데이터 그룹핑 (모든 데이터)
@@ -114,10 +114,10 @@ public class VisualEvaluationService implements EvaluationService {
                         ));
 
         // 전문가-가중치평가응답
-        Map<Long, List<UserWeightedScorePair>> weightedByUserId =
+        Map<Long, List<UserVisualWeightedScorePair>> weightedByUserId =
                 weightedScores.stream()
                         .collect(Collectors.groupingBy(
-                                UserWeightedScorePair::userId
+                                UserVisualWeightedScorePair::userId
                         ));
 
         return users.stream()
@@ -141,7 +141,7 @@ public class VisualEvaluationService implements EvaluationService {
     private EvaluationStatusByMemberResponse createEvaluationStatus(
             UserEntity user,
             Map<Long, List<UserResponsePair>> userResponses,
-            List<UserWeightedScorePair> weightedScore,
+            List<UserVisualWeightedScorePair> weightedScore,
             List<Long> userDataIds,
             Integer surveyCount,
             List<CurrentVisualCategory> categories
@@ -180,7 +180,7 @@ public class VisualEvaluationService implements EvaluationService {
     가중치 평가 상태 확인 헬퍼
      */
     private boolean isWeightedDone(
-            List<UserWeightedScorePair> ws,
+            List<UserVisualWeightedScorePair> ws,
             List<CurrentVisualCategory> categories) {
         if (ws == null || ws.isEmpty()) return false;
 
@@ -194,7 +194,7 @@ public class VisualEvaluationService implements EvaluationService {
         return ws.stream().allMatch(this::isTotalScoreValid);
     }
 
-    private boolean hasCategoryInScores(List<UserWeightedScorePair> scores, VisualDataCategory category) {
+    private boolean hasCategoryInScores(List<UserVisualWeightedScorePair> scores, VisualDataCategory category) {
         return scores.stream()
                 .anyMatch(score ->
                         score.visualDataCategory() != null &&
@@ -202,7 +202,7 @@ public class VisualEvaluationService implements EvaluationService {
                 );
     }
 
-    private boolean isTotalScoreValid(UserWeightedScorePair vws) {
+    private boolean isTotalScoreValid(UserVisualWeightedScorePair vws) {
         int total = nz(vws.score1()) + nz(vws.score2()) +
                 nz(vws.score3()) + nz(vws.score4()) +
                 nz(vws.score5()) + nz(vws.score6()) +
