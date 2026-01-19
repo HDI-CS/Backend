@@ -8,8 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface IndustrySurveyRepository extends JpaRepository<IndustrySurvey, Long> {
@@ -33,4 +35,6 @@ public interface IndustrySurveyRepository extends JpaRepository<IndustrySurvey, 
     void deleteAllByYearId(Long yearId);
 
     Optional<IndustrySurvey> findBySurveyCode(String surveyCode);
+
+    List<IndustrySurvey> findAllBySurveyCodeIn(Collection<String> surveyCodes);
 }
