@@ -83,7 +83,7 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
         JOIN vda.userYearRound uyr
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND vda.deletedAt IS NULL
-        order by vda.visualData.brandCode
+        order by vda.visualData.brandCodeInteger
     """)
     List<UserDataIdCodePair> findDataIdCodePairsByAssessmentRoundId(
             @Param("assessmentRoundId") Long assessmentRoundId
