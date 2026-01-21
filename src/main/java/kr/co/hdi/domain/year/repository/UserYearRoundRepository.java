@@ -33,6 +33,7 @@ public interface UserYearRoundRepository extends JpaRepository<UserYearRound, Lo
     JOIN FETCH ar.year
     WHERE u.userType = :type
       AND u.deletedAt IS NULL
+     ORDER BY ar.createdAt ASC
 """)
     List<UserYearRound> findAllByUserType(UserType type);
 
