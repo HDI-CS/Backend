@@ -74,7 +74,13 @@ public class IndustryDataService {
                                         i,
                                         resolveIndustryImageUrl(i, IndustryImageType.DETAIL),
                                         resolveIndustryImageUrl(i, IndustryImageType.FRONT),
-                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE)
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE),
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE2),
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE3)
+
+
+
+
                                 ))
                                 .toList()
                 ))
@@ -93,7 +99,9 @@ public class IndustryDataService {
                 industryData,
                 resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL),
                 resolveIndustryImageUrl(industryData, IndustryImageType.FRONT),
-                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE)
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE),
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE2),
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE3)
         );
     }
 
@@ -113,6 +121,13 @@ public class IndustryDataService {
             case SIDE -> data.getOriginalSideImagePath() == null
                     ? null
                     : imageService.getImageUrl(data.getSideImagePath());
+
+            case SIDE2 -> data.getOriginalSide2ImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getSide2ImagePath());
+            case SIDE3 -> data.getOriginalSide3ImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getSide3ImagePath());
         };
     }
 
@@ -138,7 +153,9 @@ public class IndustryDataService {
         return new IndustryImageUploadUrlResponse(
                 imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
                 imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
-                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide2ImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide3ImagePath())
         );
     }
 
@@ -163,7 +180,9 @@ public class IndustryDataService {
         return new IndustryImageUploadUrlResponse(
                 imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
                 imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
-                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide2ImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide3ImagePath())
         );
     }
 
