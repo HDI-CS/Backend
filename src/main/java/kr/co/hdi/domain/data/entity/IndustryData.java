@@ -196,6 +196,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
         copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
         copy.sideImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.side2ImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.side3ImagePath = "2026/ID/" + UUID.randomUUID();
 
         return copy;
     }
