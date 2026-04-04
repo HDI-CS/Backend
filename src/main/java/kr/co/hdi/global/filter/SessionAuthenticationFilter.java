@@ -35,6 +35,7 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(userId, null, List.of(new SimpleGrantedAuthority(role.getValue())));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
+
         }
 
         filterChain.doFilter(request, response);

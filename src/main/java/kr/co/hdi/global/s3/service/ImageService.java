@@ -47,6 +47,7 @@ public class ImageService {
     이미지 조회 url
      */
     public String getImageUrl(String key) {
+
         return String.format(
                 "https://%s.s3.%s.amazonaws.com/%s",
                 bucket,

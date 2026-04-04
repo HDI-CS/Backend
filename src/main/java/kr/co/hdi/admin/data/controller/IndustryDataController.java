@@ -100,6 +100,7 @@ public class IndustryDataController {
             @PathVariable Long yearId,
             @RequestBody IndustryDataRequest request) {
 
+
         IndustryImageUploadUrlResponse response = industryDataService.createIndustryData(yearId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
