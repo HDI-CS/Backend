@@ -168,15 +168,11 @@ public class IndustryDataService {
      */
     @Transactional
     public IndustryImageUploadUrlResponse createIndustryData(Long yearId, IndustryDataRequest requst) {
-        System.out.println("🔥 [SERVICE] createIndustryData 시작");
-        System.out.println("🔥 [SERVICE] yearId = " + yearId);
-        System.out.println("🔥 [SERVICE] request category = " + requst.industryDataCategory());
+
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
-        System.out.println("🔥 [SERVICE] DB year = " + year.getYear());
 
         validateCategory(year.getYear(), requst.industryDataCategory());
-        System.out.println("🔥 [SERVICE] validateCategory 통과");
         IndustryData industryData = IndustryData.create(year, requst);
         industryDataRepository.save(industryData);
 
