@@ -18,6 +18,8 @@ public record IndustryDataRequest(
         String originalDetailImagePath,
         String originalFrontImagePath,
         String originalSideImagePath,
+        String originalSide2ImagePath,
+        String originalSide3ImagePath,
         IndustryDataCategory industryDataCategory
 ) {
 }

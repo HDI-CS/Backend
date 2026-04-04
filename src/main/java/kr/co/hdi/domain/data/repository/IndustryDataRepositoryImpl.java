@@ -39,7 +39,9 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
                                 industryData.productTypeName,
                                 industryData.detailImagePath,
                                 industryData.frontImagePath,
-                                industryData.sideImagePath
+                                industryData.sideImagePath,
+                                industryData.side2ImagePath,
+                                industryData.side3ImagePath
                         )
                 )
                 .from(industryData)

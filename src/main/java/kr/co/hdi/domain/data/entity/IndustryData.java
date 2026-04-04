@@ -3,12 +3,16 @@ package kr.co.hdi.domain.data.entity;
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
+import kr.co.hdi.admin.data.exception.DataErrorCode;
+import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -67,7 +71,20 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @Column(columnDefinition = "text")
     private String originalSideImagePath;
 
+    @Column(columnDefinition = "text")
+    private String side2ImagePath;     // 측면 2 이미지 S3 Key
+
+    @Column(columnDefinition = "text")
+    private String originalSide2ImagePath;
+
+    @Column(columnDefinition = "text")
+    private String side3ImagePath;     // 측면 3 이미지 S3 Key
+
+    @Column(columnDefinition = "text")
+    private String originalSide3ImagePath;
+
     private Integer originalIdInteger;
+
 
     public void delete() {
         processDeletion();
@@ -87,6 +104,14 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
             deleteSideImage();
             return this.sideImagePath;
         }
+        if (imageStatus.equals("SIDE2")) {
+            deleteSide2Image();
+            return this.side2ImagePath;
+        }
+        if (imageStatus.equals("SIDE3")) {
+            deleteSide3Image();
+            return this.side3ImagePath;
+        }
         return null;
     }
 
@@ -100,6 +125,14 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
 
     private void deleteSideImage() {
         this.originalSideImagePath = null;
+    }
+
+    private void deleteSide2Image() {
+        this.originalSide2ImagePath = null;
+    }
+
+    private void deleteSide3Image() {
+        this.originalSide3ImagePath = null;
     }
 
     /*
@@ -132,6 +165,12 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.originalSideImagePath = request.originalSideImagePath();
         i.sideImagePath = "2026/ID/" + UUID.randomUUID();
 
+        i.originalSide2ImagePath = request.originalSide2ImagePath();
+        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
+
+        i.originalSide3ImagePath = request.originalSide3ImagePath();
+        i.side3ImagePath = "2026/ID/" + UUID.randomUUID();
+
         return i;
     }
 
@@ -161,6 +200,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
         copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
         copy.sideImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.side2ImagePath = "2026/ID/" + UUID.randomUUID();
+        copy.side3ImagePath = "2026/ID/" + UUID.randomUUID();
 
         return copy;
     }
@@ -218,7 +259,15 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         if (request.originalSideImagePath() != null) {
             this.originalSideImagePath = request.originalSideImagePath();
         }
+        if (request.originalSide2ImagePath() != null) {
+            this.originalSide2ImagePath = request.originalSide2ImagePath();
+        }
+        if (request.originalSide3ImagePath() != null) {
+            this.originalSide3ImagePath = request.originalSide3ImagePath();
+        }
     }
+
+
 
     @PrePersist
     @PreUpdate

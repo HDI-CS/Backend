@@ -40,6 +40,30 @@ public class IndustryDataService {
     private final IndustryDataRepository industryDataRepository;
 
     /*
+     IndustryData category 년도별 매핑
+     */
+    private final Map<String, List<IndustryDataCategory>> categoryPolicy = Map.of(
+            "2025", List.of(
+                    IndustryDataCategory.VACUUM_CLEANER,
+                    IndustryDataCategory.AIR_PURIFIER,
+                    IndustryDataCategory.HAIR_DRYER
+            ),
+            "2026", List.of(
+                    IndustryDataCategory.HEADPHONE,
+                    IndustryDataCategory.EARPHONE
+            )
+    );
+
+    private void validateCategory(String year, IndustryDataCategory category) {
+        List<IndustryDataCategory> allowed = categoryPolicy.getOrDefault(year, List.of());
+
+        if (!allowed.contains(category)) {
+            throw new DataException(DataErrorCode.INVALID_CATEGORY);
+        }
+    }
+
+
+    /*
     산업 디자인 연도 목록 조회
      */
     public List<YearResponse> getIndustryDataYears() {
@@ -74,7 +98,13 @@ public class IndustryDataService {
                                         i,
                                         resolveIndustryImageUrl(i, IndustryImageType.DETAIL),
                                         resolveIndustryImageUrl(i, IndustryImageType.FRONT),
-                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE)
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE),
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE2),
+                                        resolveIndustryImageUrl(i, IndustryImageType.SIDE3)
+
+
+
+
                                 ))
                                 .toList()
                 ))
@@ -93,7 +123,9 @@ public class IndustryDataService {
                 industryData,
                 resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL),
                 resolveIndustryImageUrl(industryData, IndustryImageType.FRONT),
-                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE)
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE),
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE2),
+                resolveIndustryImageUrl(industryData, IndustryImageType.SIDE3)
         );
     }
 
@@ -113,6 +145,13 @@ public class IndustryDataService {
             case SIDE -> data.getOriginalSideImagePath() == null
                     ? null
                     : imageService.getImageUrl(data.getSideImagePath());
+
+            case SIDE2 -> data.getOriginalSide2ImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getSide2ImagePath());
+            case SIDE3 -> data.getOriginalSide3ImagePath() == null
+                    ? null
+                    : imageService.getImageUrl(data.getSide3ImagePath());
         };
     }
 
@@ -129,16 +168,20 @@ public class IndustryDataService {
      */
     @Transactional
     public IndustryImageUploadUrlResponse createIndustryData(Long yearId, IndustryDataRequest requst) {
+
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
 
+        validateCategory(year.getYear(), requst.industryDataCategory());
         IndustryData industryData = IndustryData.create(year, requst);
         industryDataRepository.save(industryData);
 
         return new IndustryImageUploadUrlResponse(
                 imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
                 imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
-                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide2ImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide3ImagePath())
         );
     }
 
@@ -163,7 +206,9 @@ public class IndustryDataService {
         return new IndustryImageUploadUrlResponse(
                 imageService.generateUploadPresignedUrl(industryData.getDetailImagePath()),
                 imageService.generateUploadPresignedUrl(industryData.getFrontImagePath()),
-                imageService.generateUploadPresignedUrl(industryData.getSideImagePath())
+                imageService.generateUploadPresignedUrl(industryData.getSideImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide2ImagePath()),
+                imageService.generateUploadPresignedUrl(industryData.getSide3ImagePath())
         );
     }
 
@@ -277,8 +322,10 @@ public class IndustryDataService {
         for (IndustryData data : industryData) {
 
             putIfNotBlank(keyNameMap, data.getFrontImagePath(),  data.getOriginalFrontImagePath());
-            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
             putIfNotBlank(keyNameMap, data.getDetailImagePath(), data.getOriginalDetailImagePath());
+            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
+            putIfNotBlank(keyNameMap, data.getSide2ImagePath(), data.getOriginalSide2ImagePath());
+            putIfNotBlank(keyNameMap, data.getSide3ImagePath(), data.getOriginalSide3ImagePath());
         }
 
         imageService.downloadAsZip(keyNameMap, os);

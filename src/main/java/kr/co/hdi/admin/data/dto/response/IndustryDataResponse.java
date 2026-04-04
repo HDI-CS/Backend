@@ -18,12 +18,14 @@ public record IndustryDataResponse (
     String productTypeName,
     String detailImagePath,
     String frontImagePath,
-    String sideImagePath
+    String sideImagePath,
+    String side2ImagePath,
+    String side3ImagePath
 ) {
 
     public static IndustryDataResponse from (
             IndustryData i,
-            String detailImagePath, String frontImagePath, String sideImagePath){
+            String detailImagePath, String frontImagePath, String sideImagePath, String side2ImagePath, String side3ImagePath){
 
         return new IndustryDataResponse(
                 i.getId(),
@@ -41,7 +43,9 @@ public record IndustryDataResponse (
                 i.getProductTypeName(),
                 detailImagePath,
                 frontImagePath,
-                sideImagePath
+                sideImagePath,
+                side2ImagePath,
+                side3ImagePath
         );
     }
 }
