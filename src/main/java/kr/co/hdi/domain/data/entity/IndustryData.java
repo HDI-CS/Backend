@@ -3,12 +3,16 @@ package kr.co.hdi.domain.data.entity;
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
+import kr.co.hdi.admin.data.exception.DataErrorCode;
+import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
@@ -262,6 +266,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
             this.originalSide3ImagePath = request.originalSide3ImagePath();
         }
     }
+
+
 
     @PrePersist
     @PreUpdate

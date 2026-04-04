@@ -40,6 +40,30 @@ public class IndustryDataService {
     private final IndustryDataRepository industryDataRepository;
 
     /*
+     IndustryData category 년도별 매핑
+     */
+    private final Map<String, List<IndustryDataCategory>> categoryPolicy = Map.of(
+            "2025", List.of(
+                    IndustryDataCategory.VACUUM_CLEANER,
+                    IndustryDataCategory.AIR_PURIFIER,
+                    IndustryDataCategory.HAIR_DRYER
+            ),
+            "2026", List.of(
+                    IndustryDataCategory.HEADPHONE,
+                    IndustryDataCategory.EARPHONE
+            )
+    );
+
+    private void validateCategory(String year, IndustryDataCategory category) {
+        List<IndustryDataCategory> allowed = categoryPolicy.getOrDefault(year, List.of());
+
+        if (!allowed.contains(category)) {
+            throw new DataException(DataErrorCode.INVALID_CATEGORY);
+        }
+    }
+
+
+    /*
     산업 디자인 연도 목록 조회
      */
     public List<YearResponse> getIndustryDataYears() {
@@ -144,9 +168,15 @@ public class IndustryDataService {
      */
     @Transactional
     public IndustryImageUploadUrlResponse createIndustryData(Long yearId, IndustryDataRequest requst) {
+        System.out.println("🔥 [SERVICE] createIndustryData 시작");
+        System.out.println("🔥 [SERVICE] yearId = " + yearId);
+        System.out.println("🔥 [SERVICE] request category = " + requst.industryDataCategory());
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
+        System.out.println("🔥 [SERVICE] DB year = " + year.getYear());
 
+        validateCategory(year.getYear(), requst.industryDataCategory());
+        System.out.println("🔥 [SERVICE] validateCategory 통과");
         IndustryData industryData = IndustryData.create(year, requst);
         industryDataRepository.save(industryData);
 
@@ -296,8 +326,10 @@ public class IndustryDataService {
         for (IndustryData data : industryData) {
 
             putIfNotBlank(keyNameMap, data.getFrontImagePath(),  data.getOriginalFrontImagePath());
-            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
             putIfNotBlank(keyNameMap, data.getDetailImagePath(), data.getOriginalDetailImagePath());
+            putIfNotBlank(keyNameMap, data.getSideImagePath(),   data.getOriginalSideImagePath());
+            putIfNotBlank(keyNameMap, data.getSide2ImagePath(), data.getOriginalSide2ImagePath());
+            putIfNotBlank(keyNameMap, data.getSide3ImagePath(), data.getOriginalSide3ImagePath());
         }
 
         imageService.downloadAsZip(keyNameMap, os);

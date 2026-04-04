@@ -99,6 +99,9 @@ public class IndustryDataController {
     public ResponseEntity<IndustryImageUploadUrlResponse> createIndustryData(
             @PathVariable Long yearId,
             @RequestBody IndustryDataRequest request) {
+        System.out.println("🔥 [CONTROLLER] create industry request 들어옴");
+        System.out.println("🔥 [CONTROLLER] yearId = " + yearId);
+        System.out.println("🔥 [CONTROLLER] category = " + request.industryDataCategory());
 
         IndustryImageUploadUrlResponse response = industryDataService.createIndustryData(yearId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
