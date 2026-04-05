@@ -36,6 +36,15 @@ public class Product {
 
     private String productTypeName;
 
+    //2026
+    String noiseCancelling;
+    String codec;
+    String extraFeatures;
+    String controlType;
+    String waterproof;
+    String maxPlayTime;
+    String chargeTime;
+
     @Column(name = "original_id")
     private Long originalId;
 
@@ -52,11 +61,20 @@ public class Product {
                 .productPath(productInfo.get("제품경로"))
                 .registeredAt(productInfo.get("등록일"))
                 .productTypeName(productInfo.get("제품유형"))
+
+                // 2026
+                .noiseCancelling(productInfo.get("노이즈캔슬링"))
+                .codec(productInfo.get("코덱"))
+                .extraFeatures(productInfo.get("부가기능"))
+                .controlType(productInfo.get("컨트롤"))
+                .waterproof(productInfo.get("방수기능"))
+                .maxPlayTime(productInfo.get("최대재생시간(hr)"))
+                .chargeTime(productInfo.get("1회 충전시간(hr)"))
                 .build();
     }
 
     @Builder(access = PRIVATE)
-    private Product(String productName, String modelName, String price, String material, String size, String weight, String referenceUrl, String companyName, String registeredAt, String productPath, String productTypeName) {
+    private Product(String productName, String modelName, String price, String material, String size, String weight, String referenceUrl, String companyName, String registeredAt, String productPath, String productTypeName, String noiseCancelling, String codec, String extraFeatures, String controlType, String waterproof, String maxPlayTime, String chargeTime) {
         this.productTypeName = productTypeName;
         this.registeredAt = registeredAt;
         this.productPath = productPath;
@@ -68,5 +86,14 @@ public class Product {
         this.size = size;
         this.weight = weight;
         this.referenceUrl = referenceUrl;
+
+        // 2026
+        this.noiseCancelling = noiseCancelling;
+        this.codec = codec;
+        this.extraFeatures = extraFeatures;
+        this.controlType = controlType;
+        this.waterproof = waterproof;
+        this.maxPlayTime = maxPlayTime;
+        this.chargeTime = chargeTime;
     }
 }

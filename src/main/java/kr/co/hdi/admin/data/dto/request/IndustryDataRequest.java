@@ -6,15 +6,28 @@ public record IndustryDataRequest(
         String code,
         String productName,
         String companyName,
-        String modelName,
         String price,
-        String material,
-        String size,
-        String weight,
         String referenceUrl,
         String registeredAt,
         String productPath,
         String productTypeName,
+        String weight,
+
+        // 2025
+        String modelName,
+        String material,
+        String size,
+
+        // 2026
+        String noiseCancelling,
+        String codec,
+        String extraFeatures,
+        String controlType,
+        String waterproof,
+        String maxPlayTime,
+        String chargeTime,
+
+        // 이미지
         String originalDetailImagePath,
         String originalFrontImagePath,
         String originalSideImagePath,

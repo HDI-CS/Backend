@@ -5,10 +5,8 @@ import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
-import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.data.enums.IndustryImageType;
-import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
@@ -50,7 +48,8 @@ public class IndustryDataService {
             ),
             "2026", List.of(
                     IndustryDataCategory.HEADPHONE,
-                    IndustryDataCategory.EARPHONE
+                    IndustryDataCategory.EARPHONE,
+                    IndustryDataCategory.BLUETOOTH_SPEAKER
             )
     );
 
@@ -284,6 +283,15 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getRegisteredAt()));
                 row.createCell(c++).setCellValue(nvl(i.getProductPath()));
                 row.createCell(c++).setCellValue(nvl(i.getProductTypeName()));
+
+                // 2026
+                row.createCell(c++).setCellValue(nvl(i.getNoiseCancelling()));
+                row.createCell(c++).setCellValue(nvl(i.getCodec()));
+                row.createCell(c++).setCellValue(nvl(i.getExtraFeatures()));
+                row.createCell(c++).setCellValue(nvl(i.getControlType()));
+                row.createCell(c++).setCellValue(nvl(i.getWaterproof()));
+                row.createCell(c++).setCellValue(nvl(i.getMaxPlayTime()));
+                row.createCell(c++).setCellValue(nvl(i.getChargeTime()));
             }
 
             for (int c = 0; c < headers.length; c++) {

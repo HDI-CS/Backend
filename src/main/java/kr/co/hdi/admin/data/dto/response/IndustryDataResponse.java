@@ -16,6 +16,16 @@ public record IndustryDataResponse (
     String registeredAt,
     String productPath,
     String productTypeName,
+
+    // 2026
+    String noiseCancelling,
+    String codec,
+    String extraFeatures,
+    String controlType,
+    String waterproof,
+    String maxPlayTime,
+    String chargeTime,
+
     String detailImagePath,
     String frontImagePath,
     String sideImagePath,
@@ -41,6 +51,15 @@ public record IndustryDataResponse (
                 i.getRegisteredAt(),
                 i.getProductPath(),
                 i.getProductTypeName(),
+
+                i.getNoiseCancelling(),
+                i.getCodec(),
+                i.getExtraFeatures(),
+                i.getControlType(),
+                i.getWaterproof(),
+                i.getMaxPlayTime(),
+                i.getChargeTime(),
+
                 detailImagePath,
                 frontImagePath,
                 sideImagePath,
