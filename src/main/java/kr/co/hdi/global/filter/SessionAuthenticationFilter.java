@@ -23,7 +23,6 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("SessionFilter 실행됨");
         HttpSession session = request.getSession(false);
 
         if (session != null) {

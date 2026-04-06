@@ -18,7 +18,6 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
 
     @Override
     public List<IndustryDataResponse> search(IndustryDataCategory category, String q) {
-    System.out.println("search까진 들어옴");
         return queryFactory
                 .select(
                         Projections.constructor(

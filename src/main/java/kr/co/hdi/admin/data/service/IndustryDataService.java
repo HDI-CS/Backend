@@ -320,7 +320,6 @@ public class IndustryDataService {
     산업 디자인 데이터셋 검색
      */
     public List<IndustryDataResponse> searchIndustryData(String q, IndustryDataCategory category) {
-        System.out.println("검색까진 들어오");
         return industryDataRepository.search(category, q);
     }
 
