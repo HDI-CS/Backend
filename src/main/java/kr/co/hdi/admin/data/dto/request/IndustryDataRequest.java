@@ -26,6 +26,10 @@ public record IndustryDataRequest(
         String waterproof,
         String maxPlayTime,
         String chargeTime,
+        String usage,
+        String shoppingUrl,
+        String soundOutput,
+        String connectivity,
 
         // 이미지
         String originalDetailImagePath,

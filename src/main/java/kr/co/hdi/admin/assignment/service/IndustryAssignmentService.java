@@ -378,6 +378,10 @@ public class IndustryAssignmentService implements AssignmentService {
                         "Waterproof",
                         "MaxPlayTime",
                         "ChargeTime",
+                        "Usage",
+                        "ShoppingUrl",
+                        "SoundOutput",
+                        "Connectivity"
                 };
 
                 Row headerRow = sheet.createRow(0);
@@ -421,6 +425,11 @@ public class IndustryAssignmentService implements AssignmentService {
                     row.createCell(c++).setCellValue(nvl(data.getWaterproof()));
                     row.createCell(c++).setCellValue(nvl(data.getMaxPlayTime()));
                     row.createCell(c++).setCellValue(nvl(data.getChargeTime()));
+                    row.createCell(c++).setCellValue(nvl(data.getUsage()));
+                    row.createCell(c++).setCellValue(nvl(data.getShoppingUrl()));
+                    row.createCell(c++).setCellValue(nvl(data.getSoundOutput()));
+                    row.createCell(c++).setCellValue(nvl(data.getConnectivity()));
+
                 }
 
                 for (int c = 0; c < headers.length; c++) {

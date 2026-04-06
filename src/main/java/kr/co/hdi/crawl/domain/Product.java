@@ -36,7 +36,7 @@ public class Product {
 
     private String productTypeName;
 
-    //2026
+    // 2026
     String noiseCancelling;
     String codec;
     String extraFeatures;
@@ -44,6 +44,11 @@ public class Product {
     String waterproof;
     String maxPlayTime;
     String chargeTime;
+    String usage;
+    String shoppingUrl;
+    String connectivity;
+    String soundOutput;
+
 
     @Column(name = "original_id")
     private Long originalId;
@@ -70,11 +75,15 @@ public class Product {
                 .waterproof(productInfo.get("방수기능"))
                 .maxPlayTime(productInfo.get("최대재생시간(hr)"))
                 .chargeTime(productInfo.get("1회 충전시간(hr)"))
+                .usage(productInfo.get("용도"))
+                .shoppingUrl(productInfo.get("쇼핑몰 링크"))
+                .connectivity(productInfo.get("입출력"))
+                .soundOutput(productInfo.get("사운드출력"))
                 .build();
     }
 
     @Builder(access = PRIVATE)
-    private Product(String productName, String modelName, String price, String material, String size, String weight, String referenceUrl, String companyName, String registeredAt, String productPath, String productTypeName, String noiseCancelling, String codec, String extraFeatures, String controlType, String waterproof, String maxPlayTime, String chargeTime) {
+    private Product(String productName, String modelName, String price, String material, String size, String weight, String referenceUrl, String companyName, String registeredAt, String productPath, String productTypeName, String noiseCancelling, String codec, String extraFeatures, String controlType, String waterproof, String maxPlayTime, String chargeTime, String usage, String shoppingUrl, String soundOutput, String connectivity) {
         this.productTypeName = productTypeName;
         this.registeredAt = registeredAt;
         this.productPath = productPath;
@@ -95,5 +104,9 @@ public class Product {
         this.waterproof = waterproof;
         this.maxPlayTime = maxPlayTime;
         this.chargeTime = chargeTime;
+        this.usage = usage;
+        this.shoppingUrl = shoppingUrl;
+        this.connectivity = connectivity;
+        this.soundOutput = soundOutput;
     }
 }

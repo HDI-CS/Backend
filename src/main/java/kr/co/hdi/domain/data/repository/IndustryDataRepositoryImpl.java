@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 import static kr.co.hdi.domain.data.entity.QIndustryData.industryData;
-import static kr.co.hdi.domain.data.entity.QVisualData.visualData;
 
 @RequiredArgsConstructor
 public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom {
@@ -18,14 +17,14 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<IndustryDataResponse> search(String q, IndustryDataCategory category) {
-
+    public List<IndustryDataResponse> search(IndustryDataCategory category, String q) {
+    System.out.println("search까진 들어옴");
         return queryFactory
                 .select(
                         Projections.constructor(
                                 IndustryDataResponse.class,
                                 industryData.id,
-                                industryData.originalId,
+                                industryData.originalId.as("code"),
                                 industryData.companyName,
                                 industryData.productName,
                                 industryData.modelName,
@@ -37,6 +36,21 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
                                 industryData.registeredAt,
                                 industryData.productPath,
                                 industryData.productTypeName,
+
+                                // 2026
+                                industryData.noiseCancelling,
+                                industryData.codec,
+                                industryData.extraFeatures,
+                                industryData.controlType,
+                                industryData.waterproof,
+                                industryData.maxPlayTime,
+                                industryData.chargeTime,
+                                industryData.usage,
+                                industryData.shoppingUrl,
+                                industryData.connectivity,
+                                industryData.soundOutput,
+
+
                                 industryData.detailImagePath,
                                 industryData.frontImagePath,
                                 industryData.sideImagePath,

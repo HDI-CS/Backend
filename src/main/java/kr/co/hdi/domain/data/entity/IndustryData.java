@@ -52,6 +52,10 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     private String waterproof;
     private String maxPlayTime;
     private String chargeTime;
+    private String usage;
+    private String shoppingUrl;
+    private String soundOutput;
+    private String connectivity;
 
     @Column(name = "original_id")
     private String originalId;
@@ -173,6 +177,11 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.waterproof = request.waterproof();
         i.maxPlayTime = request.maxPlayTime();
         i.chargeTime = request.chargeTime();
+        i.usage = request.usage();
+        i.shoppingUrl = request.shoppingUrl();
+        i.connectivity = request.connectivity();
+        i.soundOutput = request.soundOutput();
+
 
         // 로컬용
         String basePath = "industrial";
@@ -226,6 +235,11 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.waterproof = this.waterproof;
         copy.maxPlayTime = this.maxPlayTime;
         copy.chargeTime = this.chargeTime;
+        copy.usage = this.usage;
+        copy.shoppingUrl = this.shoppingUrl;
+        copy.connectivity = this.connectivity;
+        copy.soundOutput = this.soundOutput;
+
 
         copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
         copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
@@ -317,6 +331,18 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
         if (request.chargeTime() != null) {
             this.chargeTime = request.chargeTime();
+        }
+        if (request.usage() != null) {
+            this.usage = request.usage();
+        }
+        if (request.shoppingUrl() != null) {
+            this.shoppingUrl = request.shoppingUrl();
+        }
+        if (request.connectivity() != null) {
+            this.connectivity = request.connectivity();
+        }
+        if (request.soundOutput() != null) {
+            this.soundOutput = request.soundOutput();
         }
     }
 

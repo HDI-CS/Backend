@@ -5,8 +5,10 @@ import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
+import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.data.enums.IndustryImageType;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
@@ -40,26 +42,26 @@ public class IndustryDataService {
     /*
      IndustryData category 년도별 매핑
      */
-    private final Map<String, List<IndustryDataCategory>> categoryPolicy = Map.of(
-            "2025", List.of(
-                    IndustryDataCategory.VACUUM_CLEANER,
-                    IndustryDataCategory.AIR_PURIFIER,
-                    IndustryDataCategory.HAIR_DRYER
-            ),
-            "2026", List.of(
-                    IndustryDataCategory.HEADPHONE,
-                    IndustryDataCategory.EARPHONE,
-                    IndustryDataCategory.BLUETOOTH_SPEAKER
-            )
-    );
+//    private final Map<String, List<IndustryDataCategory>> categoryPolicy = Map.of(
+//            "2025", List.of(
+//                    IndustryDataCategory.VACUUM_CLEANER,
+//                    IndustryDataCategory.AIR_PURIFIER,
+//                    IndustryDataCategory.HAIR_DRYER
+//            ),
+//            "2026", List.of(
+//                    IndustryDataCategory.HEADPHONE,
+//                    IndustryDataCategory.EARPHONE,
+//                    IndustryDataCategory.BLUETOOTH_SPEAKER
+//            )
+//    );
 
-    private void validateCategory(String year, IndustryDataCategory category) {
-        List<IndustryDataCategory> allowed = categoryPolicy.getOrDefault(year, List.of());
-
-        if (!allowed.contains(category)) {
-            throw new DataException(DataErrorCode.INVALID_CATEGORY);
-        }
-    }
+//    private void validateCategory(String year, IndustryDataCategory category) {
+//        List<IndustryDataCategory> allowed = categoryPolicy.getOrDefault(year, List.of());
+//
+//        if (!allowed.contains(category)) {
+//            throw new DataException(DataErrorCode.INVALID_CATEGORY);
+//        }
+//    }
 
 
     /*
@@ -171,7 +173,7 @@ public class IndustryDataService {
         Year year = yearRepository.findByIdAndDeletedAtIsNull(yearId)
                 .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
 
-        validateCategory(year.getYear(), requst.industryDataCategory());
+//        validateCategory(year.getYear(), requst.industryDataCategory());
         IndustryData industryData = IndustryData.create(year, requst);
         industryDataRepository.save(industryData);
 
@@ -292,6 +294,10 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getWaterproof()));
                 row.createCell(c++).setCellValue(nvl(i.getMaxPlayTime()));
                 row.createCell(c++).setCellValue(nvl(i.getChargeTime()));
+                row.createCell(c++).setCellValue(nvl(i.getUsage()));
+                row.createCell(c++).setCellValue(nvl(i.getConnectivity()));
+                row.createCell(c++).setCellValue(nvl(i.getSoundOutput()));
+                row.createCell(c++).setCellValue(nvl(i.getShoppingUrl()));
             }
 
             for (int c = 0; c < headers.length; c++) {
@@ -314,8 +320,8 @@ public class IndustryDataService {
     산업 디자인 데이터셋 검색
      */
     public List<IndustryDataResponse> searchIndustryData(String q, IndustryDataCategory category) {
-
-        return industryDataRepository.search(q, category);
+        System.out.println("검색까진 들어오");
+        return industryDataRepository.search(category, q);
     }
 
     /*

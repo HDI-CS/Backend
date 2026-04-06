@@ -25,6 +25,10 @@ public record IndustryDataResponse (
     String waterproof,
     String maxPlayTime,
     String chargeTime,
+    String usage,
+    String shoppingUrl,
+    String connectivity,
+    String soundOutput,
 
     String detailImagePath,
     String frontImagePath,
@@ -59,6 +63,10 @@ public record IndustryDataResponse (
                 i.getWaterproof(),
                 i.getMaxPlayTime(),
                 i.getChargeTime(),
+                i.getUsage(),
+                i.getShoppingUrl(),
+                i.getConnectivity(),
+                i.getSoundOutput(),
 
                 detailImagePath,
                 frontImagePath,
