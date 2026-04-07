@@ -44,6 +44,19 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
 
     private String productTypeName;
 
+    // 2026
+    private String noiseCancelling;
+    private String codec;
+    private String extraFeatures;
+    private String controlType;
+    private String waterproof;
+    private String maxPlayTime;
+    private String chargeTime;
+    private String usage;
+    private String shoppingUrl;
+    private String soundOutput;
+    private String connectivity;
+
     @Column(name = "original_id")
     private String originalId;
 
@@ -156,20 +169,37 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.productTypeName = request.productTypeName();
         i.industryDataCategory = request.industryDataCategory();
 
+        // 2026
+        i.noiseCancelling = request.noiseCancelling();
+        i.codec = request.codec();
+        i.extraFeatures = request.extraFeatures();
+        i.controlType = request.controlType();
+        i.waterproof = request.waterproof();
+        i.maxPlayTime = request.maxPlayTime();
+        i.chargeTime = request.chargeTime();
+        i.usage = request.usage();
+        i.shoppingUrl = request.shoppingUrl();
+        i.connectivity = request.connectivity();
+        i.soundOutput = request.soundOutput();
+
+
+        // 로컬용
+        String basePath = "industrial";
+
         i.originalDetailImagePath = request.originalDetailImagePath();
-        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
+        i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
 
         i.originalFrontImagePath = request.originalFrontImagePath();
-        i.frontImagePath = "2026/ID/" + UUID.randomUUID();
+        i.frontImagePath = basePath + "/" + request.originalFrontImagePath();
 
         i.originalSideImagePath = request.originalSideImagePath();
-        i.sideImagePath = "2026/ID/" + UUID.randomUUID();
+        i.sideImagePath = basePath + "/" + request.originalSideImagePath();
 
         i.originalSide2ImagePath = request.originalSide2ImagePath();
-        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
+        i.side2ImagePath = basePath + "/" + request.originalSide2ImagePath();
 
         i.originalSide3ImagePath = request.originalSide3ImagePath();
-        i.side3ImagePath = "2026/ID/" + UUID.randomUUID();
+        i.side3ImagePath = basePath + "/" + request.originalSide3ImagePath();
 
         return i;
     }
@@ -196,6 +226,20 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.productPath = this.productPath;
         copy.productTypeName = this.productTypeName;
         copy.industryDataCategory = this.industryDataCategory;
+
+        // 2026
+        copy.noiseCancelling = this.noiseCancelling;
+        copy.codec = this.codec;
+        copy.extraFeatures = this.extraFeatures;
+        copy.controlType = this.controlType;
+        copy.waterproof = this.waterproof;
+        copy.maxPlayTime = this.maxPlayTime;
+        copy.chargeTime = this.chargeTime;
+        copy.usage = this.usage;
+        copy.shoppingUrl = this.shoppingUrl;
+        copy.connectivity = this.connectivity;
+        copy.soundOutput = this.soundOutput;
+
 
         copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
         copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
@@ -264,6 +308,41 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
         if (request.originalSide3ImagePath() != null) {
             this.originalSide3ImagePath = request.originalSide3ImagePath();
+        }
+
+        // 2026
+        if (request.noiseCancelling() != null) {
+            this.noiseCancelling = request.noiseCancelling();
+        }
+        if (request.codec() != null) {
+            this.codec = request.codec();
+        }
+        if (request.extraFeatures() != null) {
+            this.extraFeatures = request.extraFeatures();
+        }
+        if (request.controlType() != null) {
+            this.controlType = request.controlType();
+        }
+        if (request.waterproof() != null) {
+            this.waterproof = request.waterproof();
+        }
+        if (request.maxPlayTime() != null) {
+            this.maxPlayTime = request.maxPlayTime();
+        }
+        if (request.chargeTime() != null) {
+            this.chargeTime = request.chargeTime();
+        }
+        if (request.usage() != null) {
+            this.usage = request.usage();
+        }
+        if (request.shoppingUrl() != null) {
+            this.shoppingUrl = request.shoppingUrl();
+        }
+        if (request.connectivity() != null) {
+            this.connectivity = request.connectivity();
+        }
+        if (request.soundOutput() != null) {
+            this.soundOutput = request.soundOutput();
         }
     }
 

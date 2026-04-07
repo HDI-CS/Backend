@@ -74,7 +74,6 @@ public class VisualDataController {
     public ResponseEntity<VisualImageUploadUrlResponse> createVisualData(
             @PathVariable Long yearId,
             @RequestBody VisualDataRequest request) {
-
         VisualImageUploadUrlResponse response = visualDataService.createVisualData(yearId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

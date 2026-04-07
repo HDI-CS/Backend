@@ -32,6 +32,7 @@ public class VisualDataRepositoryImpl implements VisualDataRepositoryCustom{
                                 visualData.target,
                                 visualData.referenceUrl,
                                 visualData.logoImage
+
                         )
                 )
                 .from(visualData)

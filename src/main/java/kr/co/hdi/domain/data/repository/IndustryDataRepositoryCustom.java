@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface IndustryDataRepositoryCustom {
 
-    List<IndustryDataResponse> search(String q, IndustryDataCategory category);
+    List<IndustryDataResponse> search(IndustryDataCategory category, String q);
 }
