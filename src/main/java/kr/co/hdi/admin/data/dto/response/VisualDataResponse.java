@@ -11,6 +11,16 @@ public record VisualDataResponse(
         String mainProduct,
         String target,
         String referenceUrl,
+
+        // 2026
+        String title,
+        String country,
+        String clientName,
+        String contentType,
+        String visualType,
+        String designDescription,
+        String releaseYear,
+
         String logoImage
 ) {
 
@@ -24,6 +34,15 @@ public record VisualDataResponse(
                 v.getMainProduct(),
                 v.getTarget(),
                 v.getReferenceUrl(),
+                // 2026
+                v.getTitle(),
+                v.getCountry(),
+                v.getClientName(),
+                v.getContentType(),
+                v.getVisualType(),
+                v.getDesignDescription(),
+                v.getReleaseYear(),
+
                 image
         );
     }

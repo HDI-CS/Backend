@@ -230,6 +230,16 @@ public class VisualDataService {
                 row.createCell(c++).setCellValue(nvl(i.getMainProduct()));
                 row.createCell(c++).setCellValue(nvl(i.getTarget()));
                 row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
+
+                // 2026
+                row.createCell(c++).setCellValue(nvl(i.getTitle()));
+                row.createCell(c++).setCellValue(nvl(i.getCountry()));
+                row.createCell(c++).setCellValue(nvl(i.getClientName()));
+                row.createCell(c++).setCellValue(nvl(i.getContentType()));
+                row.createCell(c++).setCellValue(nvl(i.getVisualType()));
+                row.createCell(c++).setCellValue(nvl(i.getDesignDescription()));
+                row.createCell(c++).setCellValue(nvl(i.getReleaseYear()));
+
                 row.createCell(c++).setCellValue(nvl(i.getVisualDataCategory()));
             }
 

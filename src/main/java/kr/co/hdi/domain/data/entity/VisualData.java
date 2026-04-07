@@ -2,6 +2,7 @@ package kr.co.hdi.domain.data.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
+import kr.co.hdi.admin.parser.dto.VisualImportRow;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -33,6 +34,17 @@ public class VisualData extends BaseTimeEntityWithDeletion {
     private String mainProduct;
 
     private String target;
+
+    private String title;
+    private String country;
+    private String clientName;
+    private String contentType;
+    private String visualType;
+
+    @Column(columnDefinition = "text")
+    private String designDescription;
+
+    private String releaseYear;
 
     @Column(columnDefinition = "text")
     private String referenceUrl;
@@ -75,6 +87,15 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         v.target = request.target();
         v.referenceUrl = request.referenceUrl();
         v.visualDataCategory = request.visualDataCategory();
+
+        v.title = request.title();
+        v.country = request.country();
+        v.clientName = request.clientName();
+        v.contentType = request.contentType();
+        v.visualType = request.visualType();
+        v.designDescription = request.designDescription();
+        v.releaseYear = request.releaseYear();
+
         v.originalLogoImage = request.originalLogoImage();
         v.logoImage = "2026/VI/" + UUID.randomUUID();
 
@@ -96,6 +117,16 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         copy.mainProduct = this.mainProduct;
         copy.target = this.target;
         copy.referenceUrl = this.referenceUrl;
+
+        // 2026
+        copy.title = this.title;
+        copy.country = this.country;
+        copy.clientName = this.clientName;
+        copy.contentType = this.contentType;
+        copy.visualType = this.visualType;
+        copy.designDescription = this.designDescription;
+        copy.releaseYear = this.releaseYear;
+
         copy.visualDataCategory = this.visualDataCategory;
         copy.year = this.year;
         copy.logoImage = "2026/VI/" + UUID.randomUUID();
@@ -129,6 +160,30 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         if (request.referenceUrl() != null) {
             this.referenceUrl = request.referenceUrl();
         }
+
+        // 2026
+        if (request.title() != null) {
+            this.title = request.title();
+        }
+        if (request.country() != null) {
+            this.country = request.country();
+        }
+        if (request.clientName() != null) {
+            this.clientName = request.clientName();
+        }
+        if (request.contentType() != null) {
+            this.contentType = request.contentType();
+        }
+        if (request.visualType() != null) {
+            this.visualType = request.visualType();
+        }
+        if (request.designDescription() != null) {
+            this.designDescription = request.designDescription();
+        }
+        if(request.releaseYear() != null) {
+            this.releaseYear = request.releaseYear();
+        }
+
         if (request.visualDataCategory() != null) {
             this.visualDataCategory = request.visualDataCategory();
         }
@@ -147,5 +202,35 @@ public class VisualData extends BaseTimeEntityWithDeletion {
                 this.brandCodeInteger = null;
             }
         }
+    }
+
+
+    // 엑셀 업로드용
+    public static VisualData createFromImport(
+            Year year,
+            VisualImportRow row,
+            String s3Key
+    ) {
+        VisualData v = new VisualData();
+
+        v.year = year;
+
+        v.brandCode = row.getCode();
+        v.sectorCategory = row.getSectorCategory();
+        v.title = row.getTitle();
+        v.releaseYear = row.getReleaseYear();
+        v.country = row.getCountry();
+        v.clientName = row.getClientName();
+        v.contentType = row.getContentType();
+        v.visualType = row.getVisualType();
+        v.designDescription = row.getDesignDescription();
+        v.referenceUrl = row.getReferenceUrl();
+
+        v.originalLogoImage = row.getOriginalLogoImage();
+        v.logoImage = s3Key;
+        v.visualDataCategory = VisualDataCategory.POSTER;
+
+
+        return v;
     }
 }
