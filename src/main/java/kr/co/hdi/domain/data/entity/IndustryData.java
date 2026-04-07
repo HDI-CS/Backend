@@ -2,7 +2,13 @@ package kr.co.hdi.domain.data.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
+<<<<<<< HEAD
 
+=======
+import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
+import kr.co.hdi.admin.data.exception.DataErrorCode;
+import kr.co.hdi.admin.data.exception.DataException;
+>>>>>>> dev
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -46,10 +52,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     // 2026
     private String noiseCancelling;
     private String codec;
-
-    @Column(columnDefinition = "text")
     private String extraFeatures;
-
     private String controlType;
     private String waterproof;
     private String maxPlayTime;
@@ -185,19 +188,26 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.soundOutput = request.soundOutput();
 
 
+<<<<<<< HEAD
+=======
+        // 로컬용
+        String basePath = "industrial";
+
+>>>>>>> dev
         i.originalDetailImagePath = request.originalDetailImagePath();
-        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
+        i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
 
         i.originalFrontImagePath = request.originalFrontImagePath();
-        i.frontImagePath = "2026/ID/" + UUID.randomUUID();
+        i.frontImagePath = basePath + "/" + request.originalFrontImagePath();
+
         i.originalSideImagePath = request.originalSideImagePath();
-        i.sideImagePath = "2026/ID/" + UUID.randomUUID();
+        i.sideImagePath = basePath + "/" + request.originalSideImagePath();
 
         i.originalSide2ImagePath = request.originalSide2ImagePath();
-        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
+        i.side2ImagePath = basePath + "/" + request.originalSide2ImagePath();
 
         i.originalSide3ImagePath = request.originalSide3ImagePath();
-        i.side3ImagePath = "2026/ID/" + UUID.randomUUID();
+        i.side3ImagePath = basePath + "/" + request.originalSide3ImagePath();
 
         return i;
     }

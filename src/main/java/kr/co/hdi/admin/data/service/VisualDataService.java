@@ -7,7 +7,6 @@ import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
-import kr.co.hdi.domain.data.enums.VisualExcelType;
 import kr.co.hdi.domain.data.repository.VisualDataRepository;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.domain.year.enums.DomainType;
@@ -192,8 +191,7 @@ public class VisualDataService {
     /*
     시각 디자인 데이터셋 액셀 다운로드
      */
-    public byte[] exportVisualData(Long yearId, VisualExcelType category){
-
+    public byte[] exportVisualData(Long yearId) {
         List<VisualData> rows = visualDataRepository.findByYearIdAndDeletedAtIsNull(yearId);
 
         try (Workbook wb = new XSSFWorkbook();
@@ -208,8 +206,10 @@ public class VisualDataService {
             headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            String[] headers = category.getHeaders();
-
+            String[] headers = {
+                    "ID", "Brand Name", "Sector Category", "Main Product Category",
+                    "Main Product", "Target", "Reference URL", "Category"
+            };
 
             Row headerRow = sheet.createRow(0);
             for (int c = 0; c < headers.length; c++) {
@@ -221,7 +221,26 @@ public class VisualDataService {
             int r = 1;
             for (VisualData i : rows) {
                 Row row = sheet.createRow(r++);
-                category.getWriter().accept(row, i);
+
+                int c = 0;
+                row.createCell(c++).setCellValue(nvl(i.getBrandCode()));
+                row.createCell(c++).setCellValue(nvl(i.getBrandName()));
+                row.createCell(c++).setCellValue(nvl(i.getSectorCategory()));
+                row.createCell(c++).setCellValue(nvl(i.getMainProductCategory()));
+                row.createCell(c++).setCellValue(nvl(i.getMainProduct()));
+                row.createCell(c++).setCellValue(nvl(i.getTarget()));
+                row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
+
+                // 2026
+                row.createCell(c++).setCellValue(nvl(i.getTitle()));
+                row.createCell(c++).setCellValue(nvl(i.getCountry()));
+                row.createCell(c++).setCellValue(nvl(i.getClientName()));
+                row.createCell(c++).setCellValue(nvl(i.getContentType()));
+                row.createCell(c++).setCellValue(nvl(i.getVisualType()));
+                row.createCell(c++).setCellValue(nvl(i.getDesignDescription()));
+                row.createCell(c++).setCellValue(nvl(i.getReleaseYear()));
+
+                row.createCell(c++).setCellValue(nvl(i.getVisualDataCategory()));
             }
 
             for (int c = 0; c < headers.length; c++) {
