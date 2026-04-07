@@ -10,6 +10,17 @@ public record VisualDataRequest(
         String mainProduct,
         String target,
         String referenceUrl,
+
+        // 2026
+        String title,
+        String country,
+        String clientName,
+        String contentType,
+        String visualType,
+        String designDescription,
+        String releaseYear,
+
+
         String originalLogoImage,
         VisualDataCategory visualDataCategory
 ) {

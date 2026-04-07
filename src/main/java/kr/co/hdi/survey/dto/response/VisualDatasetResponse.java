@@ -1,6 +1,7 @@
 package kr.co.hdi.survey.dto.response;
 
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.VisualDataCategory;
 
 public record VisualDatasetResponse(
 
@@ -11,7 +12,18 @@ public record VisualDatasetResponse(
         String mainProduct,
         String target,
         String referenceUrl,
-        String image
+        String image,
+
+        // 2026
+        String title,
+        String country,
+        String clientName,
+        String contentType,
+        String visualType,
+        String releaseYear,
+        String designDescription,
+        VisualDataCategory visualDataCategory
+
 ) {
     public static VisualDatasetResponse fromEntity(VisualData data, String visualDataImage) {
         return new VisualDatasetResponse(
@@ -22,7 +34,17 @@ public record VisualDatasetResponse(
                 data.getMainProduct(),
                 data.getTarget(),
                 data.getReferenceUrl(),
-                visualDataImage
+                visualDataImage,
+
+                data.getTitle(),
+                data.getCountry(),
+                data.getClientName(),
+                data.getContentType(),
+                data.getVisualType(),
+                data.getReleaseYear(),
+                data.getDesignDescription(),
+                data.getVisualDataCategory()
+
         );
     }
 }
