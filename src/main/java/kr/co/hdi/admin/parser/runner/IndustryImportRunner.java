@@ -1,6 +1,6 @@
 package kr.co.hdi.admin.parser.runner;
 
-import kr.co.hdi.admin.parser.service.HeadphoneImportService;
+import kr.co.hdi.admin.parser.service.EarphoneImportService;
 import kr.co.hdi.admin.parser.service.VisualImportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class IndustryImportRunner implements CommandLineRunner {
 
-    private final HeadphoneImportService service;
+    private final EarphoneImportService service;
 
     @Override
     public void run(String... args) {
 
         service.importFromLocal(
-                "/Users/choijeong-in/Downloads/headphone/data.xlsx",
-                "/Users/choijeong-in/Downloads/headphone/images",
+                "/Users/choijeong-in/Downloads/industry/data.xlsx",
+                "/Users/choijeong-in/Downloads/industry/images",
                 10L
         );
 

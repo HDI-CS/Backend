@@ -5,6 +5,7 @@ import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
+import kr.co.hdi.admin.parser.dto.EarphoneImportRow;
 import kr.co.hdi.admin.parser.dto.HeadphoneImportRow;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
@@ -366,7 +367,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     // 엑셀 업로드용
     public static IndustryData createFromImport(
             Year year,
-            HeadphoneImportRow row,
+            EarphoneImportRow row,
             String detailKey,
             String frontKey,
             String sideKey,
@@ -414,7 +415,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.sideImagePath = sideKey;
         i.side2ImagePath = side2Key;
         i.side3ImagePath = side3Key;
-        i.industryDataCategory = IndustryDataCategory.HEADPHONE;
+        i.industryDataCategory = IndustryDataCategory.EARPHONE;
 
         return i;
     }

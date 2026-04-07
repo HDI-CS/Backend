@@ -7,7 +7,9 @@ import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.VisualDataService;
+import kr.co.hdi.domain.data.enums.IndustryExcelType;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
+import kr.co.hdi.domain.data.enums.VisualExcelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -126,9 +128,11 @@ public class VisualDataController {
     @GetMapping("/years/{yearId}/datasets/export")
     @Operation(summary = "시각 디자인 데이터셋 액셀 다운로드")
     public ResponseEntity<Resource> exportVisualData(
-            @PathVariable("yearId") Long yearId) {
+            @PathVariable("yearId") Long yearId,
+            @RequestParam(value = "category", defaultValue = "DEFAULT") VisualExcelType category) throws IOException {
 
-        byte[] bytes = visualDataService.exportVisualData(yearId);
+
+        byte[] bytes = visualDataService.exportVisualData(yearId, category);
         ByteArrayResource resource = new ByteArrayResource(bytes);
         String filename = "visual_data.xlsx";
 
@@ -141,3 +145,4 @@ public class VisualDataController {
                 .body(resource);
     }
 }
+
