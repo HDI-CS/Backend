@@ -2,13 +2,10 @@ package kr.co.hdi.domain.data.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
-<<<<<<< HEAD
-
-=======
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
->>>>>>> dev
+
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -188,12 +185,9 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.soundOutput = request.soundOutput();
 
 
-<<<<<<< HEAD
-=======
-        // 로컬용
-        String basePath = "industrial";
+        String basePath = "2026/ID";
 
->>>>>>> dev
+
         i.originalDetailImagePath = request.originalDetailImagePath();
         i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
 
