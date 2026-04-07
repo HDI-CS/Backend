@@ -7,4 +7,5 @@ public enum VisualDataCategory {
 
     // 2026
     POSTER
+
 }

@@ -86,8 +86,8 @@ public class IndustryDataController {
     @Operation(summary = "산업 디자인 데이터셋 검색")
     public ResponseEntity<List<IndustryDataResponse>> searchIndustryData(
             @RequestParam String q, @RequestParam IndustryDataCategory category) {
-
         List<IndustryDataResponse> response = industryDataService.searchIndustryData(q, category);
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
