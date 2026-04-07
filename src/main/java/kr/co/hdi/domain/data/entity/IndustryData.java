@@ -5,6 +5,8 @@ import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
+import kr.co.hdi.admin.parser.dto.EarphoneImportRow;
+import kr.co.hdi.admin.parser.dto.HeadphoneImportRow;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -47,7 +49,10 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     // 2026
     private String noiseCancelling;
     private String codec;
+
+    @Column(columnDefinition = "text")
     private String extraFeatures;
+
     private String controlType;
     private String waterproof;
     private String maxPlayTime;
@@ -183,23 +188,21 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.soundOutput = request.soundOutput();
 
 
-        // 로컬용
-        String basePath = "industrial";
+
 
         i.originalDetailImagePath = request.originalDetailImagePath();
-        i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
+        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
 
         i.originalFrontImagePath = request.originalFrontImagePath();
-        i.frontImagePath = basePath + "/" + request.originalFrontImagePath();
-
+        i.frontImagePath = "2026/ID/" + UUID.randomUUID();
         i.originalSideImagePath = request.originalSideImagePath();
-        i.sideImagePath = basePath + "/" + request.originalSideImagePath();
+        i.sideImagePath = "2026/ID/" + UUID.randomUUID();
 
         i.originalSide2ImagePath = request.originalSide2ImagePath();
-        i.side2ImagePath = basePath + "/" + request.originalSide2ImagePath();
+        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
 
         i.originalSide3ImagePath = request.originalSide3ImagePath();
-        i.side3ImagePath = basePath + "/" + request.originalSide3ImagePath();
+        i.side3ImagePath = "2026/ID/" + UUID.randomUUID();
 
         return i;
     }
@@ -358,5 +361,62 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
                 this.originalIdInteger = null;
             }
         }
+    }
+
+
+    // 엑셀 업로드용
+    public static IndustryData createFromImport(
+            Year year,
+            EarphoneImportRow row,
+            String detailKey,
+            String frontKey,
+            String sideKey,
+            String side2Key,
+            String side3Key,
+
+            String originalDetail,
+            String originalFront,
+            String originalSide,
+            String originalSide2,
+            String originalSide3
+    ) {
+        IndustryData i = new IndustryData();
+
+        i.year = year;
+        i.originalId = row.getCode();
+
+        i.companyName = row.getCompanyName();
+        i.productName = row.getProductName();
+        i.productPath = row.getProductPath();
+        i.productTypeName = row.getProductTypeName();
+
+        i.usage = row.getUsage();
+        i.noiseCancelling = row.getNoiseCancelling();
+        i.codec = row.getCodec();
+        i.extraFeatures = row.getExtraFeatures();
+        i.controlType = row.getControlType();
+
+        i.maxPlayTime = row.getMaxPlayTime();
+        i.chargeTime = row.getChargeTime();
+        i.weight = row.getWeight();
+        i.price = row.getPrice();
+
+        i.registeredAt = row.getRegisteredAt();
+        i.referenceUrl = row.getReferenceUrl();
+
+        i.originalDetailImagePath = originalDetail;
+        i.originalFrontImagePath = originalFront;
+        i.originalSideImagePath = originalSide;
+        i.originalSide2ImagePath = originalSide2;
+        i.originalSide3ImagePath = originalSide3;
+
+        i.detailImagePath = detailKey;
+        i.frontImagePath = frontKey;
+        i.sideImagePath = sideKey;
+        i.side2ImagePath = side2Key;
+        i.side3ImagePath = side3Key;
+        i.industryDataCategory = IndustryDataCategory.EARPHONE;
+
+        return i;
     }
 }
