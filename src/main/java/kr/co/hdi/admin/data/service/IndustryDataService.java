@@ -7,7 +7,6 @@ import kr.co.hdi.admin.data.exception.DataException;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
-import kr.co.hdi.domain.data.enums.IndustryExcelType;
 import kr.co.hdi.domain.data.enums.IndustryImageType;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.data.repository.IndustryDataRepository;
@@ -240,7 +239,7 @@ public class IndustryDataService {
     /*
     산업 디자인 데이터셋 엑셀 다운로드
      */
-    public byte[] exportIndustryData(Long yearId, IndustryExcelType category) {
+    public byte[] exportIndustryData(Long yearId) {
         List<IndustryData> rows = industryDataRepository.findByYearIdAndDeletedAtIsNull(yearId);
 
         try (Workbook wb = new XSSFWorkbook();
@@ -255,7 +254,12 @@ public class IndustryDataService {
             headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            String[] headers = category.getHeaders();
+            String[] headers = {
+                    "ID", "Product Name", "Company Name", "Model Name",
+                    "Price", "Material", "Size", "Weight",
+                    "Reference URL", "Registered At",
+                    "Product Path", "Product Type Name"
+            };
 
             Row headerRow = sheet.createRow(0);
             for (int c = 0; c < headers.length; c++) {
@@ -267,7 +271,33 @@ public class IndustryDataService {
             int r = 1;
             for (IndustryData i : rows) {
                 Row row = sheet.createRow(r++);
-                category.getWriter().accept(row, i);
+
+                int c = 0;
+                row.createCell(c++).setCellValue(nvl(i.getOriginalId()));
+                row.createCell(c++).setCellValue(nvl(i.getProductName()));
+                row.createCell(c++).setCellValue(nvl(i.getCompanyName()));
+                row.createCell(c++).setCellValue(nvl(i.getModelName()));
+                row.createCell(c++).setCellValue(nvl(i.getPrice()));
+                row.createCell(c++).setCellValue(nvl(i.getMaterial()));
+                row.createCell(c++).setCellValue(nvl(i.getSize()));
+                row.createCell(c++).setCellValue(nvl(i.getWeight()));
+                row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
+                row.createCell(c++).setCellValue(nvl(i.getRegisteredAt()));
+                row.createCell(c++).setCellValue(nvl(i.getProductPath()));
+                row.createCell(c++).setCellValue(nvl(i.getProductTypeName()));
+
+                // 2026
+                row.createCell(c++).setCellValue(nvl(i.getNoiseCancelling()));
+                row.createCell(c++).setCellValue(nvl(i.getCodec()));
+                row.createCell(c++).setCellValue(nvl(i.getExtraFeatures()));
+                row.createCell(c++).setCellValue(nvl(i.getControlType()));
+                row.createCell(c++).setCellValue(nvl(i.getWaterproof()));
+                row.createCell(c++).setCellValue(nvl(i.getMaxPlayTime()));
+                row.createCell(c++).setCellValue(nvl(i.getChargeTime()));
+                row.createCell(c++).setCellValue(nvl(i.getUsage()));
+                row.createCell(c++).setCellValue(nvl(i.getConnectivity()));
+                row.createCell(c++).setCellValue(nvl(i.getSoundOutput()));
+                row.createCell(c++).setCellValue(nvl(i.getShoppingUrl()));
             }
 
             for (int c = 0; c < headers.length; c++) {

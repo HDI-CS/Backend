@@ -8,7 +8,6 @@ import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.service.IndustryDataService;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
-import kr.co.hdi.domain.data.enums.IndustryExcelType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -68,10 +67,9 @@ public class IndustryDataController {
     @GetMapping("/years/{yearId}/datasets/export")
     @Operation(summary = "산업 디자인 데이터셋 액셀 다운로드")
     public ResponseEntity<Resource>  exportIndustryData(
-            @PathVariable("yearId") Long yearId,
-            @RequestParam(value = "category", defaultValue = "DEFAULT") IndustryExcelType category) throws IOException {
+            @PathVariable("yearId") Long yearId) throws IOException {
 
-        byte[] bytes = industryDataService.exportIndustryData(yearId, category);
+        byte[] bytes = industryDataService.exportIndustryData(yearId);
         ByteArrayResource resource = new ByteArrayResource(bytes);
         String filename = "industry_data.xlsx";
 

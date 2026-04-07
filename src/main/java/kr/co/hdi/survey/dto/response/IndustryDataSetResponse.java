@@ -1,7 +1,6 @@
 package kr.co.hdi.survey.dto.response;
 
 import kr.co.hdi.domain.data.entity.IndustryData;
-import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 
 public record IndustryDataSetResponse(
         String id,
@@ -32,9 +31,7 @@ public record IndustryDataSetResponse(
 
         String detailImagePath,
         String frontImagePath,
-        String sideImagePath,
-
-        IndustryDataCategory industryCategory
+        String sideImagePath
 ) {
 
     public static IndustryDataSetResponse fromEntity(
@@ -71,8 +68,7 @@ public record IndustryDataSetResponse(
 
                 detailImagePath,
                 frontImagePath,
-                sideImagePath,
-                data.getIndustryDataCategory()
+                sideImagePath
         );
     }
 }
