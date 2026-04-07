@@ -2,9 +2,13 @@ package kr.co.hdi.domain.data.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
+<<<<<<< HEAD
+
+=======
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
+>>>>>>> dev
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -23,7 +27,8 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class IndustryData extends BaseTimeEntityWithDeletion {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "industry_data_id")
     private Long id;
 
@@ -183,9 +188,12 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.soundOutput = request.soundOutput();
 
 
+<<<<<<< HEAD
+=======
         // 로컬용
         String basePath = "industrial";
 
+>>>>>>> dev
         i.originalDetailImagePath = request.originalDetailImagePath();
         i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
 
@@ -268,7 +276,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
             this.modelName = request.modelName();
         }
         if (request.price() != null) {
-            this.price= request.price();
+            this.price = request.price();
         }
         if (request.material() != null) {
             this.material = request.material();
@@ -347,7 +355,6 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     }
 
 
-
     @PrePersist
     @PreUpdate
     private void syncOriginalIdInteger() {
@@ -360,3 +367,4 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
     }
 }
+

@@ -2,7 +2,6 @@ package kr.co.hdi.domain.data.entity;
 
 import jakarta.persistence.*;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
-import kr.co.hdi.admin.parser.dto.VisualImportRow;
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
@@ -19,7 +18,8 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class VisualData extends BaseTimeEntityWithDeletion {
 
-    @Id @GeneratedValue(strategy = IDENTITY)
+    @Id
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "visual_data_id")
     private Long id;
 
@@ -180,7 +180,7 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         if (request.designDescription() != null) {
             this.designDescription = request.designDescription();
         }
-        if(request.releaseYear() != null) {
+        if (request.releaseYear() != null) {
             this.releaseYear = request.releaseYear();
         }
 
@@ -204,33 +204,4 @@ public class VisualData extends BaseTimeEntityWithDeletion {
         }
     }
 
-
-    // 엑셀 업로드용
-    public static VisualData createFromImport(
-            Year year,
-            VisualImportRow row,
-            String s3Key
-    ) {
-        VisualData v = new VisualData();
-
-        v.year = year;
-
-        v.brandCode = row.getCode();
-        v.sectorCategory = row.getSectorCategory();
-        v.title = row.getTitle();
-        v.releaseYear = row.getReleaseYear();
-        v.country = row.getCountry();
-        v.clientName = row.getClientName();
-        v.contentType = row.getContentType();
-        v.visualType = row.getVisualType();
-        v.designDescription = row.getDesignDescription();
-        v.referenceUrl = row.getReferenceUrl();
-
-        v.originalLogoImage = row.getOriginalLogoImage();
-        v.logoImage = s3Key;
-        v.visualDataCategory = VisualDataCategory.POSTER;
-
-
-        return v;
-    }
 }
