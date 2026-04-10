@@ -188,23 +188,22 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.soundOutput = request.soundOutput();
 
 
-        String basePath = "2026/ID";
+
+
 
 
         i.originalDetailImagePath = request.originalDetailImagePath();
-        i.detailImagePath = basePath + "/" + request.originalDetailImagePath();
-
+        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
         i.originalFrontImagePath = request.originalFrontImagePath();
-        i.frontImagePath = basePath + "/" + request.originalFrontImagePath();
-
+        i.frontImagePath =  "2026/ID/" + UUID.randomUUID();
         i.originalSideImagePath = request.originalSideImagePath();
-        i.sideImagePath = basePath + "/" + request.originalSideImagePath();
+        i.sideImagePath =  "2026/ID/" + UUID.randomUUID();
 
         i.originalSide2ImagePath = request.originalSide2ImagePath();
-        i.side2ImagePath = basePath + "/" + request.originalSide2ImagePath();
+        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
 
         i.originalSide3ImagePath = request.originalSide3ImagePath();
-        i.side3ImagePath = basePath + "/" + request.originalSide3ImagePath();
+        i.side3ImagePath =  "2026/ID/" + UUID.randomUUID();
 
         return i;
     }
@@ -213,6 +212,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     IndustryData 복제
     id, createdAt, updatedAt, deletedAt 제외
      */
+
     public IndustryData duplicate() {
 
         IndustryData copy = new IndustryData();
