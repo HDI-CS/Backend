@@ -4,6 +4,7 @@ import kr.co.hdi.admin.data.dto.response.IndustryDataIdsResponse;
 import kr.co.hdi.admin.data.dto.response.VisualDataIdsResponse;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.entity.VisualData;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +49,9 @@ public interface IndustryDataRepository extends JpaRepository<IndustryData, Long
     Optional<LocalDateTime> findLastModifiedAtByYearId(Long yearId);
 
     Optional<IndustryData> findByOriginalId(String dataCode);
+
+
+
 }
+
+

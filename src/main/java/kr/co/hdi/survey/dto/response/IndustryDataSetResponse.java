@@ -5,6 +5,7 @@ import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 
 public record IndustryDataSetResponse(
         String id,
+        String code,
         String productName,
         String companyName,
         String modelName,
@@ -33,6 +34,8 @@ public record IndustryDataSetResponse(
         String detailImagePath,
         String frontImagePath,
         String sideImagePath,
+        String side2ImagePath,
+        String side3ImagePath,
         IndustryDataCategory industryDataCategory
 ) {
 
@@ -40,9 +43,13 @@ public record IndustryDataSetResponse(
             IndustryData data,
             String detailImagePath,
             String frontImagePath,
-            String sideImagePath) {
+            String sideImagePath,
+            String side2ImagePath,
+            String side3ImagePath
+    ) {
         return new IndustryDataSetResponse(
                 data.getId().toString(),
+                data.getOriginalId(),
                 data.getProductName(),
                 data.getCompanyName(),
                 data.getModelName(),
@@ -71,6 +78,8 @@ public record IndustryDataSetResponse(
                 detailImagePath,
                 frontImagePath,
                 sideImagePath,
+                side2ImagePath,
+                side3ImagePath,
                 data.getIndustryDataCategory()
 
                 );

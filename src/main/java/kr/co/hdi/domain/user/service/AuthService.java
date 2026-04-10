@@ -106,6 +106,12 @@ public class AuthService {
         CurrentSurvey currentSurvey = currentSurveyRepository.findByDomainType(type)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_DOMAIN_TYPE));
 
+
+        if (currentSurvey.getYearId() == null) {
+            throw new AuthException(AuthErrorCode.YEAR_NOT_FOUND);
+        }
+
+
         Year year = yearRepository.findById(currentSurvey.getYearId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.YEAR_NOT_FOUND));
 

@@ -49,7 +49,10 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     // 2026
     private String noiseCancelling;
     private String codec;
+
+    @Column(columnDefinition = "text")
     private String extraFeatures;
+
     private String controlType;
     private String waterproof;
     private String maxPlayTime;
@@ -359,6 +362,9 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
                 this.originalIdInteger = null;
             }
         }
-    }
-}
 
+
+    }
+
+
+}
