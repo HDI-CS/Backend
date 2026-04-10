@@ -27,7 +27,6 @@ public class UserController {
         if (userId == null) {
             return ResponseEntity.status(401).build();
         }
-
         AuthResponse response = authService.getAuthInfo(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
