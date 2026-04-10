@@ -40,31 +40,6 @@ public class IndustryDataService {
     private final IndustryDataRepository industryDataRepository;
 
     /*
-     IndustryData category 년도별 매핑
-     */
-//    private final Map<String, List<IndustryDataCategory>> categoryPolicy = Map.of(
-//            "2025", List.of(
-//                    IndustryDataCategory.VACUUM_CLEANER,
-//                    IndustryDataCategory.AIR_PURIFIER,
-//                    IndustryDataCategory.HAIR_DRYER
-//            ),
-//            "2026", List.of(
-//                    IndustryDataCategory.HEADPHONE,
-//                    IndustryDataCategory.EARPHONE,
-//                    IndustryDataCategory.BLUETOOTH_SPEAKER
-//            )
-//    );
-
-//    private void validateCategory(String year, IndustryDataCategory category) {
-//        List<IndustryDataCategory> allowed = categoryPolicy.getOrDefault(year, List.of());
-//
-//        if (!allowed.contains(category)) {
-//            throw new DataException(DataErrorCode.INVALID_CATEGORY);
-//        }
-//    }
-
-
-    /*
     산업 디자인 연도 목록 조회
      */
     public List<YearResponse> getIndustryDataYears() {
