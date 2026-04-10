@@ -202,6 +202,8 @@ public class SurveyService {
         String detailImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL);
         String frontImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.FRONT);
         String sideImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE);
+        String side2ImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE2);
+        String side3ImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE3);
 
         // 설문 문항 조회
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
@@ -228,7 +230,10 @@ public class SurveyService {
                         industryData,
                         detailImagePath,
                         frontImagePath,
-                        sideImagePath),
+                        sideImagePath,
+                        side2ImagePath,
+                        side3ImagePath
+                ),
                 new SurveyResponse(
                         industryData.getOriginalId() + "_" + industryData.getModelName(),
                         numberResponses,
