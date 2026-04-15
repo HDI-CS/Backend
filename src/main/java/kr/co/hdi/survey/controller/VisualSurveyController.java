@@ -57,15 +57,15 @@ public class VisualSurveyController {
         return ResponseEntity.ok().build();
     }
 
-//    @Operation(summary = "제출")
-//    @PostMapping("/brand/{brandResponseId}/submit")
-//    public ResponseEntity<Void> submitBrandSurvey(
-//            @PathVariable Long brandResponseId,
-//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-//    ) {
-//        surveyService.setBrandResponseStatusDone(brandResponseId, userId);
-//        return ResponseEntity.ok().build();
-//    }
+    @Operation(summary = "브랜드 설문 응답 제출")
+    @PostMapping("/{dataId}/submit")
+    public ResponseEntity<Void> submitBrandSurvey(
+            @PathVariable Long dataId,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.submitVisualSurvey(dataId, userId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/weighted-score")
     @Operation(summary = "시각 디자인 가중치 응답 조회")
@@ -74,6 +74,7 @@ public class VisualSurveyController {
     ) {
 
         List<VisualWeightedScoreResponse> responses = surveyService.getVisualWeightedResponse(userId);
+
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 

@@ -163,6 +163,14 @@ public class SurveyService {
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
         List<VisualSurvey> visualSurveys = visualSurveyRepository.findAllByYear(currentSurvey.getYearId());
 
+        // 사용자 평가 참여 정보 조회
+        UserYearRound userYearRound =
+                userYearRoundRepository.findByAssessmentRoundIdAndUserId(
+                                currentSurvey.getAssessmentRoundId(),
+                                userId
+                        )
+                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
+
         // 데이터에 대한 응답 조회
         List<VisualResponse> responses = visualResponseRepository.findAllByVisualDataIdAndUserId(dataId, userId);
         Map<Long, VisualResponse> responseMap = responses.stream()
@@ -180,10 +188,16 @@ public class SurveyService {
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
                 .orElse(null);
 
+        VisualDataAssignment assignment =
+                visualDataAssignmentRepository
+                        .findByUserYearRoundIdAndVisualDataId(userYearRound.getId(), dataId)
+                        .orElseThrow(null);
+
         return new VisualSurveyDetailResponse(
                 VisualDatasetResponse.fromEntity(visualData,visualDataImage),
                 new SurveyResponse(
                         visualData.getBrandCode() + "_" + visualData.getSectorCategory(),
+                        assignment.isSubmitted(),
                         numberResponses,
                         textResponse
                 ));
@@ -214,6 +228,14 @@ public class SurveyService {
         Map<Long, IndustryResponse> responseMap = responses.stream()
                 .collect(Collectors.toMap(r -> r.getIndustrySurvey().getId(), r -> r));  // key: industrySurveyId, value: industryResponse
 
+        // 사용자 평가 참여 정보 조회
+        UserYearRound userYearRound =
+                userYearRoundRepository.findByAssessmentRoundIdAndUserId(
+                                currentSurvey.getAssessmentRoundId(),
+                                userId
+                        )
+                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
+
         // 설문 + 응답 dto
         List<NumberSurveyResponse> numberResponses = industrySurveys.stream()
                 .filter(s -> s.getSurveyType() == SurveyType.NUMBER)
@@ -224,6 +246,12 @@ public class SurveyService {
                 .findFirst()
                 .map(s -> TextSurveyResponse.of(s, responseMap.get(s.getId())))
                 .orElse(null);
+
+
+        IndustryDataAssignment assignment =
+                industryDataAssignmentRepository
+                        .findByUserYearRoundIdAndIndustryDataId(userYearRound.getId(), dataId)
+                        .orElseThrow(null);
 
         return  new IndustrySurveyDetailResponse(
                 IndustryDataSetResponse.fromEntity(
@@ -236,6 +264,7 @@ public class SurveyService {
                 ),
                 new SurveyResponse(
                         industryData.getOriginalId() + "_" + industryData.getModelName(),
+                        assignment.isSubmitted(),
                         numberResponses,
                         textResponses
                 ));
@@ -431,4 +460,52 @@ public class SurveyService {
         );
         industryWeightedScoreRepository.save(industryWeightedScore);
     }
-}
+
+    // 브랜드 응답 최종 제출
+    @Transactional
+    public void submitVisualSurvey(Long dataId, Long userId) {
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.VISUAL);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
+
+        VisualDataAssignment assignment =
+                visualDataAssignmentRepository
+                        .findByUserYearRoundIdAndVisualDataId(
+                                userYearRound.getId(),
+                                dataId
+                        )
+                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE));
+
+        // 다 작성했는지 체크
+        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+        }
+
+        // 제출 처리
+        assignment.updateSubmitted(true);
+        }
+
+    // 제품 응답 최종 제출
+    @Transactional
+    public void submitIndustrySurvey(Long dataId, Long userId) {
+        CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
+        UserYearRound userYearRound = userYearRoundRepository.findByAssessmentRoundIdAndUserId(currentSurvey.getAssessmentRoundId(), userId)
+                .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_USER_YEAR_ROUND));
+
+        IndustryDataAssignment assignment =
+                industryDataAssignmentRepository
+                        .findByUserYearRoundIdAndIndustryDataId(
+                                userYearRound.getId(),
+                                dataId
+                        )
+                        .orElseThrow(() -> new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE));
+
+        // 다 작성했는지 체크
+        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+        }
+
+        // 제출 처리
+        assignment.updateSubmitted(true);
+        }
+    }

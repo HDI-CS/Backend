@@ -24,7 +24,6 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-
         if (session != null) {
             Long userId = (Long) session.getAttribute("userId");
             Role role = (Role) session.getAttribute("role");

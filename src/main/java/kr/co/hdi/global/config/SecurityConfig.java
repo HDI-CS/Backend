@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers(WHITE_LIST).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/user/**").hasRole("USER")
+                        .requestMatchers("/api/v1/user/visual/survey/**").permitAll()
                         .anyRequest().denyAll()
                 )
 
