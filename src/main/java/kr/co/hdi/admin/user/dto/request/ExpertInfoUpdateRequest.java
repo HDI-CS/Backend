@@ -2,6 +2,8 @@ package kr.co.hdi.admin.user.dto.request;
 
 public record ExpertInfoUpdateRequest(
         String name,
+        String email,
+        String password,
         String phoneNumber,
         String gender,
         String age,
