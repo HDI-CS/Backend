@@ -7,6 +7,7 @@ import kr.co.hdi.domain.survey.entity.VisualSurvey;
 
 public record NumberSurveyResponse(
         Long surveyId,
+        String surveyCode,
         String survey,   // 설문 문항 내용
         Integer response  // 정량 평가 응답
 ) {
@@ -15,6 +16,7 @@ public record NumberSurveyResponse(
 
         return new NumberSurveyResponse(
                 survey.getId(),
+                survey.getSurveyCode(),
                 survey.getSurveyContent(),
                 response != null ? response.getNumberResponse() : null
         );
@@ -24,6 +26,7 @@ public record NumberSurveyResponse(
 
         return new NumberSurveyResponse(
                 survey.getId(),
+                survey.getSurveyCode(),
                 survey.getSurveyContent(),
                 response != null ? response.getNumberResponse() : null
         );
