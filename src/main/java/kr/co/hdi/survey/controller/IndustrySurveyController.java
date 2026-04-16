@@ -58,15 +58,15 @@ public class IndustrySurveyController {
         return ResponseEntity.ok().build();
     }
 
-//    @Operation(summary = "제출")
-//    @PostMapping("/product/{productResponseId}/submit")
-//    public ResponseEntity<Void> submitProductSurvey(
-//            @PathVariable Long productResponseId,
-//            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
-//    ) {
-//        surveyService.setProductResponseStatusDone(productResponseId, userId);
-//        return ResponseEntity.ok().build();
-//    }
+    @Operation(summary = "제품 설문 응답 제출")
+    @PostMapping("/{dataId}/submit")
+    public ResponseEntity<Void> submitProductSurvey(
+            @PathVariable Long dataId,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.submitIndustrySurvey(dataId, userId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/weighted-score")
     @Operation(summary = "산업 디자인 가중치 응답 조회")

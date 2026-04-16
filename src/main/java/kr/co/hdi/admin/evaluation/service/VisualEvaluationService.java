@@ -166,7 +166,7 @@ public class VisualEvaluationService implements EvaluationService {
     정성 평가 상태 확인 헬퍼
      */
     private boolean isQualitativeDone(List<UserResponsePair> list, Integer surveyCount) {
-        if (list == null || list.size() != surveyCount) {
+        if (list == null || list.isEmpty()) {
             return false;
         }
 

@@ -145,6 +145,8 @@ public class UserEntity extends BaseTimeEntityWithDeletion {
 
     public void updateInfo(ExpertInfoUpdateRequest request) {
         this.name = request.name();
+        this.email = request.email();
+        this.password = request.password();
         this.phoneNumber = request.phoneNumber();
         this.gender = request.gender();
         this.age = request.age();
