@@ -207,10 +207,12 @@ public class SurveyService {
     산업 디자인 평가 데이터셋 + 응답 조회
      */
     public IndustrySurveyDetailResponse getIndustrySurveyDetail(Long dataId, Long userId) {
+        System.out.println("STEP 1 - userYearRound 조회 완료");
 
         // 데이터 조회
         IndustryData industryData = industryDataRepository.findById(dataId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.NOT_FOUND_DATA));
+        System.out.println("STEP 2 - data 조회 완료");
 
         // 데이터 이미지 조회
         String detailImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.DETAIL);
@@ -218,6 +220,7 @@ public class SurveyService {
         String sideImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE);
         String side2ImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE2);
         String side3ImagePath = industryDataService.resolveIndustryImageUrl(industryData, IndustryImageType.SIDE3);
+        System.out.println("STEP 3 - assignment 조회 완료");
 
         // 설문 문항 조회
         CurrentSurvey currentSurvey = getCurrentSurvey(DomainType.INDUSTRY);
@@ -227,6 +230,7 @@ public class SurveyService {
         List<IndustryResponse> responses = industryResponseRepository.findAllByIndustryDataIdAndUserId(dataId, userId);
         Map<Long, IndustryResponse> responseMap = responses.stream()
                 .collect(Collectors.toMap(r -> r.getIndustrySurvey().getId(), r -> r));  // key: industrySurveyId, value: industryResponse
+        System.out.println("STEP 4 - response 조회 완료");
 
         // 사용자 평가 참여 정보 조회
         UserYearRound userYearRound =

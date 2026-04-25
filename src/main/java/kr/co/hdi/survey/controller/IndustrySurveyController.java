@@ -3,6 +3,7 @@ package kr.co.hdi.survey.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import kr.co.hdi.admin.evaluation.service.IndustryEvaluationService;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
 import kr.co.hdi.survey.dto.request.industry.IndustryWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.SurveyDataPreviewResponse;
@@ -11,6 +12,7 @@ import kr.co.hdi.survey.dto.response.industry.IndustryWeightedScoreResponse;
 import kr.co.hdi.survey.service.SurveyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,7 @@ import java.util.List;
 public class IndustrySurveyController {
 
     private final SurveyService surveyService;
+    private final IndustryEvaluationService industryEvaluationService;
 
     @GetMapping
     @Operation(summary = "유저에게 할당된 제품 설문 목록 조회")
@@ -87,5 +90,15 @@ public class IndustrySurveyController {
 
         surveyService.saveIndustryWeightedResponse(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/excel/pivot")
+    public ResponseEntity<byte[]> downloadPivot() {
+
+        byte[] file = industryEvaluationService.exportPivotExcel(8L);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=result.xlsx")
+                .body(file);
     }
 }
