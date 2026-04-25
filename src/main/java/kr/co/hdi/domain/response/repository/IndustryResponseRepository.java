@@ -72,4 +72,16 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
     order by ir.id asc
     """)
     List<UserResponsePair> findPairsByUserYearRound(Long assessmentRoundId);
+
+    @Query("""
+    select ir
+    from IndustryResponse ir
+    join fetch ir.userYearRound uyr
+    join fetch uyr.user u
+    join fetch ir.industryData d
+    join fetch ir.industrySurvey s
+    where uyr.assessmentRound.id = :assessmentRoundId
+      and ir.deletedAt is null
+""")
+    List<IndustryResponse> findAllEntitiesByAssessmentRoundId(@Param("assessmentRoundId") Long assessmentRoundId);
 }

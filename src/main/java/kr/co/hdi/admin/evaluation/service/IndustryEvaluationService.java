@@ -508,4 +508,156 @@ public class IndustryEvaluationService implements EvaluationService {
         return txt;
     }
 
+
+    public byte[] exportPivotExcel(Long assessmentRoundId) {
+
+        List<IndustryResponse> responses =
+                industryResponseRepository.findAllEntitiesByAssessmentRoundId(assessmentRoundId);
+
+        List<IndustrySurvey> surveys =
+                industrySurveyRepository.findAll();
+
+        List<IndustryWeightedScore> weights =
+                industryWeightedScoreRepository.findAllByUserYearRound(assessmentRoundId);
+
+        // survey_code 매핑
+        Map<Long, String> surveyCodeMap = surveys.stream()
+                .collect(Collectors.toMap(
+                        IndustrySurvey::getId,
+                        IndustrySurvey::getSurveyCode
+                ));
+
+        // user별 grouping
+        Map<String, List<IndustryResponse>> byUser =
+                responses.stream()
+                        .filter(r -> !"TEST_PR".equals(
+                                r.getUserYearRound().getUser().getName()
+                        ))
+                        .collect(Collectors.groupingBy(
+                                r -> r.getUserYearRound().getUser().getName()
+                        ));
+
+        try (Workbook wb = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            for (String userName : byUser.keySet()) {
+
+                Sheet sheet = wb.createSheet(userName);
+
+                List<IndustryResponse> userResponses = byUser.get(userName);
+
+                // productId 기준 grouping
+                Map<Long, List<IndustryResponse>> byProduct =
+                        userResponses.stream()
+                                .collect(Collectors.groupingBy(
+                                        r -> r.getIndustryData().getId()
+                                ));
+
+                // 헤더
+                Row header = sheet.createRow(0);
+                header.createCell(0).setCellValue("productId");
+
+                List<String> surveyCodes = surveys.stream()
+                        .filter(s -> s.getYear().getId() == 10)
+                        .map(IndustrySurvey::getSurveyCode)
+                        .distinct()
+                        .sorted((a, b) -> {
+                            if (a.equals("PR_TEXT")) return 1;  // a를 뒤로
+                            if (b.equals("PR_TEXT")) return -1; // b를 뒤로
+                            return a.compareTo(b); // 나머지는 기본 정렬
+                        })
+                        .toList();
+
+                for (int i = 0; i < surveyCodes.size(); i++) {
+                    header.createCell(i + 1).setCellValue(surveyCodes.get(i));
+                }
+
+                int rowIdx = 1;
+
+                List<Long> sortedProductIds = byProduct.keySet().stream()
+                        .sorted()
+                        .toList();
+
+                for (Long productId : sortedProductIds) {
+
+                    Row row = sheet.createRow(rowIdx++);
+                    row.createCell(0).setCellValue(productId);
+
+                    Map<String, IndustryResponse> map =
+                            byProduct.get(productId).stream()
+                                    .collect(Collectors.toMap(
+                                            r -> surveyCodeMap.get(r.getIndustrySurvey().getId()),
+                                            r -> r,
+                                            (a, b) -> a
+                                    ));
+
+                    for (int i = 0; i < surveyCodes.size(); i++) {
+
+                        String code = surveyCodes.get(i);
+                        IndustryResponse r = map.get(code);
+
+                        if (r != null) {
+                            if (r.getNumberResponse() != null) {
+                                row.createCell(i + 1).setCellValue(r.getNumberResponse());
+                            } else if (r.getTextResponse() != null) {
+                                row.createCell(i + 1).setCellValue(r.getTextResponse());
+                            }
+                        }
+                    }
+                }
+
+                // ===== 가중치 추가 =====
+                List<IndustryWeightedScore> userWeights = weights.stream()
+                        .filter(w -> w.getUserYearRound().getUser().getName().equals(userName))
+                        .toList();
+
+                int start = rowIdx + 2;
+
+                Row header2 = sheet.createRow(start);
+                header2.createCell(0).setCellValue("카테고리");
+                header2.createCell(1).setCellValue("심미성");
+                header2.createCell(2).setCellValue("조형성");
+                header2.createCell(3).setCellValue("독창성");
+                header2.createCell(4).setCellValue("사용성");
+                header2.createCell(5).setCellValue("기능성");
+                header2.createCell(6).setCellValue("윤리성");
+                header2.createCell(7).setCellValue("경제성");
+                header2.createCell(8).setCellValue("목적성");
+
+                int wRow = start + 1;
+
+                for (IndustryWeightedScore w : userWeights) {
+
+                    Row row = sheet.createRow(wRow++);
+
+                    row.createCell(0).setCellValue(w.getIndustryDataCategory().name());
+                    row.createCell(1).setCellValue(nvl(w.getScore1()));
+                    row.createCell(2).setCellValue(nvl(w.getScore2()));
+                    row.createCell(3).setCellValue(nvl(w.getScore3()));
+                    row.createCell(4).setCellValue(nvl(w.getScore4()));
+                    row.createCell(5).setCellValue(nvl(w.getScore5()));
+                    row.createCell(6).setCellValue(nvl(w.getScore6()));
+                    row.createCell(7).setCellValue(nvl(w.getScore7()));
+                    row.createCell(8).setCellValue(nvl(w.getScore8()));
+                }
+
+                // 컬럼 width
+                for (int i = 0; i < surveyCodes.size() + 1; i++) {
+                    sheet.setColumnWidth(i, 4000);
+                }
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private int nvl(Integer v) {
+        return v == null ? 0 : v;
+    }
+
+
 }
