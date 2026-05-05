@@ -19,7 +19,7 @@ public record SurveyDataPreviewResponse(
         ResponseStatus status;
         if (responseCount == null || responseCount == 0) {
             status = ResponseStatus.NOT_STARTED;
-        } else if (surveyCount != null && responseCount >= surveyCount) {
+        } else if (surveyCount != null && responseCount >= surveyCount && assignment.isSubmitted()) {
             status = ResponseStatus.DONE;
         } else {
             status = ResponseStatus.IN_PROGRESS;
@@ -40,7 +40,7 @@ public record SurveyDataPreviewResponse(
         ResponseStatus status;
         if (responseCount == null || responseCount == 0) {
             status = ResponseStatus.NOT_STARTED;
-        } else if (surveyCount != null && responseCount >= surveyCount) {
+        } else if (surveyCount != null && responseCount >= surveyCount && assignment.isSubmitted()) {
             status = ResponseStatus.DONE;
         } else {
             status = ResponseStatus.IN_PROGRESS;
