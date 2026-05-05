@@ -73,4 +73,13 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
             Long visualSurveyId,
             Long visualDataId
     );
+
+
+    @Query("""
+    SELECT vr
+    FROM VisualResponse vr
+    WHERE vr.userYearRound.assessmentRound.year.id = :yearId
+    AND vr.deletedAt IS NULL
+    """)
+    List<VisualResponse> findAllByYearId(Long yearId);
 }

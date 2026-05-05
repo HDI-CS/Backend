@@ -46,4 +46,16 @@ public interface VisualWeightedScoreRepository extends JpaRepository<VisualWeigh
     );
 
     List<VisualWeightedScore> findAllByUserYearRoundId(Long userYearRoundId);
+
+    @Query("""
+    select vws
+    from VisualWeightedScore vws
+    join fetch vws.userYearRound uyr
+    join fetch uyr.user u
+    join uyr.assessmentRound ar
+    where ar.year.id = :yearId
+      and vws.deletedAt is null
+      and u.deletedAt is null
+""")
+    List<VisualWeightedScore> findAllByYearId(@Param("yearId") Long yearId);
 }
