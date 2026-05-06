@@ -30,6 +30,7 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
     select new kr.co.hdi.domain.response.query.UserResponsePair(
             vr.userYearRound.user.id,
             vr.visualData.id,
+            vr.visualSurvey.surveyCode,
             vr.numberResponse,
             vr.textResponse
        )

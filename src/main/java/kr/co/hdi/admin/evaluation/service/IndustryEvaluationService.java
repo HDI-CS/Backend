@@ -172,11 +172,19 @@ public class IndustryEvaluationService implements EvaluationService {
             return false;
         }
 
-        return list.stream().allMatch(r ->
-                r.numberResponse() != null ||
-                        (r.textResponse() != null && !r.textResponse().isBlank())
-        );
+
+
+        return list.stream()
+                .filter(Objects::nonNull)
+                .filter(r -> "PR_TEXT".equals(r.surveyCode()))
+                .anyMatch(this::hasAnswer);
     }
+
+    private boolean hasAnswer(UserResponsePair r) {
+        return r.numberResponse() != null ||
+                (r.textResponse() != null && !r.textResponse().isBlank());
+    }
+
 
     /*
     가중치 평가 상태 확인 헬퍼

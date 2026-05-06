@@ -63,6 +63,7 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
     select new kr.co.hdi.domain.response.query.UserResponsePair(
             ir.userYearRound.user.id,
             ir.industryData.id,
+            ir.industrySurvey.surveyCode,
             ir.numberResponse,
             ir.textResponse
        )
@@ -99,4 +100,5 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
             @Param("userYearRoundId") Long userYearRoundId,
             @Param("dataId") Long dataId
     );
+
 }

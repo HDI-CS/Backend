@@ -1,13 +1,14 @@
 package kr.co.hdi.crawl.excel;
 
-import kr.co.hdi.domain.data.entity.VisualData;
-import kr.co.hdi.domain.data.repository.VisualDataRepository;
-import kr.co.hdi.domain.response.entity.VisualResponse;
-import kr.co.hdi.domain.response.entity.VisualWeightedScore;
-import kr.co.hdi.domain.response.repository.VisualResponseRepository;
-import kr.co.hdi.domain.response.repository.VisualWeightedScoreRepository;
-import kr.co.hdi.domain.survey.entity.VisualSurvey;
-import kr.co.hdi.domain.survey.repository.VisualSurveyRepository;
+import kr.co.hdi.domain.data.entity.IndustryData;
+import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.repository.IndustryDataRepository;
+import kr.co.hdi.domain.response.entity.IndustryResponse;
+import kr.co.hdi.domain.response.entity.IndustryWeightedScore;
+import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
+import kr.co.hdi.domain.response.repository.IndustryWeightedScoreRepository;
+import kr.co.hdi.domain.survey.entity.IndustrySurvey;
+import kr.co.hdi.domain.survey.repository.IndustrySurveyRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -25,56 +26,60 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class VisualResultExcelService {
+public class IndustryResultExcelService {
 
-    private final VisualDataRepository visualDataRepository;
-    private final VisualSurveyRepository visualSurveyRepository;
-    private final VisualResponseRepository visualResponseRepository;
-    private final VisualWeightedScoreRepository visualWeightedScoreRepository;
+    private final IndustryDataRepository industryDataRepository;
+    private final IndustrySurveyRepository industrySurveyRepository;
+    private final IndustryResponseRepository industryResponseRepository;
+    private final IndustryWeightedScoreRepository industryWeightedScoreRepository;
 
-    public byte[] exportVisualResultByTeam(Long yearId) {
+    public byte[] exportIndustryResultByTeam(Long yearId) {
 
-        List<VisualData> dataList =
-                visualDataRepository.findByYearIdAndDeletedAtIsNull(yearId);
+        List<IndustryData> dataList =
+                industryDataRepository.findByYearIdAndDeletedAtIsNull(yearId);
 
-        List<VisualSurvey> surveys =
-                visualSurveyRepository.findAllByYear(yearId);
+        List<IndustrySurvey> surveys =
+                industrySurveyRepository.findAllByYear(yearId);
 
-        List<VisualResponse> responses =
-                visualResponseRepository.findAllByYearId(yearId);
+        List<IndustryResponse> responses =
+                industryResponseRepository.findAllEntitiesByAssessmentRoundId(8L);
 
-        List<VisualWeightedScore> weights =
-                visualWeightedScoreRepository.findAllByYearId(yearId);
+        List<IndustryWeightedScore> weights =
+                industryWeightedScoreRepository.findAllByYearId(yearId);
 
-        Map<Long, VisualWeightedScore> weightMapByUserYearRoundId =
+        Map<String, IndustryWeightedScore> weightMapByUserYearRoundIdAndCategory =
                 weights.stream()
+                        .filter(w -> w.getUserYearRound() != null)
+                        .filter(w -> w.getIndustryDataCategory() != null)
                         .collect(Collectors.toMap(
-                                w -> w.getUserYearRound().getId(),
+                                w -> weightKey(
+                                        w.getUserYearRound().getId(),
+                                        w.getIndustryDataCategory()
+                                ),
                                 w -> w,
                                 (w1, w2) -> w1
                         ));
 
-        System.out.println("가중치 개수 = " + weights.size());
-        System.out.println("가중치 userYearRoundIds = " + weightMapByUserYearRoundId.keySet());
+        System.out.println("산업 가중치 개수 = " + weights.size());
+        System.out.println("산업 가중치 keys = " + weightMapByUserYearRoundIdAndCategory.keySet());
 
         // =====================
         // 설문 문항 정렬
-        // - VI_TEXT는 점수 컬럼에서 제외
+        // - PR_TEXT는 점수 컬럼에서 제외
         // - surveyNumber 오름차순
-        // - 헤더 값은 "14. VI_USB_FL" 형태
+        // - 헤더 값: "14. PR_USB_FL" 형태
         // =====================
-        List<VisualSurvey> sortedSurveys = surveys.stream()
+        List<IndustrySurvey> sortedSurveys = surveys.stream()
                 .filter(s -> s.getSurveyCode() != null && !s.getSurveyCode().isBlank())
-                .filter(s -> !"VI_TEXT".equals(s.getSurveyCode()))
+                .filter(s -> !"PR_TEXT".equals(s.getSurveyCode()))
                 .sorted(Comparator.comparing(
-                        VisualSurvey::getSurveyNumber,
+                        IndustrySurvey::getSurveyNumber,
                         Comparator.nullsLast(Integer::compareTo)
                 ))
                 .toList();
 
-        Map<String, Map<Long, List<VisualResponse>>> teamDataMap =
+        Map<String, Map<Long, List<IndustryResponse>>> teamDataMap =
                 responses.stream()
-                        // 팀 없는 사람(TEST_VI, 장우석 등)은 엑셀 시트 생성 대상에서 제외
                         .filter(r -> {
                             String name = safeName(r.getUserYearRound().getUser().getName());
                             String team = getTeam(name);
@@ -87,7 +92,7 @@ public class VisualResultExcelService {
                                     return "Team " + team + "." + name;
                                 },
                                 Collectors.groupingBy(
-                                        r -> r.getVisualData().getId()
+                                        r -> r.getIndustryData().getId()
                                 )
                         ));
 
@@ -97,18 +102,43 @@ public class VisualResultExcelService {
             short rowHeight = 400;
 
             // =====================
-            // 일반 헤더 스타일
+            // 위쪽 설문 헤더 스타일 - 파란색 배경
             // =====================
             CellStyle headerStyle = wb.createCellStyle();
             Font headerFont = wb.createFont();
             headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
             headerStyle.setFont(headerFont);
             headerStyle.setAlignment(HorizontalAlignment.CENTER);
             headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
             headerStyle.setBorderTop(BorderStyle.THIN);
             headerStyle.setBorderBottom(BorderStyle.THIN);
             headerStyle.setBorderLeft(BorderStyle.THIN);
             headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // =====================
+            // 일반 값 스타일
+            // =====================
+            CellStyle valueStyle = wb.createCellStyle();
+            valueStyle.setAlignment(HorizontalAlignment.RIGHT);
+            valueStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            valueStyle.setBorderTop(BorderStyle.THIN);
+            valueStyle.setBorderBottom(BorderStyle.THIN);
+            valueStyle.setBorderLeft(BorderStyle.THIN);
+            valueStyle.setBorderRight(BorderStyle.THIN);
+
+            // =====================
+            // ID 값 스타일
+            // =====================
+            CellStyle idValueStyle = wb.createCellStyle();
+            idValueStyle.setAlignment(HorizontalAlignment.CENTER);
+            idValueStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            idValueStyle.setBorderTop(BorderStyle.THIN);
+            idValueStyle.setBorderBottom(BorderStyle.THIN);
+            idValueStyle.setBorderLeft(BorderStyle.THIN);
+            idValueStyle.setBorderRight(BorderStyle.THIN);
 
             // =====================
             // 텍스트 줄바꿈 스타일
@@ -127,6 +157,7 @@ public class VisualResultExcelService {
             CellStyle weightHeaderStyle = wb.createCellStyle();
             Font weightFont = wb.createFont();
             weightFont.setBold(true);
+            weightFont.setColor(IndexedColors.WHITE.getIndex());
             weightHeaderStyle.setFont(weightFont);
             weightHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
             weightHeaderStyle.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -173,7 +204,7 @@ public class VisualResultExcelService {
                 idHeaderCell.setCellValue("ID");
                 idHeaderCell.setCellStyle(headerStyle);
 
-                for (VisualSurvey survey : sortedSurveys) {
+                for (IndustrySurvey survey : sortedSurveys) {
                     Cell cell = header.createCell(c++);
                     cell.setCellValue(survey.getSurveyNumber() + ". " + survey.getSurveyCode());
                     cell.setCellStyle(headerStyle);
@@ -186,18 +217,18 @@ public class VisualResultExcelService {
                 // =====================
                 // 2. 설문 평가 데이터
                 // =====================
-                Map<Long, List<VisualResponse>> dataMap = teamDataMap.get(sheetName);
+                Map<Long, List<IndustryResponse>> dataMap = teamDataMap.get(sheetName);
 
                 List<Long> sortedDataIds = dataMap.keySet().stream()
                         .sorted(Comparator.comparing(dataId -> {
-                            VisualData data = findVisualData(dataList, dataId);
+                            IndustryData data = findIndustryData(dataList, dataId);
                             return getCodeNumber(data);
                         }))
                         .toList();
 
                 for (Long dataId : sortedDataIds) {
 
-                    VisualData data = findVisualData(dataList, dataId);
+                    IndustryData data = findIndustryData(dataList, dataId);
                     if (data == null) continue;
 
                     Row row = sheet.createRow(rIdx++);
@@ -205,15 +236,17 @@ public class VisualResultExcelService {
 
                     int col = 0;
 
-                    row.createCell(col++).setCellValue(nvl(data.getBrandCode()));
+                    Cell idCell = row.createCell(col++);
+                    idCell.setCellValue(nvl(getIndustryCode(data)));
+                    idCell.setCellStyle(idValueStyle);
 
-                    List<VisualResponse> responseList = dataMap.get(dataId);
+                    List<IndustryResponse> responseList = dataMap.get(dataId);
 
-                    for (VisualSurvey survey : sortedSurveys) {
+                    for (IndustrySurvey survey : sortedSurveys) {
 
-                        List<VisualResponse> filtered = responseList.stream()
-                                .filter(v -> v.getVisualSurvey() != null)
-                                .filter(v -> survey.getId().equals(v.getVisualSurvey().getId()))
+                        List<IndustryResponse> filtered = responseList.stream()
+                                .filter(v -> v.getIndustrySurvey() != null)
+                                .filter(v -> survey.getId().equals(v.getIndustrySurvey().getId()))
                                 .toList();
 
                         Cell valueCell = row.createCell(col++);
@@ -228,10 +261,12 @@ public class VisualResultExcelService {
                         } else {
                             valueCell.setCellValue("");
                         }
+
+                        valueCell.setCellStyle(valueStyle);
                     }
 
                     String text = responseList.stream()
-                            .map(VisualResponse::getTextResponse)
+                            .map(IndustryResponse::getTextResponse)
                             .filter(Objects::nonNull)
                             .filter(s -> !s.isBlank())
                             .findFirst()
@@ -249,6 +284,7 @@ public class VisualResultExcelService {
 
                 // =====================
                 // 4. 가중치 평가 영역
+                // - 산업은 카테고리 3개라서 가중치 행 3개
                 // =====================
                 Row categoryRow = sheet.createRow(rIdx++);
                 categoryRow.setHeight(rowHeight);
@@ -268,14 +304,7 @@ public class VisualResultExcelService {
                     cell.setCellStyle(weightHeaderStyle);
                 }
 
-                Row weightRow = sheet.createRow(rIdx++);
-                weightRow.setHeight(rowHeight);
-
-                Cell weightTitleCell = weightRow.createCell(0);
-                weightTitleCell.setCellValue("meep");
-                weightTitleCell.setCellStyle(weightHeaderStyle);
-
-                List<VisualResponse> allResponsesForUser =
+                List<IndustryResponse> allResponsesForUser =
                         dataMap.values()
                                 .stream()
                                 .flatMap(List::stream)
@@ -287,26 +316,49 @@ public class VisualResultExcelService {
 
                 System.out.println(sheetName + " userYearRoundId = " + userYearRoundId);
 
-                VisualWeightedScore weight = userYearRoundId == null
-                        ? null
-                        : weightMapByUserYearRoundId.get(userYearRoundId);
+                IndustryDataCategory[] industryCategories = {
+                        IndustryDataCategory.HEADPHONE,
+                        IndustryDataCategory.EARPHONE,
+                        IndustryDataCategory.BLUETOOTH_SPEAKER
+                };
 
-                if (weight != null) {
-                    createWeightValueCell(weightRow, 1, weight.getScore1(), weightValueStyle);
-                    createWeightValueCell(weightRow, 2, weight.getScore2(), weightValueStyle);
-                    createWeightValueCell(weightRow, 3, weight.getScore3(), weightValueStyle);
-                    createWeightValueCell(weightRow, 4, weight.getScore4(), weightValueStyle);
-                    createWeightValueCell(weightRow, 5, weight.getScore5(), weightValueStyle);
-                    createWeightValueCell(weightRow, 6, weight.getScore6(), weightValueStyle);
-                    createWeightValueCell(weightRow, 7, weight.getScore7(), weightValueStyle);
-                    createWeightValueCell(weightRow, 8, weight.getScore8(), weightValueStyle);
-                } else {
-                    System.out.println("⚠️ 가중치 없음: " + sheetName + ", userYearRoundId=" + userYearRoundId);
+                for (IndustryDataCategory category : industryCategories) {
 
-                    for (int i = 1; i <= 8; i++) {
-                        Cell emptyCell = weightRow.createCell(i);
-                        emptyCell.setCellValue("");
-                        emptyCell.setCellStyle(weightValueStyle);
+                    Row weightRow = sheet.createRow(rIdx++);
+                    weightRow.setHeight(rowHeight);
+
+                    Cell weightTitleCell = weightRow.createCell(0);
+                    weightTitleCell.setCellValue(getCategoryDisplayName(category));
+                    weightTitleCell.setCellStyle(weightHeaderStyle);
+
+                    IndustryWeightedScore weight = userYearRoundId == null
+                            ? null
+                            : weightMapByUserYearRoundIdAndCategory.get(
+                            weightKey(userYearRoundId, category)
+                    );
+
+                    if (weight != null) {
+                        createWeightValueCell(weightRow, 1, weight.getScore1(), weightValueStyle);
+                        createWeightValueCell(weightRow, 2, weight.getScore2(), weightValueStyle);
+                        createWeightValueCell(weightRow, 3, weight.getScore3(), weightValueStyle);
+                        createWeightValueCell(weightRow, 4, weight.getScore4(), weightValueStyle);
+                        createWeightValueCell(weightRow, 5, weight.getScore5(), weightValueStyle);
+                        createWeightValueCell(weightRow, 6, weight.getScore6(), weightValueStyle);
+                        createWeightValueCell(weightRow, 7, weight.getScore7(), weightValueStyle);
+                        createWeightValueCell(weightRow, 8, weight.getScore8(), weightValueStyle);
+                    } else {
+                        System.out.println("⚠️ 산업 가중치 없음: "
+                                + sheetName
+                                + ", userYearRoundId="
+                                + userYearRoundId
+                                + ", category="
+                                + category);
+
+                        for (int i = 1; i <= 8; i++) {
+                            Cell emptyCell = weightRow.createCell(i);
+                            emptyCell.setCellValue("");
+                            emptyCell.setCellStyle(weightValueStyle);
+                        }
                     }
                 }
 
@@ -319,22 +371,22 @@ public class VisualResultExcelService {
             return out.toByteArray();
 
         } catch (Exception e) {
-            throw new RuntimeException("엑셀 생성 실패", e);
+            throw new RuntimeException("산업 엑셀 생성 실패", e);
         }
     }
 
-    public void exportVisualResultToFile(Long yearId) {
+    public void exportIndustryResultToFile(Long yearId) {
 
-        byte[] bytes = exportVisualResultByTeam(yearId);
+        byte[] bytes = exportIndustryResultByTeam(yearId);
 
         String path = System.getProperty("user.home")
-                + "/Downloads/visual_result.xlsx";
+                + "/Downloads/industry_result.xlsx";
 
         try (FileOutputStream fos = new FileOutputStream(path)) {
             fos.write(bytes);
             System.out.println("📁 저장 완료: " + path);
         } catch (Exception e) {
-            throw new RuntimeException("파일 저장 실패", e);
+            throw new RuntimeException("산업 파일 저장 실패", e);
         }
     }
 
@@ -350,31 +402,31 @@ public class VisualResultExcelService {
 
     private String getTeam(String name) {
         return switch (name) {
-            case "석재원", "최슬기" -> "1";
-            case "미정", "저스틴고" -> "2";
-            case "이규락", "고은영" -> "3";
-            case "김보영", "송민승" -> "4";
-            case "윤영민", "신자영" -> "5";
-            case "하상목", "장미네" -> "6";
-            case "이주원", "김보라" -> "7";
-            case "전재환", "박우경" -> "8";
-            case "강주현", "정사록" -> "9";
-            case "채병록" -> "10";
+            case "백은경", "안성훈" -> "1";
+            case "함수정", "류관준" -> "2";
+            case "김병수", "허정은" -> "3";
+            case "김재희", "최정민" -> "4";
+            case "노재승", "이상연" -> "5";
+            case "김태완", "김현용" -> "6";
+            case "양성원", "이지환" -> "7";
+            case "김세희", "양성철" -> "8";
+            case "김성한", "이현일" -> "9";
+            case "박희면", "양동환" -> "10";
             default -> null;
         };
     }
 
-    private VisualData findVisualData(List<VisualData> dataList, Long dataId) {
+    private IndustryData findIndustryData(List<IndustryData> dataList, Long dataId) {
         return dataList.stream()
                 .filter(d -> d.getId().equals(dataId))
                 .findFirst()
                 .orElse(null);
     }
 
-    private int getCodeNumber(VisualData data) {
+    private int getCodeNumber(IndustryData data) {
         if (data == null) return Integer.MAX_VALUE;
 
-        String code = data.getBrandCode();
+        String code = getIndustryCode(data);
 
         if (code == null || code.isBlank()) {
             return Integer.MAX_VALUE;
@@ -385,6 +437,24 @@ public class VisualResultExcelService {
         } catch (Exception e) {
             return Integer.MAX_VALUE;
         }
+    }
+
+    private String getIndustryCode(IndustryData data) {
+        if (data == null) return "";
+        return data.getOriginalId();
+    }
+
+    private String weightKey(Long userYearRoundId, IndustryDataCategory category) {
+        return userYearRoundId + "_" + category.name();
+    }
+
+    private String getCategoryDisplayName(IndustryDataCategory category) {
+        return switch (category) {
+            case HEADPHONE -> "HEADPHONE";
+            case EARPHONE -> "EARPHONE";
+            case BLUETOOTH_SPEAKER -> "BLUETOOTH_SPEAKER";
+            default -> category.name();
+        };
     }
 
     private int extractTeamNumber(String sheetName) {
