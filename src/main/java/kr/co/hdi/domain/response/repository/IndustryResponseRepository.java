@@ -86,4 +86,19 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
 """)
     List<IndustryResponse> findAllEntitiesByAssessmentRoundId(@Param("assessmentRoundId") Long assessmentRoundId);
 
+    @Query("""
+        select count(distinct ir.industrySurvey.id)
+        from IndustryResponse ir
+        where ir.userYearRound.id = :userYearRoundId
+          and ir.industryData.id = :dataId
+          and (
+              ir.numberResponse is not null
+              or (ir.textResponse is not null and ir.textResponse <> '')
+          )
+    """)
+    long countCompletedResponses(
+            @Param("userYearRoundId") Long userYearRoundId,
+            @Param("dataId") Long dataId
+    );
+
 }

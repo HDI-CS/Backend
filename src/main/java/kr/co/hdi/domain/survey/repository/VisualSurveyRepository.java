@@ -31,4 +31,20 @@ public interface VisualSurveyRepository extends JpaRepository<VisualSurvey, Long
     void deleteAllByYearId(Long yearId);
 
     Optional<VisualSurvey> findBySurveyCode(String surveyCode);
+
+        @Query("""
+        select count(distinct vr.visualSurvey.id)
+        from VisualResponse vr
+        where vr.userYearRound.id = :userYearRoundId
+          and vr.visualData.id = :dataId
+          and (
+              vr.numberResponse is not null
+              or (vr.textResponse is not null and vr.textResponse <> '')
+          )
+    """)
+        long countCompletedResponses(
+                @Param("userYearRoundId") Long userYearRoundId,
+                @Param("dataId") Long dataId
+        );
+
 }
