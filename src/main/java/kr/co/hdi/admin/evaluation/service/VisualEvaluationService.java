@@ -166,14 +166,30 @@ public class VisualEvaluationService implements EvaluationService {
     정성 평가 상태 확인 헬퍼
      */
     private boolean isQualitativeDone(List<UserResponsePair> list, Integer surveyCount) {
+        if (surveyCount == null || surveyCount <= 0) {
+            return false;
+        }
+
         if (list == null || list.isEmpty()) {
             return false;
         }
 
-        return list.stream().allMatch(r ->
-                r.numberResponse() != null ||
-                        (r.textResponse() != null && !r.textResponse().isBlank())
-        );
+
+        if (list.size() < surveyCount) {
+            return false;
+        }
+
+
+        return list.stream()
+                .filter(Objects::nonNull)
+                .filter(r -> "VI_TEXT".equals(r.surveyCode()))
+                .anyMatch(this::hasAnswer);
+    }
+
+
+    private boolean hasAnswer(UserResponsePair r) {
+        return r.numberResponse() != null ||
+                (r.textResponse() != null && !r.textResponse().isBlank());
     }
 
     /*
