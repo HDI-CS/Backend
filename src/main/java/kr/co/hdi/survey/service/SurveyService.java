@@ -481,7 +481,14 @@ public class SurveyService {
                         .orElseThrow(() -> new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE));
 
         // 다 작성했는지 체크
-        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+//        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+//            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+//        }
+        long completedResponseCount = visualSurveyRepository.countCompletedResponses(
+                userYearRound.getId(),
+                dataId
+        );
+        if (completedResponseCount < assignment.getSurveyCount()) {
             throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
         }
 
@@ -505,9 +512,18 @@ public class SurveyService {
                         .orElseThrow(() -> new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE));
 
         // 다 작성했는지 체크
-        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+//        if (assignment.getResponseCount() < assignment.getSurveyCount()) {
+//            throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
+//        }
+
+        long completedResponseCount = industryResponseRepository.countCompletedResponses(
+                userYearRound.getId(),
+                dataId
+        );
+        if (completedResponseCount < assignment.getSurveyCount()) {
             throw new SurveyException(SurveyErrorCode.INCOMPLETE_RESPONSE);
         }
+
 
         // 제출 처리
         assignment.updateSubmitted(true);
