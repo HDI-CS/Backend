@@ -310,6 +310,9 @@ public class SurveyService {
         if (survey.getSurveyType() == SurveyType.NUMBER) {
             visualResponse.updateNumberResponse(request.response());
         } else if (survey.getSurveyType() == SurveyType.TEXT) {
+            if (assignment.isSubmitted()) {
+                assignment.updateSubmitted(false);
+            }
             visualResponse.updateTextResponse(request.textResponse());
         }
         visualResponseRepository.save(visualResponse);
@@ -350,6 +353,9 @@ public class SurveyService {
         if (survey.getSurveyType() == SurveyType.NUMBER) {
             industryResponse.updateNumberResponse(request.response());
         } else if (survey.getSurveyType() == SurveyType.TEXT) {
+            if (assignment.isSubmitted()) {
+                assignment.updateSubmitted(false);
+            }
             industryResponse.updateTextResponse(request.textResponse());
         }
         industryResponseRepository.save(industryResponse);
