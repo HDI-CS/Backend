@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ExcelRunner implements CommandLineRunner {
 
-    private final VisualResultExcelService excelService;
+    private final IndustryResultExcelService excelService;
 
     @Override
     public void run(String... args) {
 
-        Long yearId = 11L;
+        Long yearId = 10L;
 
-        excelService.exportVisualResultToFile(yearId);
+        excelService.exportIndustryResultToFile(yearId);
 
-        System.out.println("✅ 엑셀 생성 완료: visual_result.xlsx");
+        System.out.println("✅ 엑셀 생성 완료: industry_result_0527.xlsx");
     }
 }

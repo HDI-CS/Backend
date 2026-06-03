@@ -99,4 +99,21 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
             @Param("userYearRoundId") Long userYearRoundId,
             @Param("dataId") Long dataId
     );
+
+
+    //임시
+    @Query("""
+    SELECT ir
+    FROM IndustryResponse ir
+    JOIN FETCH ir.userYearRound uyr
+    JOIN FETCH uyr.user u
+    JOIN FETCH uyr.assessmentRound ar
+    JOIN FETCH ar.year y
+    JOIN FETCH ir.industryData id
+    LEFT JOIN FETCH ir.industrySurvey s
+    WHERE ar.year.id = :yearId
+      AND ir.deletedAt IS NULL
+""")
+    List<IndustryResponse> findAllByYearId(@Param("yearId") Long yearId);
+
 }

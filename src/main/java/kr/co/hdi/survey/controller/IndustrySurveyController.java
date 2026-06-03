@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co.hdi.admin.evaluation.service.IndustryEvaluationService;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
+import kr.co.hdi.survey.dto.request.SurveySubmitAllRequest;
 import kr.co.hdi.survey.dto.request.industry.IndustryWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.SurveyDataPreviewResponse;
 import kr.co.hdi.survey.dto.response.IndustrySurveyDetailResponse;
@@ -58,6 +59,28 @@ public class IndustrySurveyController {
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
     ) {
         surveyService.saveIndustrySurveyResponse(dataId, userId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{dataId}/save-all")
+    @Operation(summary = "제품 설문 전체 응답 임시저장")
+    public ResponseEntity<Void> saveAllIndustrySurvey(
+            @PathVariable Long dataId,
+            @RequestBody SurveySubmitAllRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.saveAllIndustrySurvey(dataId, userId, request.responses());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{dataId}/submit-all")
+    @Operation(summary = "제품 설문 전체 응답 저장 + 제출")
+    public ResponseEntity<Void> submitAllIndustrySurvey(
+            @PathVariable Long dataId,
+            @RequestBody SurveySubmitAllRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.saveAllAndSubmitIndustrySurvey(dataId, userId, request.responses());
         return ResponseEntity.ok().build();
     }
 

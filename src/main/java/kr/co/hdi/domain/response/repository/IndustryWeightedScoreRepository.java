@@ -47,4 +47,19 @@ public interface IndustryWeightedScoreRepository extends JpaRepository<IndustryW
     List<UserIndustryWeightedScorePair> findPairsByUserYearRound(
             @Param("assessmentRoundId") Long assessmentRoundId
     );
+
+    // 임시
+
+    @Query("""
+        SELECT iw
+        FROM IndustryWeightedScore iw
+        JOIN FETCH iw.userYearRound uyr
+        JOIN FETCH uyr.user u
+        JOIN FETCH uyr.assessmentRound ar
+        JOIN FETCH ar.year y
+        WHERE y.id = :yearId
+          AND iw.deletedAt IS NULL
+    """)
+    List<IndustryWeightedScore> findAllByYearId(@Param("yearId") Long yearId);
+
 }
