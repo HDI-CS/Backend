@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.co.hdi.survey.dto.request.SurveyResponseRequest;
+import kr.co.hdi.survey.dto.request.SurveySubmitAllRequest;
 import kr.co.hdi.survey.dto.request.visual.VisualWeightedScoreRequest;
 import kr.co.hdi.survey.dto.response.VisualSurveyDetailResponse;
 import kr.co.hdi.survey.dto.response.SurveyDataPreviewResponse;
@@ -54,6 +55,28 @@ public class VisualSurveyController {
             @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId) {
 
         surveyService.saveVisualSurveyResponse(dataId, userId, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{dataId}/save-all")
+    @Operation(summary = "시각 디자인 설문 전체 응답 임시저장")
+    public ResponseEntity<Void> saveAllVisualSurvey(
+            @PathVariable Long dataId,
+            @RequestBody SurveySubmitAllRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.saveAllVisualSurvey(dataId, userId, request.responses());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{dataId}/submit-all")
+    @Operation(summary = "시각 디자인 설문 전체 응답 저장 + 제출")
+    public ResponseEntity<Void> submitAllVisualSurvey(
+            @PathVariable Long dataId,
+            @RequestBody SurveySubmitAllRequest request,
+            @Parameter(hidden = true) @SessionAttribute(name = "userId", required = true) Long userId
+    ) {
+        surveyService.saveAllAndSubmitVisualSurvey(dataId, userId, request.responses());
         return ResponseEntity.ok().build();
     }
 

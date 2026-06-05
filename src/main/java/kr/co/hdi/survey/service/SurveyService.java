@@ -319,6 +319,34 @@ public class SurveyService {
     }
 
     /*
+시각 디자인 전체 응답 저장 + 제출
+*/
+    @Transactional
+    public void saveAllAndSubmitVisualSurvey(
+            Long dataId, Long userId, List<SurveyResponseRequest> requests) {
+
+        // 1. 전체 응답 저장
+        for (SurveyResponseRequest request : requests) {
+            saveVisualSurveyResponse(dataId, userId, request);
+        }
+
+        // 2. 제출
+        submitVisualSurvey(dataId, userId);
+    }
+
+    // 임시저장용 (제출 없음)
+    @Transactional
+    public void saveAllVisualSurvey(
+            Long dataId, Long userId, List<SurveyResponseRequest> requests) {
+
+        for (SurveyResponseRequest request : requests) {
+            saveVisualSurveyResponse(dataId, userId, request);
+        }
+        // submitVisualSurvey 호출 안 함
+    }
+
+
+    /*
     산업 디자인 응답 저장
      */
     @Transactional
@@ -359,6 +387,31 @@ public class SurveyService {
             industryResponse.updateTextResponse(request.textResponse());
         }
         industryResponseRepository.save(industryResponse);
+    }
+
+    /*
+       산업 디자인 전체 응답 저장
+        */
+    @Transactional
+    public void saveAllAndSubmitIndustrySurvey(
+            Long dataId, Long userId, List<SurveyResponseRequest> requests) {
+
+        // 1. 전체 응답 저장 (기존 메서드 재활용)
+        for (SurveyResponseRequest request : requests) {
+            saveIndustrySurveyResponse(dataId, userId, request);
+        }
+
+        // 2. 제출 (기존 메서드 재활용)
+        submitIndustrySurvey(dataId, userId);
+    }
+
+    // 임시저장용 (제출 없음)
+    @Transactional
+    public void saveAllIndustrySurvey(Long dataId, Long userId, List<SurveyResponseRequest> requests) {
+        for (SurveyResponseRequest request : requests) {
+            saveIndustrySurveyResponse(dataId, userId, request);
+        }
+        // submitIndustrySurvey 호출 안 함
     }
 
     /*

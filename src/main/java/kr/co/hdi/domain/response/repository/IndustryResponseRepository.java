@@ -101,4 +101,5 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
             @Param("dataId") Long dataId
     );
 
+
 }
