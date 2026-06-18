@@ -85,6 +85,10 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.730'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
+    // aop
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+
 }
 
 

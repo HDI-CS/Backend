@@ -19,6 +19,8 @@ services:
       - cache
     env_file:
       - .env
+    volumes:
+      - ./logs:/app/logs  # 로깅
     networks:
       - hdi-be-network
 
