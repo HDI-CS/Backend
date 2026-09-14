@@ -351,26 +351,10 @@ public class VisualAssignmentService implements AssignmentService {
 
             String teamLabel = block.team() == null ? "(팀명 없음)" : block.team();
 
-            if (block.connectId() == null) {
+            if (block.experts().isEmpty()) {
                 warnings.add("[%s] connect_id가 비어있어 건너뜀".formatted(teamLabel));
                 continue;
             }
-
-            Optional<UserEntity> userOpt = userRepository.findByEmail(block.connectId());
-            if (userOpt.isEmpty()) {
-                warnings.add("[%s] 존재하지 않는 계정(connect_id=%s) - 전문가 계정을 먼저 등록해주세요."
-                        .formatted(teamLabel, block.connectId()));
-                continue;
-            }
-            UserEntity user = userOpt.get();
-
-            if (block.password() != null && !block.password().equals(user.getPassword())) {
-                warnings.add("[%s] 비밀번호가 등록된 계정 정보와 다릅니다(connect_id=%s) - 매칭은 그대로 진행했습니다."
-                        .formatted(teamLabel, block.connectId()));
-            }
-
-            UserYearRound userYearRound = getOrCreateUserYearRound(user, assessmentRound);
-            userYearRound.updateTeam(block.team());
 
             List<Long> resolvedIds = new ArrayList<>();
             for (String code : block.dataCodes()) {
@@ -382,13 +366,37 @@ public class VisualAssignmentService implements AssignmentService {
                 resolvedIds.add(data.getId());
             }
 
-            AssignmentDiff diff = calculateDiff(userYearRound, new DataIdsRequest(resolvedIds));
-            deleteRemovedAssignments(userYearRound, diff);
-            addNewAssignments(userYearRound, diff, year);
+            boolean teamProcessed = false;
+            for (TeamAssignmentBlock.ExpertCredential expert : block.experts()) {
 
-            added += diff.toAdd().size();
-            removed += diff.toRemove().size();
-            teamsProcessed++;
+                Optional<UserEntity> userOpt = userRepository.findByEmail(expert.connectId());
+                if (userOpt.isEmpty()) {
+                    warnings.add("[%s] 존재하지 않는 계정(connect_id=%s) - 전문가 계정을 먼저 등록해주세요."
+                            .formatted(teamLabel, expert.connectId()));
+                    continue;
+                }
+                UserEntity user = userOpt.get();
+
+                if (expert.password() != null && !expert.password().equals(user.getPassword())) {
+                    warnings.add("[%s] 비밀번호가 등록된 계정 정보와 다릅니다(connect_id=%s) - 매칭은 그대로 진행했습니다."
+                            .formatted(teamLabel, expert.connectId()));
+                }
+
+                UserYearRound userYearRound = getOrCreateUserYearRound(user, assessmentRound);
+                userYearRound.updateTeam(block.team());
+
+                AssignmentDiff diff = calculateDiff(userYearRound, new DataIdsRequest(resolvedIds));
+                deleteRemovedAssignments(userYearRound, diff);
+                addNewAssignments(userYearRound, diff, year);
+
+                added += diff.toAdd().size();
+                removed += diff.toRemove().size();
+                teamProcessed = true;
+            }
+
+            if (teamProcessed) {
+                teamsProcessed++;
+            }
         }
 
         return new AssignmentImportResultResponse(teamsProcessed, added, removed, warnings);
