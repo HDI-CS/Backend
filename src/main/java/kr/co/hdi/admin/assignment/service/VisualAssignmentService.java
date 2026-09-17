@@ -234,6 +234,19 @@ public class VisualAssignmentService implements AssignmentService {
         return AssignmentDiff.of(existingIds, requestedIds);
     }
 
+    // 엑셀 업로드용: 기존 매칭 중 아직 없는 id만 추린다 (기존 매칭 삭제 없음)
+    private Set<Long> calculateIdsToAdd(UserYearRound userYearRound, List<Long> newIds) {
+
+        Set<Long> existingIds = visualDataAssignmentRepository.findByUserYearRound(userYearRound)
+                .stream()
+                .map(a -> a.getVisualData().getId())
+                .collect(Collectors.toSet());
+
+        return newIds.stream()
+                .filter(id -> !existingIds.contains(id))
+                .collect(Collectors.toSet());
+    }
+
     private void deleteRemovedAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
 
         if (diff.toRemove().isEmpty()) {
@@ -385,12 +398,11 @@ public class VisualAssignmentService implements AssignmentService {
                 UserYearRound userYearRound = getOrCreateUserYearRound(user, assessmentRound);
                 userYearRound.updateTeam(block.team());
 
-                AssignmentDiff diff = calculateDiff(userYearRound, new DataIdsRequest(resolvedIds));
-                deleteRemovedAssignments(userYearRound, diff);
-                addNewAssignments(userYearRound, diff, year);
+                // 엑셀 업로드는 전체 교체가 아니라 추가만 한다 (기존 매칭은 건드리지 않음)
+                Set<Long> idsToAdd = calculateIdsToAdd(userYearRound, resolvedIds);
+                addNewAssignments(userYearRound, AssignmentDiff.of(Set.of(), idsToAdd), year);
 
-                added += diff.toAdd().size();
-                removed += diff.toRemove().size();
+                added += idsToAdd.size();
                 teamProcessed = true;
             }
 
