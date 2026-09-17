@@ -2,8 +2,10 @@ package kr.co.hdi.admin.assignment.service;
 
 import kr.co.hdi.admin.assignment.dto.query.AssignmentDiff;
 import kr.co.hdi.admin.assignment.dto.query.AssignmentRow;
+import kr.co.hdi.admin.assignment.dto.query.TeamAssignmentBlock;
 import kr.co.hdi.admin.assignment.dto.request.AssignmentDataRequest;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentDataResponse;
+import kr.co.hdi.admin.assignment.dto.response.AssignmentImportResultResponse;
 import kr.co.hdi.admin.assignment.dto.response.AssignmentResponse;
 import kr.co.hdi.admin.assignment.exception.AssignmentErrorCode;
 import kr.co.hdi.admin.assignment.exception.AssignmentException;
@@ -33,6 +35,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
@@ -52,6 +55,7 @@ public class VisualAssignmentService implements AssignmentService {
     private final UserYearRoundRepository userYearRoundRepository;
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final VisualDataAssignmentRepository visualDataAssignmentRepository;
+    private final AssignmentExcelParser assignmentExcelParser;
 
     @Override
     public DomainType getDomainType() {
@@ -230,6 +234,19 @@ public class VisualAssignmentService implements AssignmentService {
         return AssignmentDiff.of(existingIds, requestedIds);
     }
 
+    // 엑셀 업로드용: 기존 매칭 중 아직 없는 id만 추린다 (기존 매칭 삭제 없음)
+    private Set<Long> calculateIdsToAdd(UserYearRound userYearRound, List<Long> newIds) {
+
+        Set<Long> existingIds = visualDataAssignmentRepository.findByUserYearRound(userYearRound)
+                .stream()
+                .map(a -> a.getVisualData().getId())
+                .collect(Collectors.toSet());
+
+        return newIds.stream()
+                .filter(id -> !existingIds.contains(id))
+                .collect(Collectors.toSet());
+    }
+
     private void deleteRemovedAssignments(UserYearRound userYearRound, AssignmentDiff diff) {
 
         if (diff.toRemove().isEmpty()) {
@@ -316,6 +333,85 @@ public class VisualAssignmentService implements AssignmentService {
         visualDataAssignmentRepository.saveAll(
                 VisualDataAssignment.createAll(userYearRound, visualDataList, year.getSurveyCount())
         );
+    }
+
+    /*
+    전문가-데이터 매칭 엑셀 업로드
+    1. 엑셀을 팀 블록 단위로 파싱 (팀명, connect_id, pw, 데이터 아이디 목록)
+    2. 팀별로 connect_id에 해당하는 유저를 찾아 UserYearRound를 만들고 team 라벨을 남김
+    3. 데이터 아이디를 그 연도의 실제 VisualData로 변환해서, 기존 매칭 수정과 동일한 diff 로직으로 반영
+    (존재하지 않는 계정/데이터는 건너뛰고 warnings로 보고 - 한두 개 오타 때문에 전체가 실패하지 않도록)
+     */
+    @Override
+    @Transactional
+    public AssignmentImportResultResponse importDatasetAssignmentExcel(Long assessmentRoundId, MultipartFile file) {
+
+        AssessmentRound assessmentRound = getAssessmentRound(assessmentRoundId);
+        Year year = assessmentRound.getYear();
+
+        List<TeamAssignmentBlock> blocks = assignmentExcelParser.parse(file);
+
+        Map<String, VisualData> dataByCode = visualDataRepository.findByYearIdAndDeletedAtIsNull(year.getId())
+                .stream()
+                .collect(Collectors.toMap(VisualData::getBrandCode, d -> d, (a, b) -> a));
+
+        List<String> warnings = new ArrayList<>();
+        int teamsProcessed = 0;
+        int added = 0;
+        int removed = 0;
+
+        for (TeamAssignmentBlock block : blocks) {
+
+            String teamLabel = block.team() == null ? "(팀명 없음)" : block.team();
+
+            if (block.experts().isEmpty()) {
+                warnings.add("[%s] connect_id가 비어있어 건너뜀".formatted(teamLabel));
+                continue;
+            }
+
+            List<Long> resolvedIds = new ArrayList<>();
+            for (String code : block.dataCodes()) {
+                VisualData data = dataByCode.get(code);
+                if (data == null) {
+                    warnings.add("[%s] 존재하지 않는 데이터 아이디: %s".formatted(teamLabel, code));
+                    continue;
+                }
+                resolvedIds.add(data.getId());
+            }
+
+            boolean teamProcessed = false;
+            for (TeamAssignmentBlock.ExpertCredential expert : block.experts()) {
+
+                Optional<UserEntity> userOpt = userRepository.findByEmail(expert.connectId());
+                if (userOpt.isEmpty()) {
+                    warnings.add("[%s] 존재하지 않는 계정(connect_id=%s) - 전문가 계정을 먼저 등록해주세요."
+                            .formatted(teamLabel, expert.connectId()));
+                    continue;
+                }
+                UserEntity user = userOpt.get();
+
+                if (expert.password() != null && !expert.password().equals(user.getPassword())) {
+                    warnings.add("[%s] 비밀번호가 등록된 계정 정보와 다릅니다(connect_id=%s) - 매칭은 그대로 진행했습니다."
+                            .formatted(teamLabel, expert.connectId()));
+                }
+
+                UserYearRound userYearRound = getOrCreateUserYearRound(user, assessmentRound);
+                userYearRound.updateTeam(block.team());
+
+                // 엑셀 업로드는 전체 교체가 아니라 추가만 한다 (기존 매칭은 건드리지 않음)
+                Set<Long> idsToAdd = calculateIdsToAdd(userYearRound, resolvedIds);
+                addNewAssignments(userYearRound, AssignmentDiff.of(Set.of(), idsToAdd), year);
+
+                added += idsToAdd.size();
+                teamProcessed = true;
+            }
+
+            if (teamProcessed) {
+                teamsProcessed++;
+            }
+        }
+
+        return new AssignmentImportResultResponse(teamsProcessed, added, removed, warnings);
     }
 
     /*

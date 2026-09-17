@@ -47,6 +47,10 @@ dependencies {
 	// WebDriverManager
 	implementation 'io.github.bonigarcia:webdrivermanager:5.9.2'
 
+    // .env 파일을 Spring Environment로 자동 로딩 (project root의 .env를 읽음)
+    // export 없이 로컬에서 ${POSTGRESQL_PORT} 등 플레이스홀더가 정상 치환되도록 함
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
     // DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
