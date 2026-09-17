@@ -19,8 +19,8 @@ import java.util.List;
 "시디/산디 전문가-ID매칭목록" 양식 파서.
 
 양식 구조 (0-indexed):
-- row 0: 팀 헤더 행. 팀 하나당 5컬럼을 차지하며, 팀명만 채워진다.
-- row 1: 팀의 첫 번째 전문가 행. [빈칸, "connect_id"(라벨), connect_id 값, "pw"(라벨), pw 값]
+- row 0: 팀 헤더 행. 팀 하나당 5컬럼을 차지하며, [팀명, "connect_id"(라벨), 빈칸, "pw"(라벨), 빈칸].
+- row 1: 팀의 첫 번째 전문가 행. [전문가 이름, connect_id 값, 빈칸, pw 값, 빈칸]
 - row 2: 팀의 두 번째 전문가 행 (선택). row 1과 동일한 형태.
 - row 3: 데이터 목록 컬럼 헤더 ("아이디", "부문", "주체", "분류", 빈칸) - 팀 블록마다 반복
 - row 4~ : 실제 매칭 데이터. "아이디" 칸이 비면 그 팀 블록의 데이터는 끝난 것으로 본다.
@@ -60,11 +60,11 @@ public class AssignmentExcelParser {
 
         List<TeamAssignmentBlock.ExpertCredential> experts = new ArrayList<>();
         for (int expertRow : EXPERT_ROWS) {
-            String connectId = cellToString(getCell(sheet, expertRow, blockStartCol + 2));
+            String connectId = cellToString(getCell(sheet, expertRow, blockStartCol + 1));
             if (blank(connectId)) {
                 continue;
             }
-            String password = cellToString(getCell(sheet, expertRow, blockStartCol + 4));
+            String password = cellToString(getCell(sheet, expertRow, blockStartCol + 3));
             experts.add(new TeamAssignmentBlock.ExpertCredential(
                     connectId.trim(),
                     blank(password) ? null : password.trim()
