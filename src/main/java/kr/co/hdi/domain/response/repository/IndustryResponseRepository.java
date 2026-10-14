@@ -101,5 +101,6 @@ public interface IndustryResponseRepository extends JpaRepository<IndustryRespon
             @Param("dataId") Long dataId
     );
 
+    boolean existsByIndustrySurvey_Year_Id(Long yearId);
 
 }

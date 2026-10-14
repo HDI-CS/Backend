@@ -8,6 +8,7 @@ import kr.co.hdi.admin.survey.exception.SurveyErrorCode;
 import kr.co.hdi.admin.survey.exception.SurveyException;
 import kr.co.hdi.domain.currentSurvey.entity.CurrentSurvey;
 import kr.co.hdi.domain.currentSurvey.repository.CurrentSurveyRepository;
+import kr.co.hdi.domain.response.repository.IndustryResponseRepository;
 import kr.co.hdi.domain.survey.entity.IndustrySurvey;
 import kr.co.hdi.domain.survey.entity.VisualSurvey;
 import kr.co.hdi.domain.survey.enums.SurveyType;
@@ -37,6 +38,7 @@ public class IndustrySurveyService implements SurveyService {
     private final AssessmentRoundRepository assessmentRoundRepository;
     private final IndustrySurveyRepository industrySurveyRepository;
     private final CurrentSurveyRepository currentSurveyRepository;
+    private final IndustryResponseRepository industryResponseRepository;
 
     @Override
     public DomainType getDomainType() {
@@ -190,6 +192,10 @@ public class IndustrySurveyService implements SurveyService {
 
         Year year = yearRepository.findById(yearId)
                 .orElseThrow(() -> new SurveyException(SurveyErrorCode.YEAR_NOT_FOUND));
+
+        if (industryResponseRepository.existsByIndustrySurvey_Year_Id(yearId)) {
+            throw new SurveyException(SurveyErrorCode.CANNOT_RECREATE_SURVEY_WITH_RESPONSES);
+        }
 
         industrySurveyRepository.deleteAllByYearId(yearId);
 

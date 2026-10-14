@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import kr.co.hdi.global.dto.ResponseError;
 import kr.co.hdi.global.exception.CustomException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,8 +15,24 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // DB 제약조건 위반 (FK, UNIQUE 등) - 처리되지 않으면 보안 필터 체인에서 403으로 노출되는 문제가 있어 명시적으로 처리한다.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ResponseError> handleDataIntegrityViolationException(DataIntegrityViolationException e,
+                                                                                HttpServletRequest request) {
+        log.error("[DataIntegrityViolationException] uri={}", request.getRequestURI(), e);
+
+        ResponseError responseError = ResponseError.builder()
+                .messageDetail("요청을 처리할 수 없습니다. 연관된 데이터가 존재하는지 확인해주세요.")
+                .errorDetail(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(responseError);
+    }
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ResponseError> handleCustomException(CustomException e,
