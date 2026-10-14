@@ -49,6 +49,8 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
         JOIN ida.industryData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND ida.deletedAt IS NULL
+        AND uyr.deletedAt IS NULL
+        AND u.deletedAt IS NULL
         AND d.deletedAt IS NULL
     """)
     List<UserDataPair> findUserDataPairsByAssessmentRoundId(
