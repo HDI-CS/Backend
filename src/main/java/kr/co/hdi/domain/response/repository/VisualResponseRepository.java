@@ -83,4 +83,6 @@ public interface VisualResponseRepository extends JpaRepository<VisualResponse, 
     AND vr.deletedAt IS NULL
     """)
     List<VisualResponse> findAllByYearId(Long yearId);
+
+    boolean existsByVisualSurvey_Year_Id(Long yearId);
 }
