@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
@@ -38,6 +39,7 @@ public class IndustryDataService {
 
     private final YearRepository yearRepository;
     private final IndustryDataRepository industryDataRepository;
+    private final ObjectMapper objectMapper;
 
     /*
     산업 디자인 연도 목록 조회
@@ -233,7 +235,8 @@ public class IndustryDataService {
                     "ID", "Product Name", "Company Name", "Model Name",
                     "Price", "Material", "Size", "Weight",
                     "Reference URL", "Registered At",
-                    "Product Path", "Product Type Name"
+                    "Product Path", "Product Type Name",
+                    "Attributes (JSON)"
             };
 
             Row headerRow = sheet.createRow(0);
@@ -260,6 +263,7 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getRegisteredAt()));
                 row.createCell(c++).setCellValue(nvl(i.getProductPath()));
                 row.createCell(c++).setCellValue(nvl(i.getProductTypeName()));
+                row.createCell(c++).setCellValue(nvl(toJson(i.getAttributes())));
 
                 // 2026
                 row.createCell(c++).setCellValue(nvl(i.getNoiseCancelling()));
@@ -289,6 +293,17 @@ public class IndustryDataService {
 
     private String nvl(Object v) {
         return v == null ? "" : String.valueOf(v);
+    }
+
+    private String toJson(Map<String, String> attributes) {
+        if (attributes == null || attributes.isEmpty()) {
+            return "";
+        }
+        try {
+            return objectMapper.writeValueAsString(attributes);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /*

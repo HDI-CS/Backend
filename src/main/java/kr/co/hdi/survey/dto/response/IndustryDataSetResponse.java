@@ -3,6 +3,8 @@ package kr.co.hdi.survey.dto.response;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 
+import java.util.Map;
+
 public record IndustryDataSetResponse(
         String id,
         String code,
@@ -30,6 +32,8 @@ public record IndustryDataSetResponse(
         String shoppingUrl,
         String soundOutput,
         String connectivity,
+
+        Map<String, String> attributes,
 
         String detailImagePath,
         String frontImagePath,
@@ -74,6 +78,8 @@ public record IndustryDataSetResponse(
                 data.getShoppingUrl(),
                 data.getSoundOutput(),
                 data.getConnectivity(),
+
+                data.getAttributes(),
 
                 detailImagePath,
                 frontImagePath,

@@ -2,6 +2,8 @@ package kr.co.hdi.admin.data.dto.request;
 
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 
+import java.util.Map;
+
 public record IndustryDataRequest(
         String code,
         String productName,
@@ -30,6 +32,9 @@ public record IndustryDataRequest(
         String shoppingUrl,
         String soundOutput,
         String connectivity,
+
+        // 카테고리마다 다른 스펙 필드 (고정 컬럼이 아닌 key-value). 예: {"extractionPressure": "15bar"}
+        Map<String, String> attributes,
 
         // 이미지
         String originalDetailImagePath,

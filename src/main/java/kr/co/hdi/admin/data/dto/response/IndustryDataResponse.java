@@ -2,6 +2,8 @@ package kr.co.hdi.admin.data.dto.response;
 
 import kr.co.hdi.domain.data.entity.IndustryData;
 
+import java.util.Map;
+
 public record IndustryDataResponse (
     Long id,
     String code,
@@ -29,6 +31,8 @@ public record IndustryDataResponse (
     String shoppingUrl,
     String connectivity,
     String soundOutput,
+
+    Map<String, String> attributes,
 
     String detailImagePath,
     String frontImagePath,
@@ -67,6 +71,8 @@ public record IndustryDataResponse (
                 i.getShoppingUrl(),
                 i.getConnectivity(),
                 i.getSoundOutput(),
+
+                i.getAttributes(),
 
                 detailImagePath,
                 frontImagePath,

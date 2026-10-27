@@ -11,7 +11,10 @@ import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -103,6 +106,15 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
 
     private Integer originalIdInteger;
 
+    /*
+    카테고리마다 스펙 필드가 다르고 매 회차 늘어나는 걸 고정 컬럼으로 못 따라가서(noiseCancelling,
+    waterproof 등 "// 2026" 블록 참고) 여기로 몰아둔다. 모든 카테고리가 공통으로 쓰는 필드
+    (companyName, productName, price, weight...)는 그대로 고정 컬럼 유지, 카테고리별로 들쑥날쑥한
+    것만 여기 key-value로 넣는다. 카테고리별 필드 라벨은 Frontend의 카테고리 스펙 설정에서 관리.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, String> attributes = new HashMap<>();
 
     public void delete() {
         processDeletion();
@@ -187,7 +199,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.connectivity = request.connectivity();
         i.soundOutput = request.soundOutput();
 
-
+        i.attributes = request.attributes() == null ? new HashMap<>() : new HashMap<>(request.attributes());
 
 
 
@@ -245,6 +257,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.connectivity = this.connectivity;
         copy.soundOutput = this.soundOutput;
 
+        copy.attributes = new HashMap<>(this.attributes);
 
         copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
         copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
@@ -348,6 +361,12 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         }
         if (request.soundOutput() != null) {
             this.soundOutput = request.soundOutput();
+        }
+        if (request.attributes() != null) {
+            if (this.attributes == null) {
+                this.attributes = new HashMap<>();
+            }
+            this.attributes.putAll(request.attributes());
         }
     }
 

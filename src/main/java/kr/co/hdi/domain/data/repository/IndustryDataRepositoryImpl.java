@@ -49,6 +49,7 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
                                 industryData.connectivity,
                                 industryData.soundOutput,
 
+                                industryData.attributes,
 
                                 industryData.detailImagePath,
                                 industryData.frontImagePath,
