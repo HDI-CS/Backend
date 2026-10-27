@@ -18,7 +18,11 @@ export를 수행한다.
 - `Year` : VISUAL/INDUSTRY 각각 연도(시즌) 단위. 예: "2026 3차"
 - `AssessmentRound` : 한 `Year` 안의 회차(1:N). 예: "1회차", "2회차"
 - `UserYearRound` : 전문가×회차 참여 기록. **team 필드가 여기 있다** (엑셀 업로드로만 채워지고,
-  이를 읽어서 돌려주는 API가 없다 — 필요하면 DB 직접 조회. [history/incidents](history/incidents/) 참고)
+  이를 읽어서 돌려주는 REST API는 아직 없다). 산업디자인은 회차별 "팀별결과" 엑셀 추출 도구
+  (`admin/export`)가 내부적으로 이 값을 읽어 처리해준다 →
+  [services/industry/operations/team-result-export.md](services/industry/operations/team-result-export.md).
+  시각디자인은 아직 이 도구가 없어서 DB 직접 조회 필요 →
+  [services/visual/operations/team-lookup.md](services/visual/operations/team-lookup.md)
 - `CurrentSurvey` : "지금 활성화된 round가 뭔지" 캐시 테이블. 매일 00:15 KST 스케줄러가 갱신.
   **타임존 버그 있음** → [history/incidents/2026-10-20-current-survey-timezone.md](history/incidents/2026-10-20-current-survey-timezone.md)
 
