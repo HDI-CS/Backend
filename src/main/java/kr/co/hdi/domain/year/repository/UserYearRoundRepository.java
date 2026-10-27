@@ -26,6 +26,18 @@ public interface UserYearRoundRepository extends JpaRepository<UserYearRound, Lo
     );
 
     @Query("""
+        select uyr
+        from UserYearRound uyr
+        join fetch uyr.user u
+        where uyr.assessmentRound.id = :assessmentRoundId
+          and uyr.deletedAt is null
+          and u.deletedAt is null
+    """)
+    List<UserYearRound> findAllByAssessmentRoundId(
+            @Param("assessmentRoundId") Long assessmentRoundId
+    );
+
+    @Query("""
     SELECT uyr
     FROM UserYearRound uyr
     JOIN FETCH uyr.user u

@@ -45,8 +45,11 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
         from VisualDataAssignment vda
         JOIN vda.userYearRound uyr
         JOIN uyr.user u
+        JOIN vda.visualData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND u.deletedAt IS NULL
+        AND vda.deletedAt IS NULL
+        AND d.deletedAt IS NULL
     """)
     List<UserDataPair> findUserDataPairsByAssessmentRoundId(
             @Param("assessmentRoundId") Long assessmentRoundId
@@ -61,9 +64,12 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
         from VisualDataAssignment vda
         JOIN vda.userYearRound uyr
         JOIN uyr.user u
+        JOIN vda.visualData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND u.id = :userId
         AND u.deletedAt IS NULL
+        AND vda.deletedAt IS NULL
+        AND d.deletedAt IS NULL
         ORDER BY vda.visualData.brandCodeInteger
     """)
     List<DataIdCodePair> findDataIdCodePairsByAssessmentRoundIdAndUserId(
@@ -81,8 +87,10 @@ public interface VisualDataAssignmentRepository extends JpaRepository<VisualData
         )
         from VisualDataAssignment vda
         JOIN vda.userYearRound uyr
+        JOIN vda.visualData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND vda.deletedAt IS NULL
+        AND d.deletedAt IS NULL
         order by vda.visualData.brandCodeInteger
     """)
     List<UserDataIdCodePair> findDataIdCodePairsByAssessmentRoundId(

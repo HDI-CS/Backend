@@ -46,8 +46,12 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
         from IndustryDataAssignment ida
         JOIN ida.userYearRound uyr
         JOIN uyr.user u
+        JOIN ida.industryData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND ida.deletedAt IS NULL
+        AND uyr.deletedAt IS NULL
+        AND u.deletedAt IS NULL
+        AND d.deletedAt IS NULL
     """)
     List<UserDataPair> findUserDataPairsByAssessmentRoundId(
             @Param("assessmentRoundId") Long assessmentRoundId
@@ -61,9 +65,11 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
         from IndustryDataAssignment ida
         JOIN ida.userYearRound uyr
         JOIN uyr.user u
+        JOIN ida.industryData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND u.id = :userId
         AND ida.deletedAt IS NULL
+        AND d.deletedAt IS NULL
         ORDER BY ida.industryData.originalIdInteger
     """)
     List<DataIdCodePair> findDataIdCodePairsByAssessmentRoundIdAndUserId(
@@ -80,8 +86,13 @@ public interface IndustryDataAssignmentRepository extends JpaRepository<Industry
         )
         from IndustryDataAssignment ida
         JOIN ida.userYearRound uyr
+        JOIN uyr.user u
+        JOIN ida.industryData d
         WHERE uyr.assessmentRound.id = :assessmentRoundId
         AND ida.deletedAt IS NULL
+        AND uyr.deletedAt IS NULL
+        AND u.deletedAt IS NULL
+        AND d.deletedAt IS NULL
         Order by ida.industryData.originalIdInteger
     """)
     List<UserDataIdCodePair> findDataIdCodePairsByAssessmentRoundId(
