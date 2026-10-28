@@ -16,6 +16,10 @@ IndustryData의 이미지 슬롯(상세/정면/측면/측면2/측면3)을 고정
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "industry_data_image",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"industry_data_id", "image_type"})
+)
 public class IndustryDataImage extends BaseTimeEntity {
 
     @Id
@@ -31,7 +35,7 @@ public class IndustryDataImage extends BaseTimeEntity {
     @Column(nullable = false)
     private IndustryImageType imageType;
 
-    @Column(columnDefinition = "text")
+    @Column(name = "s3_key", columnDefinition = "text")
     private String s3Key;
 
     @Column(columnDefinition = "text")

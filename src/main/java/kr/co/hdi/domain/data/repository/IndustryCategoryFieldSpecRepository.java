@@ -59,4 +59,19 @@ public interface IndustryCategoryFieldSpecRepository extends JpaRepository<Indus
             @Param("category") IndustryDataCategory category,
             @Param("yearId") Long yearId
     );
+
+    // 같은 (카테고리, 연도, 키) 조합으로 이미 정의된 스펙이 있는지 확인 — 중복 생성 방지용
+    @Query("""
+        select count(s) > 0
+        from IndustryCategoryFieldSpec s
+        where s.industryDataCategory = :category
+          and ((:yearId is null and s.year is null) or s.year.id = :yearId)
+          and s.fieldKey = :fieldKey
+          and s.deletedAt is null
+    """)
+    boolean existsByCategoryAndYearAndFieldKey(
+            @Param("category") IndustryDataCategory category,
+            @Param("yearId") Long yearId,
+            @Param("fieldKey") String fieldKey
+    );
 }

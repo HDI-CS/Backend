@@ -12,6 +12,7 @@ import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -71,6 +72,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     행 단위(IndustryDataImage)로 뺐다. 아래 getXxxImagePath()/getOriginalXxxImagePath()는
     호출부(IndustryDataService, DTO 등)를 안 건드리려고 예전 getter 이름/시그니처를 그대로 유지.
      */
+    // 리스트 조회 시 row마다 images를 따로 SELECT하는 N+1을 막기 위해 IN 절로 묶어서 가져오게 함
+    @BatchSize(size = 50)
     @OneToMany(mappedBy = "industryData", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<IndustryDataImage> images = new ArrayList<>();
 

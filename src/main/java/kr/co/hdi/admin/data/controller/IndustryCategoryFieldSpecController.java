@@ -2,6 +2,7 @@ package kr.co.hdi.admin.data.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import kr.co.hdi.admin.data.dto.request.IndustryCategoryFieldSpecRequest;
 import kr.co.hdi.admin.data.dto.response.IndustryCategoryFieldSpecResponse;
 import kr.co.hdi.admin.data.service.IndustryCategoryFieldSpecService;
@@ -36,7 +37,7 @@ public class IndustryCategoryFieldSpecController {
     public ResponseEntity<IndustryCategoryFieldSpecResponse> createSpec(
             @RequestParam IndustryDataCategory category,
             @RequestParam(required = false) Long yearId,
-            @RequestBody IndustryCategoryFieldSpecRequest request
+            @Valid @RequestBody IndustryCategoryFieldSpecRequest request
     ) {
         IndustryCategoryFieldSpecResponse response = service.createSpec(category, yearId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);

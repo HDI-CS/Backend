@@ -236,7 +236,7 @@ public class IndustryDataService {
                     "Price", "Material", "Size", "Weight",
                     "Reference URL", "Registered At",
                     "Product Path", "Product Type Name",
-                    "Attributes (JSON)"
+                    "Attributes (JSON)", "Usage", "Shopping Url"
             };
 
             Row headerRow = sheet.createRow(0);

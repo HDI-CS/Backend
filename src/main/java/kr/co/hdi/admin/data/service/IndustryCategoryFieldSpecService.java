@@ -57,6 +57,10 @@ public class IndustryCategoryFieldSpecService {
                     .orElseThrow(() -> new DataException(DataErrorCode.YEAR_NOT_FOUND));
         }
 
+        if (specRepository.existsByCategoryAndYearAndFieldKey(category, yearId, request.fieldKey())) {
+            throw new DataException(DataErrorCode.DUPLICATE_FIELD_SPEC);
+        }
+
         Integer maxOrder = specRepository.findMaxDisplayOrder(category, yearId);
         int nextOrder = (maxOrder == null ? -1 : maxOrder) + 1;
 
