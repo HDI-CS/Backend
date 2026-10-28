@@ -20,18 +20,8 @@ public record IndustryDataRequest(
         String material,
         String size,
 
-        // 2026
-        String noiseCancelling,
-        String codec,
-        String extraFeatures,
-        String controlType,
-        String waterproof,
-        String maxPlayTime,
-        String chargeTime,
         String usage,
         String shoppingUrl,
-        String soundOutput,
-        String connectivity,
 
         // 카테고리마다 다른 스펙 필드 (고정 컬럼이 아닌 key-value). 예: {"extractionPressure": "15bar"}
         Map<String, String> attributes,

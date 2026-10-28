@@ -19,18 +19,8 @@ public record IndustryDataResponse (
     String productPath,
     String productTypeName,
 
-    // 2026
-    String noiseCancelling,
-    String codec,
-    String extraFeatures,
-    String controlType,
-    String waterproof,
-    String maxPlayTime,
-    String chargeTime,
     String usage,
     String shoppingUrl,
-    String connectivity,
-    String soundOutput,
 
     Map<String, String> attributes,
 
@@ -60,17 +50,8 @@ public record IndustryDataResponse (
                 i.getProductPath(),
                 i.getProductTypeName(),
 
-                i.getNoiseCancelling(),
-                i.getCodec(),
-                i.getExtraFeatures(),
-                i.getControlType(),
-                i.getWaterproof(),
-                i.getMaxPlayTime(),
-                i.getChargeTime(),
                 i.getUsage(),
                 i.getShoppingUrl(),
-                i.getConnectivity(),
-                i.getSoundOutput(),
 
                 i.getAttributes(),
 

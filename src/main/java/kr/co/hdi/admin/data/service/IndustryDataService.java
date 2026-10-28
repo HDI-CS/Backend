@@ -265,17 +265,7 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getProductTypeName()));
                 row.createCell(c++).setCellValue(nvl(toJson(i.getAttributes())));
 
-                // 2026
-                row.createCell(c++).setCellValue(nvl(i.getNoiseCancelling()));
-                row.createCell(c++).setCellValue(nvl(i.getCodec()));
-                row.createCell(c++).setCellValue(nvl(i.getExtraFeatures()));
-                row.createCell(c++).setCellValue(nvl(i.getControlType()));
-                row.createCell(c++).setCellValue(nvl(i.getWaterproof()));
-                row.createCell(c++).setCellValue(nvl(i.getMaxPlayTime()));
-                row.createCell(c++).setCellValue(nvl(i.getChargeTime()));
                 row.createCell(c++).setCellValue(nvl(i.getUsage()));
-                row.createCell(c++).setCellValue(nvl(i.getConnectivity()));
-                row.createCell(c++).setCellValue(nvl(i.getSoundOutput()));
                 row.createCell(c++).setCellValue(nvl(i.getShoppingUrl()));
             }
 
