@@ -40,10 +40,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @Column(nullable = false)
     private String productName;
 
-    private String modelName;
     private String price;
-    private String material;
-    private String size;
     private String weight;
     private String referenceUrl;
 
@@ -179,10 +176,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.originalId = request.code();
         i.companyName = request.companyName();
         i.productName = request.productName();
-        i.modelName = request.modelName();
         i.price = request.price();
-        i.material = request.material();
-        i.size = request.size();
         i.weight = request.weight();
         i.referenceUrl = request.referenceUrl();
         i.registeredAt = request.registeredAt();
@@ -217,10 +211,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.originalId = this.originalId;
         copy.companyName = this.companyName;
         copy.productName = this.productName;
-        copy.modelName = this.modelName;
         copy.price = this.price;
-        copy.material = this.material;
-        copy.size = this.size;
         copy.weight = this.weight;
         copy.referenceUrl = this.referenceUrl;
         copy.registeredAt = this.registeredAt;
@@ -254,17 +245,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         if (request.productName() != null) {
             this.productName = request.productName();
         }
-        if (request.modelName() != null) {
-            this.modelName = request.modelName();
-        }
         if (request.price() != null) {
             this.price = request.price();
-        }
-        if (request.material() != null) {
-            this.material = request.material();
-        }
-        if (request.size() != null) {
-            this.size = request.size();
         }
         if (request.weight() != null) {
             this.weight = request.weight();

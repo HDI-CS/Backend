@@ -17,7 +17,6 @@ class IndustryDataTest {
         return new IndustryDataRequest(
                 "CODE-1", "제품명", "회사명", "10000", "https://example.com",
                 "2026-01-01", "경로", "타입", "1kg",
-                "모델명", "재질", "사이즈",
                 "용도", "https://shop.example.com",
                 Map.of(),
                 originalDetail, originalFront, originalSide, originalSide2, originalSide3,
@@ -113,7 +112,6 @@ class IndustryDataTest {
         IndustryData data = IndustryData.create(null, new IndustryDataRequest(
                 "CODE-1", "제품명", "회사명", "10000", "https://example.com",
                 "2026-01-01", "경로", "타입", "1kg",
-                "모델명", "재질", "사이즈",
                 "용도", "https://shop.example.com",
                 Map.of("codec", "AAC"),
                 null, null, null, null, null,
@@ -124,7 +122,6 @@ class IndustryDataTest {
         IndustryDataRequest patchWithAttributes = new IndustryDataRequest(
                 patch.code(), patch.productName(), patch.companyName(), patch.price(), patch.referenceUrl(),
                 patch.registeredAt(), patch.productPath(), patch.productTypeName(), patch.weight(),
-                patch.modelName(), patch.material(), patch.size(),
                 patch.usage(), patch.shoppingUrl(),
                 Map.of("chargeTime", "2시간"),
                 patch.originalDetailImagePath(), patch.originalFrontImagePath(), patch.originalSideImagePath(),

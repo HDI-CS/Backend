@@ -232,8 +232,8 @@ public class IndustryDataService {
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             String[] headers = {
-                    "ID", "Product Name", "Company Name", "Model Name",
-                    "Price", "Material", "Size", "Weight",
+                    "ID", "Product Name", "Company Name",
+                    "Price", "Weight",
                     "Reference URL", "Registered At",
                     "Product Path", "Product Type Name",
                     "Attributes (JSON)", "Usage", "Shopping Url"
@@ -254,10 +254,7 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getOriginalId()));
                 row.createCell(c++).setCellValue(nvl(i.getProductName()));
                 row.createCell(c++).setCellValue(nvl(i.getCompanyName()));
-                row.createCell(c++).setCellValue(nvl(i.getModelName()));
                 row.createCell(c++).setCellValue(nvl(i.getPrice()));
-                row.createCell(c++).setCellValue(nvl(i.getMaterial()));
-                row.createCell(c++).setCellValue(nvl(i.getSize()));
                 row.createCell(c++).setCellValue(nvl(i.getWeight()));
                 row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
                 row.createCell(c++).setCellValue(nvl(i.getRegisteredAt()));

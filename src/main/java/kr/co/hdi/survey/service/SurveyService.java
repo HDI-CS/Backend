@@ -269,7 +269,7 @@ public class SurveyService {
                         side3ImagePath
                 ),
                 new SurveyResponse(
-                        industryData.getOriginalId() + "_" + industryData.getModelName(),
+                        industryData.getOriginalId() + "_" + industryData.getAttributes().getOrDefault("modelName", ""),
                         assignment.isSubmitted(),
                         numberResponses,
                         textResponses
