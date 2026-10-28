@@ -25,6 +25,9 @@ export를 수행한다.
   [services/visual/operations/team-lookup.md](services/visual/operations/team-lookup.md)
 - `CurrentSurvey` : "지금 활성화된 round가 뭔지" 캐시 테이블. 매일 00:15 KST 스케줄러가 갱신.
   **타임존 버그 있음** → [history/incidents/2026-10-20-current-survey-timezone.md](history/incidents/2026-10-20-current-survey-timezone.md)
+- `IndustryData.attributes` : 카테고리마다 다른 제품 스펙(청소기 vs 헤드폰 vs 커피머신)을
+  고정 컬럼 대신 key-value(jsonb)로 담는 칸. 새 카테고리의 "고유 스펙 필드"는 이제 코드 수정
+  없이 관리자 화면에서 바로 추가 가능 → [services/industry/operations/dynamic-attributes.md](services/industry/operations/dynamic-attributes.md)
 
 ## 리포 구조
 - 이 리포(Backend)는 API 서버만. 관리자/평가자 화면은 별도 `Frontend` 리포 (Next.js, Vercel 배포, Admin은 `/admin` 서브패스)

@@ -1,69 +1,65 @@
 package kr.co.hdi.domain.data.repository;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kr.co.hdi.admin.data.dto.response.IndustryDataResponse;
+import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 import static kr.co.hdi.domain.data.entity.QIndustryData.industryData;
+import static kr.co.hdi.domain.data.entity.QIndustryDataImage.industryDataImage;
 
 @RequiredArgsConstructor
 public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
+    /*
+    이미지가 더 이상 고정 컬럼이 아니라 IndustryDataImage 행이라 QueryDSL DTO projection으로
+    바로 못 뽑는다. 엔티티로 fetch join해서 가져온 뒤 기존 getter(IndustryData.getDetailImagePath()
+    등)로 조립 — 응답 필드 순서/내용은 기존 동작 그대로 유지.
+     */
     @Override
     public List<IndustryDataResponse> search(IndustryDataCategory category, String q) {
-        return queryFactory
-                .select(
-                        Projections.constructor(
-                                IndustryDataResponse.class,
-                                industryData.id,
-                                industryData.originalId.as("code"),
-                                industryData.companyName,
-                                industryData.productName,
-                                industryData.modelName,
-                                industryData.price,
-                                industryData.material,
-                                industryData.size,
-                                industryData.weight,
-                                industryData.referenceUrl,
-                                industryData.registeredAt,
-                                industryData.productPath,
-                                industryData.productTypeName,
-
-                                // 2026
-                                industryData.noiseCancelling,
-                                industryData.codec,
-                                industryData.extraFeatures,
-                                industryData.controlType,
-                                industryData.waterproof,
-                                industryData.maxPlayTime,
-                                industryData.chargeTime,
-                                industryData.usage,
-                                industryData.shoppingUrl,
-                                industryData.connectivity,
-                                industryData.soundOutput,
-
-
-                                industryData.detailImagePath,
-                                industryData.frontImagePath,
-                                industryData.sideImagePath,
-                                industryData.side2ImagePath,
-                                industryData.side3ImagePath
-                        )
-                )
-                .from(industryData)
+        List<IndustryData> results = queryFactory
+                .selectFrom(industryData)
+                .leftJoin(industryData.images, industryDataImage).fetchJoin()
                 .where(
                         keywordContains(q),
                         categoryEq(category),
                         industryData.deletedAt.isNull()
                 )
+                .distinct()
                 .fetch();
+
+        return results.stream()
+                .map(i -> new IndustryDataResponse(
+                        i.getId(),
+                        i.getOriginalId(),
+                        i.getProductName(),
+                        i.getCompanyName(),
+                        i.getModelName(),
+                        i.getPrice(),
+                        i.getMaterial(),
+                        i.getSize(),
+                        i.getWeight(),
+                        i.getReferenceUrl(),
+                        i.getRegisteredAt(),
+                        i.getProductPath(),
+                        i.getProductTypeName(),
+                        i.getUsage(),
+                        i.getShoppingUrl(),
+                        i.getAttributes(),
+                        i.getDetailImagePath(),
+                        i.getFrontImagePath(),
+                        i.getSideImagePath(),
+                        i.getSide2ImagePath(),
+                        i.getSide3ImagePath()
+                ))
+                .toList();
     }
 
     private BooleanExpression keywordContains(String q) {

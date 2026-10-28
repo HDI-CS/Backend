@@ -3,6 +3,8 @@ package kr.co.hdi.survey.dto.response;
 import kr.co.hdi.domain.data.entity.IndustryData;
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
 
+import java.util.Map;
+
 public record IndustryDataSetResponse(
         String id,
         String code,
@@ -18,18 +20,10 @@ public record IndustryDataSetResponse(
         String productPath,
         String productTypeName,
 
-        // 2026
-        String noiseCancelling,
-        String codec,
-        String extraFeatures,
-        String controlType,
-        String waterproof,
-        String maxPlayTime,
-        String chargeTime,
         String usage,
         String shoppingUrl,
-        String soundOutput,
-        String connectivity,
+
+        Map<String, String> attributes,
 
         String detailImagePath,
         String frontImagePath,
@@ -62,18 +56,10 @@ public record IndustryDataSetResponse(
                 data.getProductPath(),
                 data.getProductTypeName(),
 
-                // 2026
-                data.getNoiseCancelling(),
-                data.getCodec(),
-                data.getExtraFeatures(),
-                data.getControlType(),
-                data.getWaterproof(),
-                data.getMaxPlayTime(),
-                data.getChargeTime(),
                 data.getUsage(),
                 data.getShoppingUrl(),
-                data.getSoundOutput(),
-                data.getConnectivity(),
+
+                data.getAttributes(),
 
                 detailImagePath,
                 frontImagePath,
