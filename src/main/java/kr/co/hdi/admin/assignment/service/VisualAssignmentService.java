@@ -483,9 +483,9 @@ public class VisualAssignmentService implements AssignmentService {
                     row.createCell(c++).setCellValue(nvl(data.getBrandCode()));
                     row.createCell(c++).setCellValue(nvl(data.getBrandName()));
                     row.createCell(c++).setCellValue(nvl(data.getSectorCategory()));
-                    row.createCell(c++).setCellValue(nvl(data.getMainProductCategory()));
-                    row.createCell(c++).setCellValue(nvl(data.getMainProduct()));
-                    row.createCell(c++).setCellValue(nvl(data.getTarget()));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("mainProductCategory")));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("mainProduct")));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("target")));
                     row.createCell(c++).setCellValue(nvl(data.getReferenceUrl()));
                     row.createCell(c++).setCellValue(nvl(data.getVisualDataCategory()));
                 }
