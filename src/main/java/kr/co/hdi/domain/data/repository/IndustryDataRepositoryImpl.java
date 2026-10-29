@@ -41,10 +41,7 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
                         i.getOriginalId(),
                         i.getProductName(),
                         i.getCompanyName(),
-                        i.getModelName(),
                         i.getPrice(),
-                        i.getMaterial(),
-                        i.getSize(),
                         i.getWeight(),
                         i.getReferenceUrl(),
                         i.getRegisteredAt(),
@@ -67,10 +64,10 @@ public class IndustryDataRepositoryImpl implements IndustryDataRepositoryCustom 
             return null;
         }
 
+        // material/modelName은 attributes(jsonb)로 이전되면서 QueryDSL containsIgnoreCase로
+        // 바로 검색할 수 없게 됨 — 검색 범위에서 제외.
         return industryData.originalId.containsIgnoreCase(q)
                 .or(industryData.companyName.containsIgnoreCase(q))
-                .or(industryData.material.containsIgnoreCase(q))
-                .or(industryData.modelName.containsIgnoreCase(q))
                 .or(industryData.productName.containsIgnoreCase(q))
                 .or(industryData.referenceUrl.containsIgnoreCase(q));
     }

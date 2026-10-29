@@ -15,11 +15,6 @@ public record IndustryDataRequest(
         String productTypeName,
         String weight,
 
-        // 2025
-        String modelName,
-        String material,
-        String size,
-
         String usage,
         String shoppingUrl,
 

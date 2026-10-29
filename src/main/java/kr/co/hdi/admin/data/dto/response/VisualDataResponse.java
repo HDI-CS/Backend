@@ -2,25 +2,16 @@ package kr.co.hdi.admin.data.dto.response;
 
 import kr.co.hdi.domain.data.entity.VisualData;
 
+import java.util.Map;
+
 public record VisualDataResponse(
         Long id,
         String code,
         String name,
         String sectorCategory,
-        String mainProductCategory,
-        String mainProduct,
-        String target,
         String referenceUrl,
 
-        // 2026
-        String title,
-        String country,
-        String clientName,
-        String contentType,
-        String visualType,
-        String designDescription,
-        String originalDescription,
-        String releaseYear,
+        Map<String, String> attributes,
 
         String logoImage
 ) {
@@ -31,19 +22,9 @@ public record VisualDataResponse(
                 v.getBrandCode(),
                 v.getBrandName(),
                 v.getSectorCategory(),
-                v.getMainProductCategory(),
-                v.getMainProduct(),
-                v.getTarget(),
                 v.getReferenceUrl(),
-                // 2026
-                v.getTitle(),
-                v.getCountry(),
-                v.getClientName(),
-                v.getContentType(),
-                v.getVisualType(),
-                v.getDesignDescription(),
-                v.getOriginalDescription(),
-                v.getReleaseYear(),
+
+                v.getAttributes(),
 
                 image
         );
