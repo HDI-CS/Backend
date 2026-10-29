@@ -2,33 +2,24 @@ package kr.co.hdi.admin.data.dto.response;
 
 import kr.co.hdi.domain.data.entity.IndustryData;
 
+import java.util.Map;
+
 public record IndustryDataResponse (
     Long id,
     String code,
     String productName,
     String companyName,
-    String modelName,
     String price,
-    String material,
-    String size,
     String weight,
     String referenceUrl,
     String registeredAt,
     String productPath,
     String productTypeName,
 
-    // 2026
-    String noiseCancelling,
-    String codec,
-    String extraFeatures,
-    String controlType,
-    String waterproof,
-    String maxPlayTime,
-    String chargeTime,
     String usage,
     String shoppingUrl,
-    String connectivity,
-    String soundOutput,
+
+    Map<String, String> attributes,
 
     String detailImagePath,
     String frontImagePath,
@@ -46,27 +37,17 @@ public record IndustryDataResponse (
                 i.getOriginalId(),
                 i.getProductName(),
                 i.getCompanyName(),
-                i.getModelName(),
                 i.getPrice(),
-                i.getMaterial(),
-                i.getSize(),
                 i.getWeight(),
                 i.getReferenceUrl(),
                 i.getRegisteredAt(),
                 i.getProductPath(),
                 i.getProductTypeName(),
 
-                i.getNoiseCancelling(),
-                i.getCodec(),
-                i.getExtraFeatures(),
-                i.getControlType(),
-                i.getWaterproof(),
-                i.getMaxPlayTime(),
-                i.getChargeTime(),
                 i.getUsage(),
                 i.getShoppingUrl(),
-                i.getConnectivity(),
-                i.getSoundOutput(),
+
+                i.getAttributes(),
 
                 detailImagePath,
                 frontImagePath,

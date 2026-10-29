@@ -7,11 +7,17 @@ import kr.co.hdi.admin.data.exception.DataErrorCode;
 import kr.co.hdi.admin.data.exception.DataException;
 
 import kr.co.hdi.domain.data.enums.IndustryDataCategory;
+import kr.co.hdi.domain.data.enums.IndustryImageType;
 import kr.co.hdi.domain.year.entity.Year;
 import kr.co.hdi.global.domain.BaseTimeEntityWithDeletion;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,10 +40,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @Column(nullable = false)
     private String productName;
 
-    private String modelName;
     private String price;
-    private String material;
-    private String size;
     private String weight;
     private String referenceUrl;
 
@@ -46,21 +49,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
 
     private String productTypeName;
 
-    // 2026
-    private String noiseCancelling;
-    private String codec;
-
-    @Column(columnDefinition = "text")
-    private String extraFeatures;
-
-    private String controlType;
-    private String waterproof;
-    private String maxPlayTime;
-    private String chargeTime;
     private String usage;
     private String shoppingUrl;
-    private String soundOutput;
-    private String connectivity;
 
     @Column(name = "original_id")
     private String originalId;
@@ -71,86 +61,109 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
     @ManyToOne(fetch = FetchType.LAZY)
     private Year year;
 
-    @Column(columnDefinition = "text")
-    private String detailImagePath;   // 상세 이미지 S3 Key
-
-    @Column(columnDefinition = "text")
-    private String originalDetailImagePath;
-
-    @Column(columnDefinition = "text")
-    private String frontImagePath;    // 정면 이미지 S3 Key
-
-    @Column(columnDefinition = "text")
-    private String originalFrontImagePath;
-
-    @Column(columnDefinition = "text")
-    private String sideImagePath;     // 측면 이미지 S3 Key
-
-    @Column(columnDefinition = "text")
-    private String originalSideImagePath;
-
-    @Column(name = "side2_image_path", columnDefinition = "text")
-    private String side2ImagePath;     // 측면 2 이미지 S3 Key
-
-    @Column(name = "original_side2_image_path", columnDefinition = "text")
-    private String originalSide2ImagePath;
-
-    @Column(name = "side3_image_path", columnDefinition = "text")
-    private String side3ImagePath;     // 측면 3 이미지 S3 Key
-
-    @Column(name = "original_side3_image_path", columnDefinition = "text")
-    private String originalSide3ImagePath;
-
     private Integer originalIdInteger;
 
+    /*
+    상세/정면/측면/측면2/측면3 이미지 슬롯. 예전엔 슬롯당 2컬럼(S3 키 + 원본 파일명)씩
+    고정 컬럼으로 뒀는데, 슬롯이 늘어날 때마다(서브이미지04 등) 컬럼을 추가해야 하는 구조라
+    행 단위(IndustryDataImage)로 뺐다. 아래 getXxxImagePath()/getOriginalXxxImagePath()는
+    호출부(IndustryDataService, DTO 등)를 안 건드리려고 예전 getter 이름/시그니처를 그대로 유지.
+     */
+    // 리스트 조회 시 row마다 images를 따로 SELECT하는 N+1을 막기 위해 IN 절로 묶어서 가져오게 함
+    @BatchSize(size = 50)
+    @OneToMany(mappedBy = "industryData", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<IndustryDataImage> images = new ArrayList<>();
+
+    /*
+    카테고리마다 스펙 필드가 다르고 매 회차 늘어나는 걸 고정 컬럼으로 못 따라가서(noiseCancelling,
+    waterproof 등 "// 2026" 블록 참고) 여기로 몰아둔다. 모든 카테고리가 공통으로 쓰는 필드
+    (companyName, productName, price, weight...)는 그대로 고정 컬럼 유지, 카테고리별로 들쑥날쑥한
+    것만 여기 key-value로 넣는다. 카테고리별 필드 라벨은 Frontend의 카테고리 스펙 설정에서 관리.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, String> attributes = new HashMap<>();
 
     public void delete() {
         processDeletion();
     }
 
+    private IndustryDataImage image(IndustryImageType type) {
+        return images.stream()
+                .filter(img -> img.getImageType() == type)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public String getDetailImagePath() {
+        IndustryDataImage img = image(IndustryImageType.DETAIL);
+        return img == null ? null : img.getS3Key();
+    }
+
+    public String getOriginalDetailImagePath() {
+        IndustryDataImage img = image(IndustryImageType.DETAIL);
+        return img == null ? null : img.getOriginalFileName();
+    }
+
+    public String getFrontImagePath() {
+        IndustryDataImage img = image(IndustryImageType.FRONT);
+        return img == null ? null : img.getS3Key();
+    }
+
+    public String getOriginalFrontImagePath() {
+        IndustryDataImage img = image(IndustryImageType.FRONT);
+        return img == null ? null : img.getOriginalFileName();
+    }
+
+    public String getSideImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE);
+        return img == null ? null : img.getS3Key();
+    }
+
+    public String getOriginalSideImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE);
+        return img == null ? null : img.getOriginalFileName();
+    }
+
+    public String getSide2ImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE2);
+        return img == null ? null : img.getS3Key();
+    }
+
+    public String getOriginalSide2ImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE2);
+        return img == null ? null : img.getOriginalFileName();
+    }
+
+    public String getSide3ImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE3);
+        return img == null ? null : img.getS3Key();
+    }
+
+    public String getOriginalSide3ImagePath() {
+        IndustryDataImage img = image(IndustryImageType.SIDE3);
+        return img == null ? null : img.getOriginalFileName();
+    }
+
+    /*
+    deleteImage(): 예전엔 originalXxxImagePath만 null로 만들고 s3Key는 그대로 둬서
+    (다음 업로드가 같은 키를 재사용) S3 키를 반환해 호출부가 실제 S3 객체도 지우게 했다.
+    행 기반으로 바뀌어도 동작은 동일하게 유지.
+     */
     public String deleteImage(String imageStatus) {
-
-        if (imageStatus.equals("DETAIL")) {
-            deleteDetailImage();
-            return this.detailImagePath;
+        IndustryImageType type;
+        try {
+            type = IndustryImageType.valueOf(imageStatus);
+        } catch (IllegalArgumentException e) {
+            return null;
         }
-        if (imageStatus.equals("FRONT")) {
-            deleteFrontImage();
-            return this.frontImagePath;
+
+        IndustryDataImage img = image(type);
+        if (img == null) {
+            return null;
         }
-        if (imageStatus.equals("SIDE")) {
-            deleteSideImage();
-            return this.sideImagePath;
-        }
-        if (imageStatus.equals("SIDE2")) {
-            deleteSide2Image();
-            return this.side2ImagePath;
-        }
-        if (imageStatus.equals("SIDE3")) {
-            deleteSide3Image();
-            return this.side3ImagePath;
-        }
-        return null;
-    }
-
-    private void deleteDetailImage() {
-        this.originalDetailImagePath = null;
-    }
-
-    private void deleteFrontImage() {
-        this.originalFrontImagePath = null;
-    }
-
-    private void deleteSideImage() {
-        this.originalSideImagePath = null;
-    }
-
-    private void deleteSide2Image() {
-        this.originalSide2ImagePath = null;
-    }
-
-    private void deleteSide3Image() {
-        this.originalSide3ImagePath = null;
+        img.updateOriginalFileName(null);
+        return img.getS3Key();
     }
 
     /*
@@ -163,10 +176,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.originalId = request.code();
         i.companyName = request.companyName();
         i.productName = request.productName();
-        i.modelName = request.modelName();
         i.price = request.price();
-        i.material = request.material();
-        i.size = request.size();
         i.weight = request.weight();
         i.referenceUrl = request.referenceUrl();
         i.registeredAt = request.registeredAt();
@@ -174,36 +184,16 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         i.productTypeName = request.productTypeName();
         i.industryDataCategory = request.industryDataCategory();
 
-        // 2026
-        i.noiseCancelling = request.noiseCancelling();
-        i.codec = request.codec();
-        i.extraFeatures = request.extraFeatures();
-        i.controlType = request.controlType();
-        i.waterproof = request.waterproof();
-        i.maxPlayTime = request.maxPlayTime();
-        i.chargeTime = request.chargeTime();
         i.usage = request.usage();
         i.shoppingUrl = request.shoppingUrl();
-        i.connectivity = request.connectivity();
-        i.soundOutput = request.soundOutput();
 
+        i.attributes = request.attributes() == null ? new HashMap<>() : new HashMap<>(request.attributes());
 
-
-
-
-
-        i.originalDetailImagePath = request.originalDetailImagePath();
-        i.detailImagePath = "2026/ID/" + UUID.randomUUID();
-        i.originalFrontImagePath = request.originalFrontImagePath();
-        i.frontImagePath =  "2026/ID/" + UUID.randomUUID();
-        i.originalSideImagePath = request.originalSideImagePath();
-        i.sideImagePath =  "2026/ID/" + UUID.randomUUID();
-
-        i.originalSide2ImagePath = request.originalSide2ImagePath();
-        i.side2ImagePath = "2026/ID/" + UUID.randomUUID();
-
-        i.originalSide3ImagePath = request.originalSide3ImagePath();
-        i.side3ImagePath =  "2026/ID/" + UUID.randomUUID();
+        i.images.add(IndustryDataImage.create(i, IndustryImageType.DETAIL, "2026/ID/" + UUID.randomUUID(), request.originalDetailImagePath()));
+        i.images.add(IndustryDataImage.create(i, IndustryImageType.FRONT, "2026/ID/" + UUID.randomUUID(), request.originalFrontImagePath()));
+        i.images.add(IndustryDataImage.create(i, IndustryImageType.SIDE, "2026/ID/" + UUID.randomUUID(), request.originalSideImagePath()));
+        i.images.add(IndustryDataImage.create(i, IndustryImageType.SIDE2, "2026/ID/" + UUID.randomUUID(), request.originalSide2ImagePath()));
+        i.images.add(IndustryDataImage.create(i, IndustryImageType.SIDE3, "2026/ID/" + UUID.randomUUID(), request.originalSide3ImagePath()));
 
         return i;
     }
@@ -221,10 +211,7 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.originalId = this.originalId;
         copy.companyName = this.companyName;
         copy.productName = this.productName;
-        copy.modelName = this.modelName;
         copy.price = this.price;
-        copy.material = this.material;
-        copy.size = this.size;
         copy.weight = this.weight;
         copy.referenceUrl = this.referenceUrl;
         copy.registeredAt = this.registeredAt;
@@ -232,25 +219,14 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         copy.productTypeName = this.productTypeName;
         copy.industryDataCategory = this.industryDataCategory;
 
-        // 2026
-        copy.noiseCancelling = this.noiseCancelling;
-        copy.codec = this.codec;
-        copy.extraFeatures = this.extraFeatures;
-        copy.controlType = this.controlType;
-        copy.waterproof = this.waterproof;
-        copy.maxPlayTime = this.maxPlayTime;
-        copy.chargeTime = this.chargeTime;
         copy.usage = this.usage;
         copy.shoppingUrl = this.shoppingUrl;
-        copy.connectivity = this.connectivity;
-        copy.soundOutput = this.soundOutput;
 
+        copy.attributes = new HashMap<>(this.attributes);
 
-        copy.detailImagePath = "2026/ID/" + UUID.randomUUID();
-        copy.frontImagePath = "2026/ID/" + UUID.randomUUID();
-        copy.sideImagePath = "2026/ID/" + UUID.randomUUID();
-        copy.side2ImagePath = "2026/ID/" + UUID.randomUUID();
-        copy.side3ImagePath = "2026/ID/" + UUID.randomUUID();
+        for (IndustryImageType type : IndustryImageType.values()) {
+            copy.images.add(IndustryDataImage.create(copy, type, "2026/ID/" + UUID.randomUUID(), null));
+        }
 
         return copy;
     }
@@ -269,17 +245,8 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         if (request.productName() != null) {
             this.productName = request.productName();
         }
-        if (request.modelName() != null) {
-            this.modelName = request.modelName();
-        }
         if (request.price() != null) {
             this.price = request.price();
-        }
-        if (request.material() != null) {
-            this.material = request.material();
-        }
-        if (request.size() != null) {
-            this.size = request.size();
         }
         if (request.weight() != null) {
             this.weight = request.weight();
@@ -299,58 +266,39 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
         if (request.industryDataCategory() != null) {
             this.industryDataCategory = request.industryDataCategory();
         }
-        if (request.originalDetailImagePath() != null) {
-            this.originalDetailImagePath = request.originalDetailImagePath();
-        }
-        if (request.originalFrontImagePath() != null) {
-            this.originalFrontImagePath = request.originalFrontImagePath();
-        }
-        if (request.originalSideImagePath() != null) {
-            this.originalSideImagePath = request.originalSideImagePath();
-        }
-        if (request.originalSide2ImagePath() != null) {
-            this.originalSide2ImagePath = request.originalSide2ImagePath();
-        }
-        if (request.originalSide3ImagePath() != null) {
-            this.originalSide3ImagePath = request.originalSide3ImagePath();
-        }
+        updateOriginalFileNameIfPresent(IndustryImageType.DETAIL, request.originalDetailImagePath());
+        updateOriginalFileNameIfPresent(IndustryImageType.FRONT, request.originalFrontImagePath());
+        updateOriginalFileNameIfPresent(IndustryImageType.SIDE, request.originalSideImagePath());
+        updateOriginalFileNameIfPresent(IndustryImageType.SIDE2, request.originalSide2ImagePath());
+        updateOriginalFileNameIfPresent(IndustryImageType.SIDE3, request.originalSide3ImagePath());
 
-        // 2026
-        if (request.noiseCancelling() != null) {
-            this.noiseCancelling = request.noiseCancelling();
-        }
-        if (request.codec() != null) {
-            this.codec = request.codec();
-        }
-        if (request.extraFeatures() != null) {
-            this.extraFeatures = request.extraFeatures();
-        }
-        if (request.controlType() != null) {
-            this.controlType = request.controlType();
-        }
-        if (request.waterproof() != null) {
-            this.waterproof = request.waterproof();
-        }
-        if (request.maxPlayTime() != null) {
-            this.maxPlayTime = request.maxPlayTime();
-        }
-        if (request.chargeTime() != null) {
-            this.chargeTime = request.chargeTime();
-        }
         if (request.usage() != null) {
             this.usage = request.usage();
         }
         if (request.shoppingUrl() != null) {
             this.shoppingUrl = request.shoppingUrl();
         }
-        if (request.connectivity() != null) {
-            this.connectivity = request.connectivity();
-        }
-        if (request.soundOutput() != null) {
-            this.soundOutput = request.soundOutput();
+        if (request.attributes() != null) {
+            if (this.attributes == null) {
+                this.attributes = new HashMap<>();
+            }
+            this.attributes.putAll(request.attributes());
         }
     }
 
+
+    private void updateOriginalFileNameIfPresent(IndustryImageType type, String originalFileName) {
+        if (originalFileName == null) {
+            return;
+        }
+        IndustryDataImage img = image(type);
+        if (img == null) {
+            // 구 데이터는 side2/side3 슬롯이 아예 없을 수 있어 새로 업로드하면 그때 키를 만든다.
+            images.add(IndustryDataImage.create(this, type, "2026/ID/" + UUID.randomUUID(), originalFileName));
+        } else {
+            img.updateOriginalFileName(originalFileName);
+        }
+    }
 
     @PrePersist
     @PreUpdate
@@ -362,28 +310,6 @@ public class IndustryData extends BaseTimeEntityWithDeletion {
                 this.originalIdInteger = null;
             }
         }
-    }
-
-
-    public void updateImageKeys(
-            String detailKey, String frontKey, String sideKey, String side2Key, String side3Key,
-            String originalDetailName, String originalFrontName, String originalSideName,
-            String originalSide2Name, String originalSide3Name
-    ) {
-        this.detailImagePath = detailKey;
-        this.originalDetailImagePath = originalDetailName;
-
-        this.frontImagePath = frontKey;
-        this.originalFrontImagePath = originalFrontName;
-
-        this.sideImagePath = sideKey;
-        this.originalSideImagePath = originalSideName;
-
-        this.side2ImagePath = side2Key;
-        this.originalSide2ImagePath = originalSide2Name;
-
-        this.side3ImagePath = side3Key;
-        this.originalSide3ImagePath = originalSide3Name;
     }
 
 }

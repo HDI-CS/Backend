@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.hdi.admin.data.dto.request.DataIdsRequest;
 import kr.co.hdi.admin.data.dto.request.VisualDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
@@ -37,6 +38,7 @@ public class VisualDataService {
 
     private final YearRepository yearRepository;
     private final VisualDataRepository visualDataRepository;
+    private final ObjectMapper objectMapper;
 
     /*
     시각 디자인 연도 목록 조회
@@ -207,8 +209,7 @@ public class VisualDataService {
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             String[] headers = {
-                    "ID", "Brand Name", "Sector Category", "Main Product Category",
-                    "Main Product", "Target", "Reference URL", "Category"
+                    "ID", "Brand Name", "Sector Category", "Reference URL", "Category", "Attributes (JSON)"
             };
 
             Row headerRow = sheet.createRow(0);
@@ -226,21 +227,9 @@ public class VisualDataService {
                 row.createCell(c++).setCellValue(nvl(i.getBrandCode()));
                 row.createCell(c++).setCellValue(nvl(i.getBrandName()));
                 row.createCell(c++).setCellValue(nvl(i.getSectorCategory()));
-                row.createCell(c++).setCellValue(nvl(i.getMainProductCategory()));
-                row.createCell(c++).setCellValue(nvl(i.getMainProduct()));
-                row.createCell(c++).setCellValue(nvl(i.getTarget()));
                 row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
-
-                // 2026
-                row.createCell(c++).setCellValue(nvl(i.getTitle()));
-                row.createCell(c++).setCellValue(nvl(i.getCountry()));
-                row.createCell(c++).setCellValue(nvl(i.getClientName()));
-                row.createCell(c++).setCellValue(nvl(i.getContentType()));
-                row.createCell(c++).setCellValue(nvl(i.getVisualType()));
-                row.createCell(c++).setCellValue(nvl(i.getDesignDescription()));
-                row.createCell(c++).setCellValue(nvl(i.getReleaseYear()));
-
                 row.createCell(c++).setCellValue(nvl(i.getVisualDataCategory()));
+                row.createCell(c++).setCellValue(nvl(toJson(i.getAttributes())));
             }
 
             for (int c = 0; c < headers.length; c++) {
@@ -256,5 +245,16 @@ public class VisualDataService {
 
     private String nvl(Object v) {
         return v == null ? "" : String.valueOf(v);
+    }
+
+    private String toJson(Map<String, String> attributes) {
+        if (attributes == null || attributes.isEmpty()) {
+            return "";
+        }
+        try {
+            return objectMapper.writeValueAsString(attributes);
+        } catch (Exception e) {
+            return "";
+        }
     }
 }

@@ -462,18 +462,8 @@ public class IndustryAssignmentService implements AssignmentService {
                         "ProductTypeName",
                         "DataCategory",
 
-                        // 2026
-                        "NoiseCancelling",
-                        "Codec",
-                        "ExtraFeatures",
-                        "ControlType",
-                        "Waterproof",
-                        "MaxPlayTime",
-                        "ChargeTime",
                         "Usage",
-                        "ShoppingUrl",
-                        "SoundOutput",
-                        "Connectivity"
+                        "ShoppingUrl"
                 };
 
                 Row headerRow = sheet.createRow(0);
@@ -497,10 +487,10 @@ public class IndustryAssignmentService implements AssignmentService {
                     row.createCell(c++).setCellValue(nvl(data.getOriginalId()));
                     row.createCell(c++).setCellValue(nvl(data.getCompanyName()));
                     row.createCell(c++).setCellValue(nvl(data.getProductName()));
-                    row.createCell(c++).setCellValue(nvl(data.getModelName()));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("modelName")));
                     row.createCell(c++).setCellValue(nvl(data.getPrice()));
-                    row.createCell(c++).setCellValue(nvl(data.getMaterial()));
-                    row.createCell(c++).setCellValue(nvl(data.getSize()));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("material")));
+                    row.createCell(c++).setCellValue(nvl(data.getAttributes().get("size")));
                     row.createCell(c++).setCellValue(nvl(data.getWeight()));
                     row.createCell(c++).setCellValue(nvl(data.getReferenceUrl()));
                     row.createCell(c++).setCellValue(nvl(data.getRegisteredAt()));
@@ -509,18 +499,8 @@ public class IndustryAssignmentService implements AssignmentService {
                     row.createCell(c++).setCellValue(nvl(data.getIndustryDataCategory()));
 
 
-                    // 2026
-                    row.createCell(c++).setCellValue(nvl(data.getNoiseCancelling()));
-                    row.createCell(c++).setCellValue(nvl(data.getCodec()));
-                    row.createCell(c++).setCellValue(nvl(data.getExtraFeatures()));
-                    row.createCell(c++).setCellValue(nvl(data.getControlType()));
-                    row.createCell(c++).setCellValue(nvl(data.getWaterproof()));
-                    row.createCell(c++).setCellValue(nvl(data.getMaxPlayTime()));
-                    row.createCell(c++).setCellValue(nvl(data.getChargeTime()));
                     row.createCell(c++).setCellValue(nvl(data.getUsage()));
                     row.createCell(c++).setCellValue(nvl(data.getShoppingUrl()));
-                    row.createCell(c++).setCellValue(nvl(data.getSoundOutput()));
-                    row.createCell(c++).setCellValue(nvl(data.getConnectivity()));
 
                 }
 

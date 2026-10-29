@@ -2,25 +2,16 @@ package kr.co.hdi.admin.data.dto.request;
 
 import kr.co.hdi.domain.data.enums.VisualDataCategory;
 
+import java.util.Map;
+
 public record VisualDataRequest(
         String code,
         String name,
         String sectorCategory,
-        String mainProductCategory,
-        String mainProduct,
-        String target,
         String referenceUrl,
 
-        // 2026
-        String title,
-        String country,
-        String clientName,
-        String contentType,
-        String visualType,
-        String designDescription,
-        String originalDescription,
-        String releaseYear,
-
+        // 카테고리마다 다른 스펙 필드 (고정 컬럼이 아닌 key-value)
+        Map<String, String> attributes,
 
         String originalLogoImage,
         VisualDataCategory visualDataCategory

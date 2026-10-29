@@ -1,5 +1,6 @@
 package kr.co.hdi.admin.data.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.co.hdi.admin.data.dto.request.IndustryDataRequest;
 import kr.co.hdi.admin.data.dto.response.*;
 import kr.co.hdi.admin.data.exception.DataErrorCode;
@@ -38,6 +39,7 @@ public class IndustryDataService {
 
     private final YearRepository yearRepository;
     private final IndustryDataRepository industryDataRepository;
+    private final ObjectMapper objectMapper;
 
     /*
     산업 디자인 연도 목록 조회
@@ -230,10 +232,11 @@ public class IndustryDataService {
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
             String[] headers = {
-                    "ID", "Product Name", "Company Name", "Model Name",
-                    "Price", "Material", "Size", "Weight",
+                    "ID", "Product Name", "Company Name",
+                    "Price", "Weight",
                     "Reference URL", "Registered At",
-                    "Product Path", "Product Type Name"
+                    "Product Path", "Product Type Name",
+                    "Attributes (JSON)", "Usage", "Shopping Url"
             };
 
             Row headerRow = sheet.createRow(0);
@@ -251,27 +254,15 @@ public class IndustryDataService {
                 row.createCell(c++).setCellValue(nvl(i.getOriginalId()));
                 row.createCell(c++).setCellValue(nvl(i.getProductName()));
                 row.createCell(c++).setCellValue(nvl(i.getCompanyName()));
-                row.createCell(c++).setCellValue(nvl(i.getModelName()));
                 row.createCell(c++).setCellValue(nvl(i.getPrice()));
-                row.createCell(c++).setCellValue(nvl(i.getMaterial()));
-                row.createCell(c++).setCellValue(nvl(i.getSize()));
                 row.createCell(c++).setCellValue(nvl(i.getWeight()));
                 row.createCell(c++).setCellValue(nvl(i.getReferenceUrl()));
                 row.createCell(c++).setCellValue(nvl(i.getRegisteredAt()));
                 row.createCell(c++).setCellValue(nvl(i.getProductPath()));
                 row.createCell(c++).setCellValue(nvl(i.getProductTypeName()));
+                row.createCell(c++).setCellValue(nvl(toJson(i.getAttributes())));
 
-                // 2026
-                row.createCell(c++).setCellValue(nvl(i.getNoiseCancelling()));
-                row.createCell(c++).setCellValue(nvl(i.getCodec()));
-                row.createCell(c++).setCellValue(nvl(i.getExtraFeatures()));
-                row.createCell(c++).setCellValue(nvl(i.getControlType()));
-                row.createCell(c++).setCellValue(nvl(i.getWaterproof()));
-                row.createCell(c++).setCellValue(nvl(i.getMaxPlayTime()));
-                row.createCell(c++).setCellValue(nvl(i.getChargeTime()));
                 row.createCell(c++).setCellValue(nvl(i.getUsage()));
-                row.createCell(c++).setCellValue(nvl(i.getConnectivity()));
-                row.createCell(c++).setCellValue(nvl(i.getSoundOutput()));
                 row.createCell(c++).setCellValue(nvl(i.getShoppingUrl()));
             }
 
@@ -289,6 +280,17 @@ public class IndustryDataService {
 
     private String nvl(Object v) {
         return v == null ? "" : String.valueOf(v);
+    }
+
+    private String toJson(Map<String, String> attributes) {
+        if (attributes == null || attributes.isEmpty()) {
+            return "";
+        }
+        try {
+            return objectMapper.writeValueAsString(attributes);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /*
