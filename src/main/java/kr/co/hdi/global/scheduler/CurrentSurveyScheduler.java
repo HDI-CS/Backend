@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Objects;
 
 @Component
@@ -22,7 +23,7 @@ public class CurrentSurveyScheduler {
     @Transactional
     @Scheduled(cron = "0 15 0 * * *", zone = "Asia/Seoul")
     public void syncCurrentSurvey() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         for (DomainType domainType : DomainType.values()) {
 
