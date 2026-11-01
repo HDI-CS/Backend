@@ -60,9 +60,9 @@ public interface AssessmentRoundRepository extends JpaRepository<AssessmentRound
           and ar.startDate <= :today
           and (ar.endDate is null or ar.endDate >= :today)
           and ar.deletedAt is null
-        order by ar.startDate desc
+        order by ar.createdAt desc
     """)
-    Optional<AssessmentRound> findCurrentRound(
+    List<AssessmentRound> findCurrentRounds(
             @Param("domainType") DomainType domainType,
             @Param("today") LocalDate today);
 }
